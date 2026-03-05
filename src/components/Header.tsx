@@ -31,6 +31,13 @@ export default function Header() {
             >
               Generator
             </Link>
+            <Link
+              to="/translator"
+              className="nav-link"
+              activeProps={{ className: 'nav-link is-active' }}
+            >
+              Translator
+            </Link>
           </div>
         </div>
 

@@ -1,4 +1,5 @@
 import { defineConfig } from 'vite'
+import basicSsl from '@vitejs/plugin-basic-ssl'
 import { devtools } from '@tanstack/devtools-vite'
 import tsconfigPaths from 'vite-tsconfig-paths'
 
@@ -11,6 +12,7 @@ import { nitro } from 'nitro/vite'
 
 const config = defineConfig({
   plugins: [
+    basicSsl(),
     devtools(),
     nitro({ rollupConfig: { external: [/^@sentry\//] } }),
     tsconfigPaths({ projects: ['./tsconfig.json'] }),

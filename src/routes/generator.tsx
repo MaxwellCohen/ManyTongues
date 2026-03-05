@@ -12,7 +12,6 @@ import {
   DEFAULT_COLORS,
   DEFAULT_TEXT,
   tokenizeAndCount,
-  type CloudWord,
 } from '#/lib/wordCloudUtils'
 
 const scaleOptions = ['linear', 'sqrt', 'log'] as const
@@ -206,13 +205,6 @@ function WordCloudPage() {
     random,
   })
 
-  const [tooltip, setTooltip] = useState<string | null>(null)
-  const onWordMouseOver = useCallback(
-    (word: CloudWord) => setTooltip(`${word.text} (${word.value})`),
-    [],
-  )
-  const onWordMouseOut = useCallback(() => setTooltip(null), [])
-
   return (
     <main className="page-wrap py-8 sm:py-12">
       <PageHero />
@@ -262,9 +254,6 @@ function WordCloudPage() {
           backgroundColor={backgroundColor}
           mounted={mounted}
           hasWords={hasWords}
-          tooltip={tooltip}
-          onWordMouseOver={onWordMouseOver}
-          onWordMouseOut={onWordMouseOut}
         />
       </div>
     </main>

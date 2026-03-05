@@ -8,9 +8,6 @@ type Props = {
   backgroundColor: string
   mounted: boolean
   hasWords: boolean
-  tooltip: string | null
-  onWordMouseOver: (word: CloudWord) => void
-  onWordMouseOut: () => void
 }
 
 export default function WordCloudCanvas({
@@ -19,9 +16,6 @@ export default function WordCloudCanvas({
   backgroundColor,
   mounted,
   hasWords,
-  tooltip,
-  onWordMouseOver,
-  onWordMouseOut,
 }: Props) {
   const svgRef = useRef<SVGSVGElement>(null)
 
@@ -123,23 +117,12 @@ export default function WordCloudCanvas({
                       fontSize: `${word.size ?? 14}px`,
                       fill: palette[i % palette.length] ?? palette[0],
                     }}
-                    onMouseOver={() => onWordMouseOver(word)}
-                    onMouseOut={onWordMouseOut}
-                    className="cursor-default"
                   >
                     {word.text}
                   </text>
                 ))}
               </g>
             </svg>
-            {tooltip && (
-              <div
-                className="pointer-events-none absolute bottom-2 left-1/2 -translate-x-1/2 rounded bg-sea-ink px-2 py-1 text-xs text-white shadow"
-                role="tooltip"
-              >
-                {tooltip}
-              </div>
-            )}
           </div>
         ) : (
           <p className="text-sm text-sea-ink-soft">
