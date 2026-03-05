@@ -1,0 +1,10 @@
+---
+description: Do not run dev or build commands; assume they are already running
+alwaysApply: true
+---
+
+# Dev and Build Commands
+
+- **Do not run** dev servers or build commands (e.g. `pn dev`, `npm run dev`, `pnpm dev`, `vite`, `pn build`, `npm run build`, `pnpm build`).
+- **Assume** the dev server and build tooling are already running or will be started by the user.
+- When suggesting verification steps, tell the user to check the app in the browser or rely on their existing dev/build process instead of running these commands in the agent.
