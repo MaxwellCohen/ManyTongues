@@ -4,35 +4,36 @@ import {
   inputClass,
   labelClass,
   type ScaleType,
-} from '#/lib/wordCloudUtils'
+} from "#/lib/wordCloudUtils";
 
 type Props = {
-  maxWords: number
-  onMaxWordsChange: (v: number) => void
-  padding: number
-  onPaddingChange: (v: number) => void
-  minFontSize: number
-  onMinFontSizeChange: (v: number) => void
-  maxFontSize: number
-  onMaxFontSizeChange: (v: number) => void
-  scale: ScaleType
-  onScaleChange: (v: ScaleType) => void
-  rotationAngles: [number, number]
-  onRotationAnglesChange: (v: [number, number]) => void
-  rotations: number
-  onRotationsChange: (v: number) => void
-  deterministic: boolean
-  onDeterministicChange: (v: boolean) => void
-  fontFamily: string
-  onFontFamilyChange: (v: string) => void
-  backgroundColor: string
-  onBackgroundColorChange: (v: string) => void
-  colors: string[]
-  onColorsChange: (v: string[]) => void
-  onBlur?: () => void
-}
+  maxWords: number;
+  onMaxWordsChange: (v: number) => void;
+  padding: number;
+  onPaddingChange: (v: number) => void;
+  minFontSize: number;
+  onMinFontSizeChange: (v: number) => void;
+  maxFontSize: number;
+  onMaxFontSizeChange: (v: number) => void;
+  scale: ScaleType;
+  onScaleChange: (v: ScaleType) => void;
+  rotationAngles: [number, number];
+  onRotationAnglesChange: (v: [number, number]) => void;
+  rotations: number;
+  onRotationsChange: (v: number) => void;
+  deterministic: boolean;
+  onDeterministicChange: (v: boolean) => void;
+  fontFamily: string;
+  onFontFamilyChange: (v: string) => void;
+  backgroundColor: string;
+  onBackgroundColorChange: (v: string) => void;
+  colors: string[];
+  onColorsChange: (v: string[]) => void;
+  onBlur?: () => void;
+};
 
-const clampRotation = (n: number) => Math.min(90, Math.max(-90, Number(n) || 0))
+const clampRotation = (n: number) =>
+  Math.min(360, Math.max(-360, Number(n) || 0));
 
 export default function WordCloudOptions({
   maxWords,
@@ -67,13 +68,8 @@ export default function WordCloudOptions({
           <input
             type="number"
             min={5}
-            max={1000}
             value={maxWords}
-            onChange={(e) =>
-              onMaxWordsChange(
-                Math.min(1000, Math.max(5, Number(e.target.value) || 1000)),
-              )
-            }
+            onChange={(e) => onMaxWordsChange(Number(e.target.value))}
             className={inputClass}
           />
         </label>
@@ -82,12 +78,9 @@ export default function WordCloudOptions({
           <input
             type="number"
             min={0}
-            max={20}
             value={padding}
             onChange={(e) =>
-              onPaddingChange(
-                Math.min(20, Math.max(0, Number(e.target.value) || 1)),
-              )
+              onPaddingChange(Math.max(0, Number(e.target.value) || 0))
             }
             className={inputClass}
           />
@@ -166,12 +159,9 @@ export default function WordCloudOptions({
           <input
             type="number"
             min={0}
-            max={10}
             value={rotations}
             onChange={(e) =>
-              onRotationsChange(
-                Math.min(10, Math.max(0, Number(e.target.value) || 2)),
-              )
+              onRotationsChange(Math.max(0, Number(e.target.value) || 0))
             }
             className={inputClass}
           />
@@ -180,11 +170,14 @@ export default function WordCloudOptions({
           <span className={labelClass}>Rotation min (°)</span>
           <input
             type="number"
-            min={-90}
-            max={90}
+            min={-360}
+            max={360}
             value={rotationAngles[0]}
             onChange={(e) =>
-              onRotationAnglesChange([clampRotation(Number(e.target.value)), rotationAngles[1]])
+              onRotationAnglesChange([
+                clampRotation(Number(e.target.value)),
+                rotationAngles[1],
+              ])
             }
             className={inputClass}
           />
@@ -193,11 +186,14 @@ export default function WordCloudOptions({
           <span className={labelClass}>Rotation max (°)</span>
           <input
             type="number"
-            min={-90}
-            max={90}
+            min={-360}
+            max={360}
             value={rotationAngles[1]}
             onChange={(e) =>
-              onRotationAnglesChange([rotationAngles[0], clampRotation(Number(e.target.value))])
+              onRotationAnglesChange([
+                rotationAngles[0],
+                clampRotation(Number(e.target.value)),
+              ])
             }
             className={inputClass}
           />
@@ -236,9 +232,9 @@ export default function WordCloudOptions({
                   type="color"
                   value={color}
                   onChange={(e) => {
-                    const next = [...colors]
-                    next[i] = e.target.value
-                    onColorsChange(next)
+                    const next = [...colors];
+                    next[i] = e.target.value;
+                    onColorsChange(next);
                   }}
                   className="h-8 w-8 cursor-pointer rounded border-0 bg-transparent p-0"
                 />
@@ -246,9 +242,9 @@ export default function WordCloudOptions({
                   type="text"
                   value={color}
                   onChange={(e) => {
-                    const next = [...colors]
-                    next[i] = e.target.value
-                    onColorsChange(next)
+                    const next = [...colors];
+                    next[i] = e.target.value;
+                    onColorsChange(next);
                   }}
                   placeholder="#000000"
                   className="w-20 rounded border-0 bg-transparent px-1 py-0.5 text-xs text-sea-ink focus:outline-none focus:ring-1 focus:ring-lagoon"
@@ -256,7 +252,9 @@ export default function WordCloudOptions({
                 {colors.length > 1 && (
                   <button
                     type="button"
-                    onClick={() => onColorsChange(colors.filter((_, j) => j !== i))}
+                    onClick={() =>
+                      onColorsChange(colors.filter((_, j) => j !== i))
+                    }
                     className="rounded p-1 text-sea-ink-soft hover:bg-line/30 hover:text-sea-ink"
                     aria-label="Remove color"
                   >
@@ -280,7 +278,7 @@ export default function WordCloudOptions({
             ))}
             <button
               type="button"
-              onClick={() => onColorsChange([...colors, '#6b7280'])}
+              onClick={() => onColorsChange([...colors, "#6b7280"])}
               className="flex items-center gap-1.5 rounded-lg border border-dashed border-line px-3 py-1.5 text-xs font-medium text-sea-ink-soft hover:border-lagoon hover:text-lagoon"
             >
               <svg
@@ -303,5 +301,5 @@ export default function WordCloudOptions({
         </div>
       </div>
     </div>
-  )
+  );
 }

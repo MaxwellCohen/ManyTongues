@@ -125,7 +125,7 @@ export default function WordCloudCanvas({
       randomSeed: options.randomSeed ?? 'wordcloud',
       enableTooltip: false,
       rotationAngles: options.rotationAngles ?? ([-90, 0] as [number, number]),
-      rotations: options.rotations ?? 2,
+      rotations: options.rotations ?? 3,
       colors: safePalette,
     } as Parameters<typeof ReactWordcloud>[0]['options']
   }, [
@@ -195,7 +195,7 @@ export default function WordCloudCanvas({
         ) : hasWords && Array.isArray(words) && words.length > 0 ? (
           <div
             ref={containerRef}
-            className="relative h-full w-full flex items-center justify-center [&>svg]:max-h-full [&>svg]:max-w-full"
+            className="relative h-full w-full flex items-center justify-center [&_svg]:block [&_svg]:m-auto [&_svg]:max-h-full [&_svg]:max-w-full"
             style={{ minWidth: 300, minHeight: 300 }}
           >
             <ReactWordcloud

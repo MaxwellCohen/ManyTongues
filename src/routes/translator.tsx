@@ -27,16 +27,19 @@ const translatorOptionsDefaults = {
   padding: 1,
   scale: 'sqrt' as ScaleType,
   rotationAngles: [-90, 90] as [number, number],
-  rotations: 2,
+  rotations: 3,
   deterministic: true,
   fontFamily: DEFAULT_FONT_FAMILY,
   backgroundColor: TRANSLATOR_BG,
   colors: [TRANSLATOR_TEXT_COLOR] as string[],
 }
 
+const DEFAULT_WEIGHT = 50
+
 function TranslatorWordCloudPage() {
   const [input, setInput] = useState('everything will be great')
   const [translations, setTranslations] = useState<Map<string, string>>(new Map())
+  const [weights, setWeights] = useState<Map<string, number>>(new Map())
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [mounted, setMounted] = useState(false)
@@ -56,33 +59,61 @@ function TranslatorWordCloudPage() {
     setError(null)
     setLoading(true)
     setTranslations(new Map())
+    setWeights(new Map())
 
     const result = await getOrTranslatePhrase({
       data: { phrase: text, sourceLanguage: 'en' },
     })
 
     if (result.ok) {
-      setTranslations(new Map(Object.entries(result.translations)))
+      const next = new Map(Object.entries(result.translations))
+      setTranslations(next)
+      const nextWeights = new Map<string, number>()
+      next.forEach((_, lang) =>
+        nextWeights.set(lang, Math.floor(Math.random() * 199) + 1),
+      )
+      setWeights(nextWeights)
     } else {
       setError(result.error)
     }
     setLoading(false)
   }, [input])
 
+  const removeTranslation = useCallback((lang: string) => {
+    setTranslations((prev) => {
+      const m = new Map(prev)
+      m.delete(lang)
+      return m
+    })
+    setWeights((prev) => {
+      const m = new Map(prev)
+      m.delete(lang)
+      return m
+    })
+  }, [])
+
+  const setWeight = useCallback((lang: string, value: number) => {
+    setWeights((prev) => {
+      const m = new Map(prev)
+      m.set(lang, value)
+      return m
+    })
+  }, [])
+
   const cloudDataRaw = useMemo(() => {
     const text = input.trim()
     if (!text && translations.size === 0) return []
 
     const items: { text: string; value: number }[] = []
-    // English original is the biggest (max value); translations get smaller random values
     if (text) {
       items.push({ text, value: 1000 })
     }
-    translations.forEach((translated, _lang) => {
-      items.push({ text: translated, value: Math.floor(Math.random() * 80) + 1 })
+    translations.forEach((translated, lang) => {
+      const w = weights.get(lang) ?? DEFAULT_WEIGHT
+      items.push({ text: translated, value: Math.max(1, Math.round(w)) })
     })
     return items
-  }, [input, translations])
+  }, [input, translations, weights])
 
   const cloudData =cloudDataRaw;
 
@@ -166,6 +197,52 @@ function TranslatorWordCloudPage() {
               </p>
             )}
           </Accordion>
+
+          {translations.size > 0 && (
+            <Accordion title="Translations" defaultOpen>
+              <p className="mb-3 text-sm text-sea-ink-soft">
+                Remove entries or adjust weight (size in the cloud). Higher = larger.
+              </p>
+              <ul className="space-y-3">
+                {Array.from(translations.entries()).map(([lang, text]) => (
+                  <li
+                    key={lang}
+                    className="flex flex-wrap items-center gap-2 rounded-lg border border-line bg-foam p-3"
+                  >
+                    <span className="min-w-10 rounded bg-line/30 px-2 py-0.5 font-mono text-xs font-medium text-sea-ink">
+                      {lang}
+                    </span>
+                    <span className="min-w-0 flex-1 truncate text-sm text-sea-ink" title={text}>
+                      {text}
+                    </span>
+                    <label className="flex items-center gap-1.5 text-sm text-sea-ink">
+                      <span className="sr-only">Weight for {lang}</span>
+                      <input
+                        type="range"
+                        min={1}
+                        max={200}
+                        value={weights.get(lang) ?? DEFAULT_WEIGHT}
+                        onChange={(e) =>
+                          setWeight(lang, Number(e.target.value))
+                        }
+                        className="h-2 w-24 shrink-0 rounded-full bg-line accent-lagoon"
+                      />
+                      <span className="w-8 tabular-nums">
+                        {weights.get(lang) ?? DEFAULT_WEIGHT}
+                      </span>
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => removeTranslation(lang)}
+                      className="rounded-lg border border-line px-2 py-1.5 text-xs font-medium text-sea-ink hover:bg-red-500/10 hover:border-red-500/50 hover:text-red-600"
+                    >
+                      Remove
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </Accordion>
+          )}
 
           <Accordion title="Word cloud options">
             <WordCloudOptions

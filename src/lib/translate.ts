@@ -69,8 +69,8 @@ export const getOrTranslatePhrase = createServerFn({ method: 'POST' })
       return { ok: false, error: 'No phrase to translate.' }
     }
 
-    if (phrase.length > 100) {
-      return { ok: false, error: 'Phrase is too long (max 100 characters).' }
+    if (phrase.length > 50) {
+      return { ok: false, error: 'Phrase is too long (max 50 characters).' }
     }
 
     const sourceLanguage = data.sourceLanguage ?? 'en'
