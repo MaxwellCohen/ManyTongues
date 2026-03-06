@@ -12,7 +12,7 @@ import { nitro } from 'nitro/vite'
 
 const config = defineConfig({
   plugins: [
-    basicSsl(),
+    // basicSsl(),
     devtools(),
     nitro({ rollupConfig: { external: [/^@sentry\//] } }),
     tsconfigPaths({ projects: ['./tsconfig.json'] }),

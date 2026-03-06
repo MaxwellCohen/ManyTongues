@@ -1,27 +1,78 @@
-import { useCallback, useRef } from 'react'
-import type { CloudWord } from '#/lib/wordCloudUtils'
-import { DEFAULT_BG } from '#/lib/wordCloudUtils'
+import { useCallback, useMemo, useRef } from 'react'
+import ReactWordcloud from 'react-wordcloud'
+import { DEFAULT_BG, DEFAULT_COLORS } from '#/lib/wordCloudUtils'
+
+/** Never pass empty colors to react-wordcloud (it reads colors[0]). */
+const FALLBACK_PALETTE = DEFAULT_COLORS
+
+
+export type WordCloudOptions = {
+  minFontSize: number
+  maxFontSize: number
+  padding: number
+  scale: 'linear' | 'sqrt' | 'log'
+  maxWords?: number
+  rotationAngles?: [number, number]
+  rotations?: number
+  randomSeed?: string
+  /** When false, layout is random each time; when true, layout is stable for the same seed. */
+  deterministic?: boolean
+  fontFamily?: string
+}
 
 type Props = {
-  laidOutWords: CloudWord[]
+  words: { text: string; value: number }[]
   palette: string[]
   backgroundColor: string
   mounted: boolean
   hasWords: boolean
+  options: WordCloudOptions
+}
+
+/** Approximate char width and line height so d3-cloud can place the largest phrase (it drops words that don't fit). */
+const LAYOUT_WIDTH = 640
+const LAYOUT_HEIGHT = 360
+const CHAR_WIDTH_RATIO = 0.6
+const LINE_HEIGHT_RATIO = 1.2
+
+/** Cap max font size so the longest phrase fits in the canvas and isn't dropped by d3-cloud. */
+function capMaxFontSizeForWords(
+  words: { text: string; value: number }[],
+  requestedMax: number,
+): number {
+  if (!words.length) return requestedMax
+  const maxLen = Math.max(...words.map((w) => w.text.length), 1)
+  const maxByWidth = LAYOUT_WIDTH / (maxLen * CHAR_WIDTH_RATIO)
+  const maxByHeight = LAYOUT_HEIGHT / LINE_HEIGHT_RATIO
+  return Math.min(requestedMax, maxByWidth, maxByHeight)
+}
+
+/** Simple hash to pick a deterministic color index from word text. */
+function hashWord(text: string): number {
+  let h = 0
+  for (let i = 0; i < text.length; i++) {
+    h = (h << 5) - h + text.charCodeAt(i)
+    h |= 0
+  }
+  return Math.abs(h)
 }
 
 export default function WordCloudCanvas({
-  laidOutWords,
+  words,
   palette,
   backgroundColor,
   mounted,
   hasWords,
+  options,
 }: Props) {
-  const svgRef = useRef<SVGSVGElement>(null)
+  const containerRef = useRef<HTMLDivElement>(null)
 
   const handleDownload = useCallback(() => {
-    const svg = svgRef.current
-    if (!svg || !hasWords) return
+    const container = containerRef.current
+    if (!container || !hasWords) return
+
+    const svg = container.querySelector('svg')
+    if (!svg) return
 
     const width = 640
     const height = 360
@@ -54,6 +105,53 @@ export default function WordCloudCanvas({
     img.onerror = () => URL.revokeObjectURL(url)
     img.src = url
   }, [hasWords, backgroundColor])
+
+  const safePalette =
+    palette?.length > 0 ? palette : FALLBACK_PALETTE
+
+  const cloudOptions = useMemo(() => {
+    const cappedMax = capMaxFontSizeForWords(words, options.maxFontSize)
+    const fontSizes: [number, number] = [
+      Math.min(options.minFontSize, cappedMax),
+      cappedMax,
+    ]
+    return {
+      fontSizes,
+      fontFamily: options.fontFamily ?? 'system-ui',
+      padding: options.padding,
+      scale: options.scale,
+      spiral: 'archimedean',
+      deterministic: options.deterministic ?? true,
+      randomSeed: options.randomSeed ?? 'wordcloud',
+      enableTooltip: false,
+      rotationAngles: options.rotationAngles ?? ([-90, 0] as [number, number]),
+      rotations: options.rotations ?? 2,
+      colors: safePalette,
+    } as Parameters<typeof ReactWordcloud>[0]['options']
+  }, [
+    words,
+    options.minFontSize,
+    options.maxFontSize,
+    options.fontFamily,
+    options.padding,
+    options.scale,
+    options.deterministic,
+    options.randomSeed,
+    options.rotationAngles,
+    options.rotations,
+    safePalette,
+  ])
+
+  const callbacks = useMemo(
+    () => ({
+      getWordColor: (word: { text: string }) => {
+        const colors = safePalette
+        const i = hashWord(word.text) % colors.length
+        return colors[i] ?? colors[0]
+      },
+    }),
+    [safePalette],
+  )
 
   return (
     <section className="island-shell flex min-h-80 flex-col rounded-2xl p-5 sm:p-6">
@@ -94,35 +192,21 @@ export default function WordCloudCanvas({
       >
         {!mounted ? (
           <p className="text-sm text-sea-ink-soft">Loading cloud…</p>
-        ) : hasWords ? (
+        ) : hasWords && Array.isArray(words) && words.length > 0 ? (
           <div
+            ref={containerRef}
             className="relative h-full w-full flex items-center justify-center [&>svg]:max-h-full [&>svg]:max-w-full"
             style={{ minWidth: 300, minHeight: 300 }}
           >
-            <svg
-              ref={svgRef}
-              viewBox="0 0 640 360"
-              preserveAspectRatio="xMidYMid meet"
-              className="max-h-full max-w-full"
-            >
-              <g transform="translate(320, 180)">
-                {laidOutWords.map((word, i) => (
-                  <text
-                    key={`${word.text}-${i}`}
-                    transform={`translate(${word.x ?? 0},${word.y ?? 0}) rotate(${word.rotate ?? 0})`}
-                    textAnchor="middle"
-                    style={{
-                      fontFamily:
-                        'Manrope, ui-sans-serif, system-ui, sans-serif',
-                      fontSize: `${word.size ?? 14}px`,
-                      fill: palette[i % palette.length] ?? palette[0],
-                    }}
-                  >
-                    {word.text}
-                  </text>
-                ))}
-              </g>
-            </svg>
+            <ReactWordcloud
+              key={JSON.stringify(cloudOptions) + JSON.stringify(callbacks)}
+              words={words}
+              size={[640, 360]}
+              minSize={[640, 360]}
+              options={cloudOptions}
+              callbacks={callbacks}
+              maxWords={options.maxWords}
+            />
           </div>
         ) : (
           <p className="text-sm text-sea-ink-soft">

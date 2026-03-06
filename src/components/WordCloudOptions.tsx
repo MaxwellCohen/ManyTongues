@@ -1,4 +1,5 @@
 import {
+  FONT_FAMILY_OPTIONS,
   SCALE_OPTIONS,
   inputClass,
   labelClass,
@@ -16,12 +17,22 @@ type Props = {
   onMaxFontSizeChange: (v: number) => void
   scale: ScaleType
   onScaleChange: (v: ScaleType) => void
+  rotationAngles: [number, number]
+  onRotationAnglesChange: (v: [number, number]) => void
+  rotations: number
+  onRotationsChange: (v: number) => void
+  deterministic: boolean
+  onDeterministicChange: (v: boolean) => void
+  fontFamily: string
+  onFontFamilyChange: (v: string) => void
   backgroundColor: string
   onBackgroundColorChange: (v: string) => void
   colors: string[]
   onColorsChange: (v: string[]) => void
   onBlur?: () => void
 }
+
+const clampRotation = (n: number) => Math.min(90, Math.max(-90, Number(n) || 0))
 
 export default function WordCloudOptions({
   maxWords,
@@ -34,6 +45,14 @@ export default function WordCloudOptions({
   onMaxFontSizeChange,
   scale,
   onScaleChange,
+  rotationAngles,
+  onRotationAnglesChange,
+  rotations,
+  onRotationsChange,
+  deterministic,
+  onDeterministicChange,
+  fontFamily,
+  onFontFamilyChange,
   backgroundColor,
   onBackgroundColorChange,
   colors,
@@ -41,21 +60,18 @@ export default function WordCloudOptions({
   onBlur,
 }: Props) {
   return (
-    <div onBlur={onBlur}>
-      <h3 className="mb-3 text-sm font-semibold text-sea-ink">
-        Word cloud options
-      </h3>
+    <div onBlur={onBlur} className="pt-1">
       <div className="grid gap-3 sm:grid-cols-2">
         <label className="block">
           <span className={labelClass}>Max words</span>
           <input
             type="number"
             min={5}
-            max={200}
+            max={1000}
             value={maxWords}
             onChange={(e) =>
               onMaxWordsChange(
-                Math.min(200, Math.max(5, Number(e.target.value) || 80)),
+                Math.min(1000, Math.max(5, Number(e.target.value) || 1000)),
               )
             }
             className={inputClass}
@@ -70,7 +86,7 @@ export default function WordCloudOptions({
             value={padding}
             onChange={(e) =>
               onPaddingChange(
-                Math.min(20, Math.max(0, Number(e.target.value) || 2)),
+                Math.min(20, Math.max(0, Number(e.target.value) || 1)),
               )
             }
             className={inputClass}
@@ -119,6 +135,72 @@ export default function WordCloudOptions({
               </option>
             ))}
           </select>
+        </label>
+        <label className="block sm:col-span-2">
+          <span className={labelClass}>Font family</span>
+          <select
+            value={fontFamily}
+            onChange={(e) => onFontFamilyChange(e.target.value)}
+            className={inputClass}
+          >
+            {FONT_FAMILY_OPTIONS.map((opt) => (
+              <option key={opt.value} value={opt.value}>
+                {opt.label}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label className="flex cursor-pointer items-center gap-2 pt-2">
+          <input
+            type="checkbox"
+            checked={deterministic}
+            onChange={(e) => onDeterministicChange(e.target.checked)}
+            className="h-4 w-4 rounded border-line text-lagoon focus:ring-lagoon"
+          />
+          <span className="text-xs font-medium text-sea-ink-soft">
+            Deterministic
+          </span>
+        </label>
+        <label className="block">
+          <span className={labelClass}>Rotations</span>
+          <input
+            type="number"
+            min={0}
+            max={10}
+            value={rotations}
+            onChange={(e) =>
+              onRotationsChange(
+                Math.min(10, Math.max(0, Number(e.target.value) || 2)),
+              )
+            }
+            className={inputClass}
+          />
+        </label>
+        <label className="block">
+          <span className={labelClass}>Rotation min (°)</span>
+          <input
+            type="number"
+            min={-90}
+            max={90}
+            value={rotationAngles[0]}
+            onChange={(e) =>
+              onRotationAnglesChange([clampRotation(Number(e.target.value)), rotationAngles[1]])
+            }
+            className={inputClass}
+          />
+        </label>
+        <label className="block">
+          <span className={labelClass}>Rotation max (°)</span>
+          <input
+            type="number"
+            min={-90}
+            max={90}
+            value={rotationAngles[1]}
+            onChange={(e) =>
+              onRotationAnglesChange([rotationAngles[0], clampRotation(Number(e.target.value))])
+            }
+            className={inputClass}
+          />
         </label>
         <div className="block sm:col-span-2">
           <span className="mb-2 block text-xs font-medium text-sea-ink-soft">

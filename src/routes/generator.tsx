@@ -1,15 +1,14 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { zodValidator } from '@tanstack/zod-adapter'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import seedrandom from 'seedrandom'
 import { z } from 'zod'
 import PageHero from '#/components/PageHero'
 import WordCloudCanvas from '#/components/WordCloudCanvas'
 import WordCloudOptions from '#/components/WordCloudOptions'
-import { useWordCloudLayout } from '#/hooks/useWordCloudLayout'
 import {
   DEFAULT_BG,
   DEFAULT_COLORS,
+  DEFAULT_FONT_FAMILY,
   DEFAULT_TEXT,
   tokenizeAndCount,
 } from '#/lib/wordCloudUtils'
@@ -18,7 +17,7 @@ const scaleOptions = ['linear', 'sqrt', 'log'] as const
 
 const generatorSearchSchema = z.object({
   input: z.string().optional(),
-  maxWords: z.coerce.number().int().min(1).max(500).optional(),
+  maxWords: z.coerce.number().int().min(1).max(1000).optional(),
   minFontSize: z.coerce.number().int().min(1).max(200).optional(),
   maxFontSize: z.coerce.number().int().min(1).max(200).optional(),
   padding: z.coerce.number().int().min(0).max(20).optional(),
@@ -42,10 +41,10 @@ export type FullGeneratorSearch = Required<GeneratorSearch>
 
 export const DEFAULT_GENERATOR_SEARCH: FullGeneratorSearch = {
   input: DEFAULT_TEXT,
-  maxWords: 80,
+  maxWords: 1000,
   minFontSize: 14,
   maxFontSize: 72,
-  padding: 2,
+  padding: 1,
   scale: 'sqrt',
   colors: [...DEFAULT_COLORS],
   backgroundColor: DEFAULT_BG,
@@ -154,56 +153,36 @@ function WordCloudPage() {
       ? colors.filter((c: string) => /^#[0-9A-Fa-f]{6}$/.test(c))
       : DEFAULT_COLORS
 
-  const fontSize = useCallback(
-    (word: { value: number }) => {
-      if (cloudData.length === 0) return minFontSize
-      const values = cloudData.map((w: { text: string; value: number }) => w.value)
-      const minV = Math.min(...values)
-      const maxV = Math.max(...values)
-      const range = maxV - minV || 1
-      let t: number
-      switch (scale) {
-        case 'log': {
-          const logMin = Math.log(minV + 1)
-          const logMax = Math.log(maxV + 1)
-          const logRange = logMax - logMin || 1
-          t = Math.log(word.value + 1)
-          return (
-            ((t - logMin) / logRange) * (maxFontSize - minFontSize) +
-            minFontSize
-          )
-        }
-        case 'sqrt':
-          t = Math.sqrt(word.value)
-          return (
-            ((t - Math.sqrt(minV)) / (Math.sqrt(maxV) - Math.sqrt(minV))) *
-              (maxFontSize - minFontSize) +
-            minFontSize
-          )
-        default:
-          return (
-            ((word.value - minV) / range) * (maxFontSize - minFontSize) +
-            minFontSize
-          )
-      }
-    },
-    [cloudData, scale, minFontSize, maxFontSize],
+  const [rotationAngles, setRotationAngles] = useState<[number, number]>([-90, 0])
+  const [rotations, setRotations] = useState(2)
+  const [deterministic, setDeterministic] = useState(true)
+  const [fontFamily, setFontFamily] = useState(DEFAULT_FONT_FAMILY)
+
+  const cloudOptions = useMemo(
+    () => ({
+      minFontSize,
+      maxFontSize,
+      padding,
+      scale,
+      maxWords,
+      rotationAngles,
+      rotations,
+      deterministic,
+      fontFamily,
+      randomSeed: `${scale}-42`,
+    }),
+    [
+      minFontSize,
+      maxFontSize,
+      padding,
+      scale,
+      maxWords,
+      rotationAngles,
+      rotations,
+      deterministic,
+      fontFamily,
+    ],
   )
-
-  const random = useMemo(() => seedrandom(`${scale}-42`), [scale])
-
-  const rotate = useCallback(
-    (_: { text: string; value: number }, i: number) =>
-      i % 2 === 0 ? -90 : 0,
-    [],
-  )
-
-  const laidOutWords = useWordCloudLayout(cloudData, {
-    fontSize,
-    padding,
-    rotate,
-    random,
-  })
 
   return (
     <main className="page-wrap py-8 sm:py-12">
@@ -240,6 +219,14 @@ function WordCloudPage() {
             onMaxFontSizeChange={(v) => setSearch({ maxFontSize: v })}
             scale={scale}
             onScaleChange={(v) => setSearch({ scale: v })}
+            rotationAngles={rotationAngles}
+            onRotationAnglesChange={setRotationAngles}
+            rotations={rotations}
+            onRotationsChange={setRotations}
+            deterministic={deterministic}
+            onDeterministicChange={setDeterministic}
+            fontFamily={fontFamily}
+            onFontFamilyChange={setFontFamily}
             backgroundColor={backgroundColor}
             onBackgroundColorChange={(v) => setSearch({ backgroundColor: v })}
             colors={colors}
@@ -249,11 +236,12 @@ function WordCloudPage() {
         </section>
 
         <WordCloudCanvas
-          laidOutWords={laidOutWords}
+          words={cloudData}
           palette={palette}
           backgroundColor={backgroundColor}
           mounted={mounted}
           hasWords={hasWords}
+          options={cloudOptions}
         />
       </div>
     </main>
