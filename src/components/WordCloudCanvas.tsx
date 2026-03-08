@@ -1,5 +1,7 @@
 import { useCallback, useMemo, useRef } from 'react'
 import ReactWordcloud from 'react-wordcloud'
+import { DownloadIcon } from '#/components/icons'
+import IslandPanel from '#/components/IslandPanel'
 import { DEFAULT_BG, DEFAULT_COLORS } from '#/lib/wordCloudUtils'
 
 /** Never pass empty colors to react-wordcloud (it reads colors[0]). */
@@ -18,15 +20,6 @@ export type WordCloudOptions = {
   /** When false, layout is random each time; when true, layout is stable for the same seed. */
   deterministic?: boolean
   fontFamily?: string
-}
-
-type Props = {
-  words: { text: string; value: number }[]
-  palette: string[]
-  backgroundColor: string
-  mounted: boolean
-  hasWords: boolean
-  options: WordCloudOptions
 }
 
 /** Approximate char width and line height so d3-cloud can place the largest phrase (it drops words that don't fit). */
@@ -64,7 +57,16 @@ export default function WordCloudCanvas({
   mounted,
   hasWords,
   options,
-}: Props) {
+  children,
+}: {
+  words: { text: string; value: number }[]
+  palette: string[]
+  backgroundColor: string
+  mounted: boolean
+  hasWords: boolean
+  options: WordCloudOptions
+  children?: React.ReactNode
+}) {
   const containerRef = useRef<HTMLDivElement>(null)
 
   const handleDownload = useCallback(() => {
@@ -154,7 +156,7 @@ export default function WordCloudCanvas({
   )
 
   return (
-    <section className="island-shell flex min-h-80 flex-col rounded-2xl p-5 sm:p-6">
+    <IslandPanel className="flex min-h-80 flex-col rounded-2xl p-5 sm:p-6">
       <div className="mb-3 flex items-center justify-between">
         <h2 className="text-sm font-semibold text-sea-ink">Preview</h2>
         {mounted && hasWords && (
@@ -163,21 +165,7 @@ export default function WordCloudCanvas({
             onClick={handleDownload}
             className="flex items-center gap-2 rounded-lg border border-line bg-foam px-3 py-2 text-sm font-medium text-sea-ink hover:border-lagoon hover:bg-lagoon/10 hover:text-lagoon"
           >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-              <polyline points="7 10 12 15 17 10" />
-              <line x1="12" x2="12" y1="15" y2="3" />
-            </svg>
+            <DownloadIcon className="size-4" />
             Download PNG
           </button>
         )}
@@ -214,6 +202,7 @@ export default function WordCloudCanvas({
           </p>
         )}
       </div>
-    </section>
+      {children}
+    </IslandPanel>
   )
 }

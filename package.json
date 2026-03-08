@@ -6,7 +6,7 @@
     "#/*": "./src/*"
   },
   "scripts": {
-    "dev": "vite dev --port 3500",
+    "dev": "vite dev",
     "build": "vite build",
     "preview": "vite preview",
     "typecheck": "tsgo --noEmit",
@@ -30,6 +30,7 @@
     "@tanstack/router-plugin": "^1.132.0",
     "@tanstack/zod-adapter": "^1.166.2",
     "@xstate/react": "^6.1.0",
+    "class-variance-authority": "^0.7.1",
     "d3-cloud": "^1.2.9",
     "drizzle-orm": "^0.45.1",
     "install": "^0.13.0",
@@ -41,6 +42,7 @@
     "react-dom": "^19.2.0",
     "react-wordcloud": "^1.2.7",
     "seedrandom": "^3.0.5",
+    "tailwind-merge": "^3.5.0",
     "tailwindcss": "^4.1.18",
     "xstate": "^5.28.0",
     "zipson": "^0.2.12",

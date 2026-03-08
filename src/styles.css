@@ -4,6 +4,21 @@
 
 @theme {
   --font-sans: "Manrope", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Fraunces", Georgia, serif;
+  --text-eyebrow: 0.69rem;
+  --tracking-kicker: 0.16em;
+  --tracking-action: 0.01em;
+  --animate-rise-in: rise-in 700ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  --shadow-card: 0 8px 24px rgba(30, 90, 72, 0.06);
+  --shadow-card-hover: 0 12px 32px rgba(30, 90, 72, 0.1);
+  --shadow-chip: 0 8px 24px rgba(30, 90, 72, 0.08);
+  --shadow-theme-toggle: 0 4px 12px rgba(30, 90, 72, 0.06);
+  --shadow-button-primary: 0 4px 14px rgba(13, 37, 43, 0.25);
+  --shadow-button-primary-focus:
+    0 0 0 3px var(--color-bg-base), 0 0 0 5px var(--color-btn-primary-focus-ring);
+  --shadow-island:
+    inset 0 1px 0 var(--color-inset-glint), 0 22px 44px rgba(30, 90, 72, 0.1),
+    0 6px 18px rgba(23, 58, 64, 0.08);
 
   /* Design tokens – light (default) values; dark overrides in :root[data-theme="dark"] below */
   --color-sea-ink: #0d252b;
@@ -168,128 +183,10 @@ pre code {
   color: inherit;
 }
 
-.page-wrap {
-  width: min(1080px, calc(100% - 2rem));
-  margin-inline: auto;
-}
-
-.display-title {
-  font-family: "Fraunces", Georgia, serif;
-}
-
-.island-shell {
-  border: 1px solid var(--color-line);
-  background: linear-gradient(165deg, var(--color-surface-strong), var(--color-surface));
-  box-shadow:
-    0 1px 0 var(--color-inset-glint) inset,
-    0 22px 44px rgba(30, 90, 72, 0.1),
-    0 6px 18px rgba(23, 58, 64, 0.08);
-  backdrop-filter: blur(4px);
-}
-
-.feature-card {
-  background: linear-gradient(165deg, color-mix(in oklab, var(--color-surface-strong) 93%, white 7%), var(--color-surface));
-  box-shadow:
-    0 1px 0 var(--color-inset-glint) inset,
-    0 18px 34px rgba(30, 90, 72, 0.1),
-    0 4px 14px rgba(23, 58, 64, 0.06);
-}
-
-.feature-card:hover {
-  transform: translateY(-2px);
-  border-color: color-mix(in oklab, var(--color-lagoon-deep) 35%, var(--color-line));
-}
-
 button,
-.island-shell,
 a {
   transition: background-color 180ms ease, color 180ms ease, border-color 180ms ease,
     transform 180ms ease;
-}
-
-.island-kicker {
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  font-weight: 700;
-  font-size: 0.69rem;
-  color: var(--color-kicker);
-}
-
-.nav-link {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  text-decoration: none;
-  color: var(--color-sea-ink-soft);
-}
-
-.nav-link::after {
-  content: "";
-  position: absolute;
-  left: 0;
-  bottom: -6px;
-  width: 100%;
-  height: 2px;
-  transform: scaleX(0);
-  transform-origin: left;
-  background: linear-gradient(90deg, var(--color-lagoon), #7ed3bf);
-  transition: transform 170ms ease;
-}
-
-.nav-link:hover,
-.nav-link.is-active {
-  color: var(--color-sea-ink);
-}
-
-.nav-link:hover::after,
-.nav-link.is-active::after {
-  transform: scaleX(1);
-}
-
-.cta-button {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  padding: 0.875rem 1.75rem;
-  font-size: 1rem;
-  font-weight: 600;
-  letter-spacing: 0.01em;
-  line-height: 1.25;
-  color: var(--color-btn-primary-text);
-  background-color: var(--color-btn-primary-bg);
-  border: 2px solid var(--color-btn-primary-bg);
-  border-radius: 0.75rem;
-  text-decoration: none;
-  box-shadow: 0 4px 14px rgba(13, 37, 43, 0.25);
-  transition: background-color 160ms ease, border-color 160ms ease, color 160ms ease, box-shadow 160ms ease;
-}
-
-.cta-button:hover {
-  background-color: var(--color-btn-primary-hover-bg);
-  border-color: var(--color-btn-primary-hover-bg);
-  color: var(--color-btn-primary-text);
-  box-shadow: 0 6px 20px rgba(13, 37, 43, 0.35);
-}
-
-.cta-button:focus {
-  outline: none;
-  box-shadow: 0 0 0 3px var(--color-bg-base), 0 0 0 5px var(--color-btn-primary-focus-ring);
-}
-
-@media (max-width: 640px) {
-  .nav-link::after {
-    bottom: -4px;
-  }
-}
-
-.site-footer {
-  border-top: 1px solid var(--color-line);
-  background: color-mix(in oklab, var(--color-header-bg) 84%, transparent 16%);
-}
-
-.rise-in {
-  animation: rise-in 700ms cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 @keyframes rise-in {

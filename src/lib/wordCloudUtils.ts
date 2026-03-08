@@ -52,8 +52,3 @@ export const FONT_FAMILY_OPTIONS = [
 ] as const
 
 export const DEFAULT_FONT_FAMILY = 'system-ui'
-
-export const inputClass =
-  'w-full rounded-lg border border-line bg-foam px-3 py-2 text-sm text-sea-ink focus:border-lagoon focus:outline-none focus:ring-2 focus:ring-lagoon/30'
-
-export const labelClass = 'mb-1 block text-xs font-medium text-sea-ink-soft'

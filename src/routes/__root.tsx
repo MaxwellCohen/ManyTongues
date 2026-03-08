@@ -46,7 +46,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
       </head>
       <body className="font-sans antialiased wrap-anywhere selection:bg-lagoon/24">
         <Header />
-        {children}
+        <main className="mx-auto w-[min(1080px,calc(100%-2rem))] py-8 sm:py-12">{children}</main>
         <Footer />
         <TanStackDevtools
           config={{

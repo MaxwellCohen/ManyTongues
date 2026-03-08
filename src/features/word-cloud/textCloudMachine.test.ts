@@ -15,14 +15,12 @@ describe('createTextCloudMachine', () => {
       updates: { input: 'hello world' },
     })
 
-    expect(actor.getSnapshot().matches('editing')).toBe(true)
+    expect(actor.getSnapshot().matches('dirty')).toBe(true)
     expect(actor.getSnapshot().context.formState.input).toBe('hello world')
-    expect(actor.getSnapshot().context.dirty).toBe(true)
 
     actor.send({ type: 'COMMIT_TO_URL' })
 
-    expect(actor.getSnapshot().matches('idle')).toBe(true)
-    expect(actor.getSnapshot().context.dirty).toBe(false)
+    expect(actor.getSnapshot().matches('clean')).toBe(true)
     expect(actor.getSnapshot().context.pendingUrlSearch).toEqual({
       input: 'hello world',
     })
@@ -50,8 +48,7 @@ describe('createTextCloudMachine', () => {
       }),
     })
 
-    expect(actor.getSnapshot().matches('idle')).toBe(true)
-    expect(actor.getSnapshot().context.dirty).toBe(false)
+    expect(actor.getSnapshot().matches('clean')).toBe(true)
     expect(actor.getSnapshot().context.formState.maxWords).toBe(25)
     expect(actor.getSnapshot().context.formState.colors).toEqual(['#123456'])
   })

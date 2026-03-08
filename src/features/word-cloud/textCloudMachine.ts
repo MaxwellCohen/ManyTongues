@@ -7,7 +7,6 @@ import {
 
 type TextCloudContext = {
   formState: FullGeneratorSearch
-  dirty: boolean
   pendingUrlSearch: Partial<GeneratorSearch> | null
 }
 
@@ -17,6 +16,17 @@ type TextCloudEvent =
   | { type: 'URL_CHANGED'; search: FullGeneratorSearch }
   | { type: 'URL_COMMITTED' }
 
+function applyFieldUpdates(
+  formState: FullGeneratorSearch,
+  updates: Partial<FullGeneratorSearch>,
+): FullGeneratorSearch {
+  return { ...formState, ...updates }
+}
+
+function queueCommittedSearch(formState: FullGeneratorSearch) {
+  return getGeneratorSearchForUrl(formState)
+}
+
 export function createTextCloudMachine(initialSearch: FullGeneratorSearch) {
   return setup({
     types: {
@@ -25,68 +35,48 @@ export function createTextCloudMachine(initialSearch: FullGeneratorSearch) {
     },
   }).createMachine({
     id: 'textCloudPage',
-    initial: 'hydratingFromUrl',
+    initial: 'clean',
     context: {
       formState: initialSearch,
-      dirty: false,
       pendingUrlSearch: null,
     },
+    on: {
+      URL_CHANGED: {
+        target: '.clean',
+        actions: assign(({ event }) => ({
+          formState: event.search,
+          pendingUrlSearch: null,
+        })),
+      },
+      URL_COMMITTED: {
+        actions: assign({
+          pendingUrlSearch: null,
+        }),
+      },
+    },
     states: {
-      hydratingFromUrl: {
-        always: {
-          target: 'idle',
-        },
-      },
-      idle: {
+      clean: {
         on: {
           FIELD_CHANGED: {
-            target: 'editing',
+            target: 'dirty',
             actions: assign(({ context, event }) => ({
-              formState: { ...context.formState, ...event.updates },
-              dirty: true,
+              formState: applyFieldUpdates(context.formState, event.updates),
             })),
-          },
-          URL_CHANGED: {
-            actions: assign(({ event }) => ({
-              formState: event.search,
-              dirty: false,
-              pendingUrlSearch: null,
-            })),
-          },
-          URL_COMMITTED: {
-            actions: assign({
-              pendingUrlSearch: null,
-            }),
           },
         },
       },
-      editing: {
+      dirty: {
         on: {
           FIELD_CHANGED: {
             actions: assign(({ context, event }) => ({
-              formState: { ...context.formState, ...event.updates },
-              dirty: true,
+              formState: applyFieldUpdates(context.formState, event.updates),
             })),
           },
           COMMIT_TO_URL: {
-            target: 'idle',
+            target: 'clean',
             actions: assign(({ context }) => ({
-              dirty: false,
-              pendingUrlSearch: getGeneratorSearchForUrl(context.formState),
+              pendingUrlSearch: queueCommittedSearch(context.formState),
             })),
-          },
-          URL_CHANGED: {
-            target: 'idle',
-            actions: assign(({ event }) => ({
-              formState: event.search,
-              dirty: false,
-              pendingUrlSearch: null,
-            })),
-          },
-          URL_COMMITTED: {
-            actions: assign({
-              pendingUrlSearch: null,
-            }),
           },
         },
       },
