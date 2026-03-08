@@ -1,19 +1,18 @@
+import { useMachine } from '@xstate/react'
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { zodValidator } from '@tanstack/zod-adapter'
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { z } from 'zod'
 import PageHero from '#/components/PageHero'
 import WordCloudCanvas from '#/components/WordCloudCanvas'
 import WordCloudOptions from '#/components/WordCloudOptions'
+import { createTextCloudMachine } from '#/features/word-cloud/textCloudMachine'
 import {
-  DEFAULT_BG,
-  DEFAULT_COLORS,
-  DEFAULT_FONT_FAMILY,
-  DEFAULT_TEXT,
-  tokenizeAndCount,
-} from '#/lib/wordCloudUtils'
-
-const scaleOptions = ['linear', 'sqrt', 'log'] as const
+  generatorScaleOptions,
+  getGeneratorPalette,
+  resolveGeneratorSearch,
+} from '#/features/word-cloud/textCloudState'
+import { tokenizeAndCount } from '#/lib/wordCloudUtils'
 const booleanSearchParam = z.preprocess((value) => {
   if (value === 'true') return true
   if (value === 'false') return false
@@ -26,7 +25,7 @@ const generatorSearchSchema = z.object({
   minFontSize: z.coerce.number().int().min(1).max(200).optional(),
   maxFontSize: z.coerce.number().int().min(1).max(200).optional(),
   padding: z.coerce.number().int().min(0).max(20).optional(),
-  scale: z.enum(scaleOptions).optional(),
+  scale: z.enum(generatorScaleOptions).optional(),
   rotationMin: z.coerce.number().int().min(-360).max(360).optional(),
   rotationMax: z.coerce.number().int().min(-360).max(360).optional(),
   rotations: z.coerce.number().int().min(0).max(12).optional(),
@@ -45,45 +44,6 @@ const generatorSearchSchema = z.object({
 })
 
 export type GeneratorSearch = z.infer<typeof generatorSearchSchema>
-
-/** Full form state (all keys required); defaults for the generator route. */
-export type FullGeneratorSearch = Required<GeneratorSearch>
-
-export const DEFAULT_GENERATOR_SEARCH: FullGeneratorSearch = {
-  input: DEFAULT_TEXT,
-  maxWords: 1000,
-  minFontSize: 14,
-  maxFontSize: 72,
-  padding: 1,
-  scale: 'sqrt',
-  rotationMin: -90,
-  rotationMax: 0,
-  rotations: 2,
-  deterministic: true,
-  fontFamily: DEFAULT_FONT_FAMILY,
-  colors: [...DEFAULT_COLORS],
-  backgroundColor: DEFAULT_BG,
-}
-
-/** Only keys that differ from defaults (for a clean URL) */
-function getSearchForUrl(state: FullGeneratorSearch): Partial<GeneratorSearch> {
-  const out: Partial<GeneratorSearch> = {}
-  const keys = Object.keys(DEFAULT_GENERATOR_SEARCH) as (keyof FullGeneratorSearch)[]
-  for (const k of keys) {
-    const a = state[k]
-    const b = DEFAULT_GENERATOR_SEARCH[k]
-    if (Array.isArray(a) && Array.isArray(b)) {
-      if (
-        a.length !== b.length ||
-        a.some((v, i) => v !== b[i])
-      )
-        (out as Record<keyof GeneratorSearch, unknown>)[k] = a
-    } else if (a !== b) {
-      (out as Record<keyof GeneratorSearch, unknown>)[k] = a
-    }
-  }
-  return out
-}
 
 export const Route = createFileRoute('/text-cloud')({
   ssr: false,
@@ -104,71 +64,28 @@ const textareaClass =
 function WordCloudPage() {
   const navigate = useNavigate({ from: '/text-cloud' })
   const searchFromUrl = Route.useSearch()
-  const [mounted, setMounted] = useState(false)
-
-  const [formState, setFormState] = useState<FullGeneratorSearch>(() => ({
-    ...DEFAULT_GENERATOR_SEARCH,
-    ...searchFromUrl,
-  } as FullGeneratorSearch))
-  const formStateRef = useRef<FullGeneratorSearch>(formState)
-  const hasChangedSinceLastSyncRef = useRef(false)
-
-  useEffect(() => {
-    formStateRef.current = formState
-  }, [formState])
-
-  const applyFormUpdates = useCallback(
-    (
-      updates:
-        | Partial<FullGeneratorSearch>
-        | ((prev: FullGeneratorSearch) => Partial<FullGeneratorSearch>),
-    ) => {
-      const prev = formStateRef.current
-      const partial = typeof updates === 'function' ? updates(prev) : updates
-      const nextState = { ...prev, ...partial }
-      formStateRef.current = nextState
-      hasChangedSinceLastSyncRef.current = true
-      setFormState(nextState)
-    },
-    [],
+  const resolvedSearch = useMemo(
+    () => resolveGeneratorSearch(searchFromUrl),
+    [searchFromUrl],
   )
-
-  // When URL search changes (e.g. initial load, back/forward), merge only URL params into form state
-  useEffect(() => {
-    const nextState = {
-      ...DEFAULT_GENERATOR_SEARCH,
-      ...searchFromUrl,
-      colors: searchFromUrl.colors ?? DEFAULT_GENERATOR_SEARCH.colors,
-    } as FullGeneratorSearch
-    formStateRef.current = nextState
-    setFormState(nextState)
-    hasChangedSinceLastSyncRef.current = false
-  }, [
-    searchFromUrl.input,
-    searchFromUrl.maxWords,
-    searchFromUrl.minFontSize,
-    searchFromUrl.maxFontSize,
-    searchFromUrl.padding,
-    searchFromUrl.scale,
-    searchFromUrl.rotationMin,
-    searchFromUrl.rotationMax,
-    searchFromUrl.rotations,
-    searchFromUrl.deterministic,
-    searchFromUrl.fontFamily,
-    searchFromUrl.backgroundColor,
-    (searchFromUrl.colors ?? []).join(','),
-  ])
-
-  const syncToUrlOnBlur = useCallback(() => {
-    if (!hasChangedSinceLastSyncRef.current) return
-    hasChangedSinceLastSyncRef.current = false
-    const nextSearch = getSearchForUrl(formStateRef.current)
-    navigate({ to: '/text-cloud', search: nextSearch, replace: true })
-  }, [navigate])
+  const [machine] = useState(() => createTextCloudMachine(resolvedSearch))
+  const [snapshot, send] = useMachine(machine)
 
   useEffect(() => {
-    setMounted(true)
-  }, [])
+    send({ type: 'URL_CHANGED', search: resolvedSearch })
+  }, [resolvedSearch, send])
+
+  useEffect(() => {
+    const pendingUrlSearch = snapshot.context.pendingUrlSearch
+    if (!pendingUrlSearch) return
+
+    navigate({
+      to: '/text-cloud',
+      search: pendingUrlSearch,
+      replace: true,
+    })
+    send({ type: 'URL_COMMITTED' })
+  }, [navigate, send, snapshot.context.pendingUrlSearch])
 
   const {
     input,
@@ -184,7 +101,7 @@ function WordCloudPage() {
     fontFamily,
     colors,
     backgroundColor,
-  } = formState
+  } = snapshot.context.formState
 
   const words = useMemo(() => tokenizeAndCount(input), [input])
   const cloudData = useMemo(
@@ -193,10 +110,7 @@ function WordCloudPage() {
   )
   const hasWords = words.length > 0
 
-  const palette =
-    colors.filter((c: string) => /^#[0-9A-Fa-f]{6}$/.test(c)).length > 0
-      ? colors.filter((c: string) => /^#[0-9A-Fa-f]{6}$/.test(c))
-      : DEFAULT_COLORS
+  const palette = useMemo(() => getGeneratorPalette(colors), [colors])
 
   const cloudOptions = useMemo(
     () => ({
@@ -245,8 +159,10 @@ function WordCloudPage() {
             <textarea
               id="wordcloud-input"
               value={input}
-              onChange={(e) => applyFormUpdates({ input: e.target.value })}
-              onBlur={syncToUrlOnBlur}
+              onChange={(e) =>
+                send({ type: 'FIELD_CHANGED', updates: { input: e.target.value } })
+              }
+              onBlur={() => send({ type: 'COMMIT_TO_URL' })}
               placeholder="Paste text, notes, a transcript, or lyrics..."
               rows={10}
               className={textareaClass}
@@ -255,35 +171,56 @@ function WordCloudPage() {
 
           <WordCloudOptions
             maxWords={maxWords}
-            onMaxWordsChange={(v) => applyFormUpdates({ maxWords: v })}
+            onMaxWordsChange={(v) =>
+              send({ type: 'FIELD_CHANGED', updates: { maxWords: v } })
+            }
             padding={padding}
-            onPaddingChange={(v) => applyFormUpdates({ padding: v })}
+            onPaddingChange={(v) =>
+              send({ type: 'FIELD_CHANGED', updates: { padding: v } })
+            }
             minFontSize={minFontSize}
-            onMinFontSizeChange={(v) => applyFormUpdates({ minFontSize: v })}
+            onMinFontSizeChange={(v) =>
+              send({ type: 'FIELD_CHANGED', updates: { minFontSize: v } })
+            }
             maxFontSize={maxFontSize}
-            onMaxFontSizeChange={(v) => applyFormUpdates({ maxFontSize: v })}
+            onMaxFontSizeChange={(v) =>
+              send({ type: 'FIELD_CHANGED', updates: { maxFontSize: v } })
+            }
             scale={scale}
-            onScaleChange={(v) => applyFormUpdates({ scale: v })}
+            onScaleChange={(v) =>
+              send({ type: 'FIELD_CHANGED', updates: { scale: v } })
+            }
             rotationAngles={[rotationMin, rotationMax]}
             onRotationAnglesChange={(v) =>
-              applyFormUpdates({
-                rotationMin: v[0],
-                rotationMax: v[1],
+              send({
+                type: 'FIELD_CHANGED',
+                updates: {
+                  rotationMin: v[0],
+                  rotationMax: v[1],
+                },
               })
             }
             rotations={rotations}
-            onRotationsChange={(v) => applyFormUpdates({ rotations: v })}
+            onRotationsChange={(v) =>
+              send({ type: 'FIELD_CHANGED', updates: { rotations: v } })
+            }
             deterministic={deterministic}
-            onDeterministicChange={(v) => applyFormUpdates({ deterministic: v })}
+            onDeterministicChange={(v) =>
+              send({ type: 'FIELD_CHANGED', updates: { deterministic: v } })
+            }
             fontFamily={fontFamily}
-            onFontFamilyChange={(v) => applyFormUpdates({ fontFamily: v })}
+            onFontFamilyChange={(v) =>
+              send({ type: 'FIELD_CHANGED', updates: { fontFamily: v } })
+            }
             backgroundColor={backgroundColor}
             onBackgroundColorChange={(v) =>
-              applyFormUpdates({ backgroundColor: v })
+              send({ type: 'FIELD_CHANGED', updates: { backgroundColor: v } })
             }
             colors={colors}
-            onColorsChange={(v) => applyFormUpdates({ colors: v })}
-            onCommit={syncToUrlOnBlur}
+            onColorsChange={(v) =>
+              send({ type: 'FIELD_CHANGED', updates: { colors: v } })
+            }
+            onCommit={() => send({ type: 'COMMIT_TO_URL' })}
           />
         </section>
 
@@ -291,7 +228,7 @@ function WordCloudPage() {
           words={cloudData}
           palette={palette}
           backgroundColor={backgroundColor}
-          mounted={mounted}
+          mounted
           hasWords={hasWords}
           options={cloudOptions}
         />

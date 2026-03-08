@@ -1,20 +1,10 @@
 import { sql } from 'drizzle-orm'
-import { getRequest } from '@tanstack/react-start/server'
 import { translatorRateLimitsTable } from '#/db/schema'
 import { getTursoDb } from '#/lib/db'
 
 const DEFAULT_WINDOW_MS = 5 * 60 * 1000
 const DEFAULT_MAX_REQUESTS = 10
 const RATE_LIMIT_NAMESPACE = 'translator'
-const FORWARDED_IP_HEADERS = [
-  'cf-connecting-ip',
-  'fly-client-ip',
-  'true-client-ip',
-  'x-forwarded-for',
-  'x-real-ip',
-  'x-client-ip',
-  'x-vercel-forwarded-for',
-] as const
 
 type ConsumeRateLimitInput = {
   ip?: string
@@ -33,7 +23,7 @@ type ConsumeRateLimitResult =
       retryAfterSeconds: number
     }
 
-function normalizeIpCandidate(value: string | null): string | null {
+export function normalizeIpCandidate(value: string | null): string | null {
   const firstValue = value?.split(',')[0]?.trim()
   if (!firstValue) {
     return null
@@ -44,21 +34,8 @@ function normalizeIpCandidate(value: string | null): string | null {
     : firstValue
 }
 
-export function getClientIpFromRequest(): string {
-  const request = getRequest()
-
-  for (const headerName of FORWARDED_IP_HEADERS) {
-    const ip = normalizeIpCandidate(request.headers.get(headerName))
-    if (ip) {
-      return ip
-    }
-  }
-
-  return 'unknown'
-}
-
 export async function consumeTranslatorRateLimit({
-  ip = getClientIpFromRequest(),
+  ip = 'unknown',
   maxRequests = DEFAULT_MAX_REQUESTS,
   windowMs = DEFAULT_WINDOW_MS,
 }: ConsumeRateLimitInput = {}): Promise<ConsumeRateLimitResult> {

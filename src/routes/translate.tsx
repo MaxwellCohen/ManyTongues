@@ -1,22 +1,24 @@
+import { useMachine } from '@xstate/react'
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { zodValidator } from '@tanstack/zod-adapter'
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { z } from 'zod'
 import Accordion from '#/components/Accordion'
 import PageHero from '#/components/PageHero'
 import WordCloudCanvas from '#/components/WordCloudCanvas'
 import WordCloudOptions from '#/components/WordCloudOptions'
+import { createTranslateMachine } from '#/features/word-cloud/translateMachine'
 import {
-  DEFAULT_COLORS,
-  DEFAULT_FONT_FAMILY,
-} from '#/lib/wordCloudUtils'
-import type { ScaleType } from '#/lib/wordCloudUtils'
+  clampWeight,
+  DEFAULT_WEIGHT,
+  getTranslatorPalette,
+  parseWeights,
+  resolveTranslatorSearch,
+  translatorScaleOptions,
+  WEIGHT_MAX,
+  WEIGHT_MIN,
+} from '#/features/word-cloud/translateState'
 import { getOrTranslatePhrase } from '#/lib/translate'
-
-/** Mustard / dark yellow background and black text to match reference word cloud. */
-const TRANSLATOR_BG = '#c9a227'
-const TRANSLATOR_TEXT_COLOR = '#000000'
-const scaleOptions = ['linear', 'sqrt', 'log'] as const
 const booleanSearchParam = z.preprocess((value) => {
   if (value === 'true') return true
   if (value === 'false') return false
@@ -30,7 +32,7 @@ const translatorSearchSchema = z.object({
   minFontSize: z.coerce.number().int().min(1).max(200).optional(),
   maxFontSize: z.coerce.number().int().min(1).max(200).optional(),
   padding: z.coerce.number().int().min(0).max(20).optional(),
-  scale: z.enum(scaleOptions).optional(),
+  scale: z.enum(translatorScaleOptions).optional(),
   rotationMin: z.coerce.number().int().min(-360).max(360).optional(),
   rotationMax: z.coerce.number().int().min(-360).max(360).optional(),
   rotations: z.coerce.number().int().min(0).max(12).optional(),
@@ -71,265 +73,45 @@ export const Route = createFileRoute('/translate')({
   component: TranslatorWordCloudPage,
 })
 
-type TranslatorSearch = z.infer<typeof translatorSearchSchema>
-type FullTranslatorSearch = Required<TranslatorSearch>
-
-const DEFAULT_TRANSLATOR_SEARCH: FullTranslatorSearch = {
-  input: 'everything will be great',
-  translated: false,
-  maxWords: 1000,
-  minFontSize: 14,
-  maxFontSize: 72,
-  padding: 1,
-  scale: 'sqrt' as ScaleType,
-  rotationMin: -90,
-  rotationMax: 90,
-  rotations: 3,
-  deterministic: true,
-  fontFamily: DEFAULT_FONT_FAMILY,
-  backgroundColor: TRANSLATOR_BG,
-  colors: [TRANSLATOR_TEXT_COLOR] as string[],
-  hiddenLanguages: [],
-  weights: '',
-}
-
-const DEFAULT_WEIGHT = 50
-const WEIGHT_MIN = 1
-const WEIGHT_MAX = 200
-
-function clampWeight(value: number): number {
-  return Math.min(WEIGHT_MAX, Math.max(WEIGHT_MIN, Math.round(Number(value) || DEFAULT_WEIGHT)))
-}
-
-function parseWeights(value: string): Map<string, number> {
-  const weights = new Map<string, number>()
-  for (const part of value.split(',')) {
-    const [lang, rawWeight] = part.split(':')
-    if (!lang || !rawWeight) continue
-    const parsed = Number(rawWeight)
-    if (!Number.isFinite(parsed)) continue
-    weights.set(lang, clampWeight(parsed))
-  }
-  return weights
-}
-
-function serializeWeights(weights: Map<string, number>): string {
-  return Array.from(weights.entries())
-    .sort(([a], [b]) => a.localeCompare(b))
-    .map(([lang, weight]) => `${lang}:${clampWeight(weight)}`)
-    .join(',')
-}
-
-function createRandomWeights(languages: Iterable<string>): Map<string, number> {
-  const weights = new Map<string, number>()
-  for (const lang of languages) {
-    weights.set(lang, Math.floor(Math.random() * WEIGHT_MAX) + WEIGHT_MIN)
-  }
-  return weights
-}
-
-function getSearchForUrl(state: FullTranslatorSearch): Partial<TranslatorSearch> {
-  const out: Partial<TranslatorSearch> = {}
-  const keys = Object.keys(DEFAULT_TRANSLATOR_SEARCH) as (keyof FullTranslatorSearch)[]
-  for (const key of keys) {
-    const nextValue = state[key]
-    const defaultValue = DEFAULT_TRANSLATOR_SEARCH[key]
-    if (Array.isArray(nextValue) && Array.isArray(defaultValue)) {
-      if (
-        nextValue.length !== defaultValue.length ||
-        nextValue.some((value, index) => value !== defaultValue[index])
-      ) {
-        ;(out as Record<keyof TranslatorSearch, unknown>)[key] = nextValue
-      }
-    } else if (nextValue !== defaultValue) {
-      ;(out as Record<keyof TranslatorSearch, unknown>)[key] = nextValue
-    }
-  }
-  return out
-}
-
-function getResolvedTranslatorSearch(search: TranslatorSearch): FullTranslatorSearch {
-  return {
-    ...DEFAULT_TRANSLATOR_SEARCH,
-    ...search,
-    colors: search.colors ?? DEFAULT_TRANSLATOR_SEARCH.colors,
-    hiddenLanguages: search.hiddenLanguages ?? DEFAULT_TRANSLATOR_SEARCH.hiddenLanguages,
-  }
-}
-
 function TranslatorWordCloudPage() {
   const navigate = useNavigate({ from: '/translate' })
   const searchFromUrl = Route.useSearch()
   const resolvedSearch = useMemo(
-    () => getResolvedTranslatorSearch(searchFromUrl),
+    () => resolveTranslatorSearch(searchFromUrl),
     [searchFromUrl],
   )
-  const [formState, setFormState] = useState<FullTranslatorSearch>(() => resolvedSearch)
-  const formStateRef = useRef<FullTranslatorSearch>(formState)
-  const hasChangedSinceLastSyncRef = useRef(false)
-  const loadedPhraseRef = useRef<string | null>(null)
-  const [translations, setTranslations] = useState<Map<string, string>>(new Map())
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const applyFormUpdates = useCallback(
-    (
-      updates:
-        | Partial<FullTranslatorSearch>
-        | ((prev: FullTranslatorSearch) => Partial<FullTranslatorSearch>),
-      syncImmediately = false,
-    ) => {
-      const prev = formStateRef.current
-      const partial = typeof updates === 'function' ? updates(prev) : updates
-      const nextState = { ...prev, ...partial }
-      formStateRef.current = nextState
-      setFormState(nextState)
-
-      if (syncImmediately) {
-        hasChangedSinceLastSyncRef.current = false
-        navigate({
-          to: '/translate',
-          search: getSearchForUrl(nextState),
-          replace: true,
-        })
-        return
-      }
-
-      hasChangedSinceLastSyncRef.current = true
-    },
-    [navigate],
+  const [machine] = useState(() =>
+    createTranslateMachine({
+      initialSearch: resolvedSearch,
+      translatePhrase: async (phrase) =>
+        getOrTranslatePhrase({ data: { phrase } }),
+    }),
   )
+  const [snapshot, send] = useMachine(machine)
 
-  const syncToUrlOnBlur = useCallback(() => {
-    if (!hasChangedSinceLastSyncRef.current) return
-    hasChangedSinceLastSyncRef.current = false
+  useEffect(() => {
+    send({ type: 'URL_CHANGED', search: resolvedSearch })
+  }, [resolvedSearch, send])
+
+  useEffect(() => {
+    const pendingUrlSearch = snapshot.context.pendingUrlSearch
+    if (!pendingUrlSearch) return
+
     navigate({
       to: '/translate',
-      search: getSearchForUrl(formStateRef.current),
+      search: pendingUrlSearch,
       replace: true,
     })
-  }, [navigate])
-
-  useEffect(() => {
-    const nextState = resolvedSearch
-    formStateRef.current = nextState
-    setFormState(nextState)
-    hasChangedSinceLastSyncRef.current = false
-  }, [resolvedSearch])
-
-  useEffect(() => {
-    const phrase = resolvedSearch.input.trim()
-    const shouldLoadTranslations = Boolean(resolvedSearch.translated && phrase)
-    if (!shouldLoadTranslations) {
-      loadedPhraseRef.current = null
-      setTranslations(new Map())
-      setLoading(false)
-      setError(null)
-      return
-    }
-
-    if (loadedPhraseRef.current === phrase) return
-
-    let cancelled = false
-    setLoading(true)
-    setError(null)
-
-    getOrTranslatePhrase({ data: { phrase } }).then((result) => {
-      if (cancelled) return
-
-      if (result.ok) {
-        loadedPhraseRef.current = phrase
-        setTranslations(new Map(Object.entries(result.translations)))
-        setError(null)
-      } else {
-        loadedPhraseRef.current = null
-        setTranslations(new Map())
-        setError(result.error)
-      }
-
-      setLoading(false)
-    })
-
-    return () => {
-      cancelled = true
-    }
-  }, [resolvedSearch.input, resolvedSearch.translated])
-
-  const runTranslate = useCallback(async () => {
-    const text = formStateRef.current.input.trim()
-    if (!text) {
-      setError('Enter some text to translate.')
-      setTranslations(new Map())
-      loadedPhraseRef.current = null
-      applyFormUpdates({ translated: false }, true)
-      return
-    }
-
-    setError(null)
-    setLoading(true)
-    setTranslations(new Map())
-    loadedPhraseRef.current = null
-
-    const result = await getOrTranslatePhrase({
-      data: { phrase: text },
-    })
-
-    if (result.ok) {
-      const nextTranslations = new Map(Object.entries(result.translations))
-      const nextWeights = createRandomWeights(nextTranslations.keys())
-
-      const nextHiddenLanguages = formStateRef.current.hiddenLanguages.filter((lang) =>
-        nextTranslations.has(lang),
-      )
-
-      loadedPhraseRef.current = text
-      setTranslations(nextTranslations)
-      applyFormUpdates(
-        {
-          input: text,
-          translated: true,
-          weights: serializeWeights(nextWeights),
-          hiddenLanguages: nextHiddenLanguages,
-        },
-        true,
-      )
-    } else {
-      setError(result.error)
-      setTranslations(new Map())
-      applyFormUpdates({ translated: false }, true)
-    }
-
-    setLoading(false)
-  }, [applyFormUpdates])
+    send({ type: 'URL_COMMITTED' })
+  }, [navigate, send, snapshot.context.pendingUrlSearch])
 
   const hiddenLanguages = useMemo(
-    () => new Set(formState.hiddenLanguages),
-    [formState.hiddenLanguages],
+    () => new Set(snapshot.context.formState.hiddenLanguages),
+    [snapshot.context.formState.hiddenLanguages],
   )
-  const weights = useMemo(() => parseWeights(formState.weights), [formState.weights])
-
-  const removeTranslation = useCallback(
-    (lang: string) => {
-      applyFormUpdates(
-        (prev) => ({
-          hiddenLanguages: prev.hiddenLanguages.includes(lang)
-            ? prev.hiddenLanguages
-            : [...prev.hiddenLanguages, lang],
-        }),
-        true,
-      )
-    },
-    [applyFormUpdates],
-  )
-
-  const setWeight = useCallback(
-    (lang: string, value: number) => {
-      applyFormUpdates((prev) => {
-        const nextWeights = parseWeights(prev.weights)
-        nextWeights.set(lang, clampWeight(value))
-        return { weights: serializeWeights(nextWeights) }
-      })
-    },
-    [applyFormUpdates],
+  const weights = useMemo(
+    () => parseWeights(snapshot.context.formState.weights),
+    [snapshot.context.formState.weights],
   )
 
   const {
@@ -347,7 +129,11 @@ function TranslatorWordCloudPage() {
     fontFamily,
     backgroundColor,
     colors,
-  } = formState
+  } = snapshot.context.formState
+
+  const translations = snapshot.context.translations
+  const loading = snapshot.matches('translating')
+  const error = snapshot.context.error
 
   const cloudDataRaw = useMemo(() => {
     const phrase = input.trim()
@@ -369,10 +155,7 @@ function TranslatorWordCloudPage() {
 
   const hasWords = cloudData.length > 0
 
-  const palette =
-    colors.filter((c: string) => /^#[0-9A-Fa-f]{6}$/.test(c)).length > 0
-      ? colors.filter((c: string) => /^#[0-9A-Fa-f]{6}$/.test(c))
-      : DEFAULT_COLORS
+  const palette = useMemo(() => getTranslatorPalette(colors), [colors])
 
   const cloudOptions = useMemo(
     () => ({
@@ -421,21 +204,18 @@ function TranslatorWordCloudPage() {
                 id="translator-input"
                 type="text"
                 value={input}
-                onChange={(e) => {
-                  applyFormUpdates({
-                    input: e.target.value,
-                    translated: false,
+                onChange={(e) =>
+                  send({
+                    type: 'FIELD_CHANGED',
+                    updates: { input: e.target.value },
                   })
-                  loadedPhraseRef.current = null
-                  setTranslations(new Map())
-                  setError(null)
-                }}
+                }
                 onKeyDown={(e) => {
                   if (e.key !== 'Enter') return
                   e.preventDefault()
-                  void runTranslate()
+                  send({ type: 'TRANSLATE_REQUESTED' })
                 }}
-                onBlur={syncToUrlOnBlur}
+                onBlur={() => send({ type: 'COMMIT_TO_URL' })}
                 placeholder="For example: everything will be great"
                 className="w-full rounded-xl border border-line bg-foam px-4 py-3 text-sea-ink placeholder:text-sea-ink-soft focus:border-lagoon focus:outline-none focus:ring-2 focus:ring-lagoon/30"
               />
@@ -449,7 +229,7 @@ function TranslatorWordCloudPage() {
 
             <button
               type="button"
-              onClick={runTranslate}
+              onClick={() => send({ type: 'TRANSLATE_REQUESTED' })}
               disabled={loading || !input.trim()}
               className="mt-3 w-full rounded-xl bg-lagoon px-4 py-3 text-sm font-semibold text-white hover:bg-lagoon/90 disabled:opacity-50 disabled:pointer-events-none"
             >
@@ -489,10 +269,14 @@ function TranslatorWordCloudPage() {
                         min={WEIGHT_MIN}
                         max={WEIGHT_MAX}
                         value={weights.get(lang) ?? DEFAULT_WEIGHT}
-                        onChange={(e) =>
-                          setWeight(lang, Number(e.target.value))
-                        }
-                        onBlur={syncToUrlOnBlur}
+                        onChange={(e) => {
+                          send({
+                            type: 'WEIGHT_CHANGED',
+                            lang,
+                            value: Number(e.target.value),
+                          })
+                        }}
+                        onBlur={() => send({ type: 'COMMIT_TO_URL' })}
                         className="h-2 w-24 shrink-0 rounded-full bg-line accent-lagoon"
                       />
                       <span className="w-8 tabular-nums">
@@ -501,7 +285,12 @@ function TranslatorWordCloudPage() {
                     </label>
                     <button
                       type="button"
-                      onClick={() => removeTranslation(lang)}
+                      onClick={() =>
+                        send({
+                          type: 'LANGUAGE_HIDDEN',
+                          lang,
+                        })
+                      }
                       className="rounded-lg border border-line px-2 py-1.5 text-xs font-medium text-sea-ink hover:bg-red-500/10 hover:border-red-500/50 hover:text-red-600"
                     >
                       Remove
@@ -515,37 +304,56 @@ function TranslatorWordCloudPage() {
           <Accordion title="Cloud styling">
             <WordCloudOptions
               maxWords={maxWords}
-              onMaxWordsChange={(v) => applyFormUpdates({ maxWords: v })}
+              onMaxWordsChange={(v) =>
+                send({ type: 'FIELD_CHANGED', updates: { maxWords: v } })
+              }
               padding={padding}
-              onPaddingChange={(v) => applyFormUpdates({ padding: v })}
+              onPaddingChange={(v) =>
+                send({ type: 'FIELD_CHANGED', updates: { padding: v } })
+              }
               minFontSize={minFontSize}
-              onMinFontSizeChange={(v) => applyFormUpdates({ minFontSize: v })}
+              onMinFontSizeChange={(v) =>
+                send({ type: 'FIELD_CHANGED', updates: { minFontSize: v } })
+              }
               maxFontSize={maxFontSize}
-              onMaxFontSizeChange={(v) => applyFormUpdates({ maxFontSize: v })}
+              onMaxFontSizeChange={(v) =>
+                send({ type: 'FIELD_CHANGED', updates: { maxFontSize: v } })
+              }
               scale={scale}
-              onScaleChange={(v) => applyFormUpdates({ scale: v })}
+              onScaleChange={(v) =>
+                send({ type: 'FIELD_CHANGED', updates: { scale: v } })
+              }
               rotationAngles={[rotationMin, rotationMax]}
               onRotationAnglesChange={(v) =>
-                applyFormUpdates({
-                  rotationMin: v[0],
-                  rotationMax: v[1],
+                send({
+                  type: 'FIELD_CHANGED',
+                  updates: {
+                    rotationMin: v[0],
+                    rotationMax: v[1],
+                  },
                 })
               }
               rotations={rotations}
-              onRotationsChange={(v) => applyFormUpdates({ rotations: v })}
+              onRotationsChange={(v) =>
+                send({ type: 'FIELD_CHANGED', updates: { rotations: v } })
+              }
               deterministic={deterministic}
               onDeterministicChange={(v) =>
-                applyFormUpdates({ deterministic: v })
+                send({ type: 'FIELD_CHANGED', updates: { deterministic: v } })
               }
               fontFamily={fontFamily}
-              onFontFamilyChange={(v) => applyFormUpdates({ fontFamily: v })}
+              onFontFamilyChange={(v) =>
+                send({ type: 'FIELD_CHANGED', updates: { fontFamily: v } })
+              }
               backgroundColor={backgroundColor}
               onBackgroundColorChange={(v) =>
-                applyFormUpdates({ backgroundColor: v })
+                send({ type: 'FIELD_CHANGED', updates: { backgroundColor: v } })
               }
               colors={colors}
-              onColorsChange={(v) => applyFormUpdates({ colors: v })}
-              onCommit={syncToUrlOnBlur}
+              onColorsChange={(v) =>
+                send({ type: 'FIELD_CHANGED', updates: { colors: v } })
+              }
+              onCommit={() => send({ type: 'COMMIT_TO_URL' })}
             />
           </Accordion>
         </section>

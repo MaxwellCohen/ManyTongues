@@ -6,7 +6,7 @@
     "#/*": "./src/*"
   },
   "scripts": {
-    "dev": "vite dev --port 3000",
+    "dev": "vite dev --port 3500",
     "build": "vite build",
     "preview": "vite preview",
     "typecheck": "tsgo --noEmit",
@@ -29,6 +29,7 @@
     "@tanstack/react-start": "^1.132.0",
     "@tanstack/router-plugin": "^1.132.0",
     "@tanstack/zod-adapter": "^1.166.2",
+    "@xstate/react": "^6.1.0",
     "d3-cloud": "^1.2.9",
     "drizzle-orm": "^0.45.1",
     "install": "^0.13.0",
