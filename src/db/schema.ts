@@ -33,3 +33,18 @@ export const phraseTranslationsTable = sqliteTable(
 
 export type PhraseTranslation = typeof phraseTranslationsTable.$inferSelect
 export type NewPhraseTranslation = typeof phraseTranslationsTable.$inferInsert
+
+export const translatorRateLimitsTable = sqliteTable(
+  'translator_rate_limits',
+  {
+    id: integer('id').primaryKey({ autoIncrement: true }),
+    key: text('key').notNull(),
+    windowStartedAtMs: integer('window_started_at_ms').notNull(),
+    hits: integer('hits').notNull().default(0),
+    updatedAtMs: integer('updated_at_ms').notNull(),
+  },
+  (table) => [uniqueIndex('translator_rate_limits_key_idx').on(table.key)],
+)
+
+export type TranslatorRateLimit = typeof translatorRateLimitsTable.$inferSelect
+export type NewTranslatorRateLimit = typeof translatorRateLimitsTable.$inferInsert

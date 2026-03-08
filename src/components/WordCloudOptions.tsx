@@ -29,7 +29,7 @@ type Props = {
   onBackgroundColorChange: (v: string) => void;
   colors: string[];
   onColorsChange: (v: string[]) => void;
-  onBlur?: () => void;
+  onCommit?: () => void;
 };
 
 const clampRotation = (n: number) =>
@@ -58,10 +58,10 @@ export default function WordCloudOptions({
   onBackgroundColorChange,
   colors,
   onColorsChange,
-  onBlur,
+  onCommit,
 }: Props) {
   return (
-    <div onBlur={onBlur} className="pt-1">
+    <div className="pt-1">
       <div className="grid gap-3 sm:grid-cols-2">
         <label className="block">
           <span className={labelClass}>Max words</span>
@@ -70,6 +70,7 @@ export default function WordCloudOptions({
             min={5}
             value={maxWords}
             onChange={(e) => onMaxWordsChange(Number(e.target.value))}
+            onBlur={onCommit}
             className={inputClass}
           />
         </label>
@@ -82,6 +83,7 @@ export default function WordCloudOptions({
             onChange={(e) =>
               onPaddingChange(Math.max(0, Number(e.target.value) || 0))
             }
+            onBlur={onCommit}
             className={inputClass}
           />
         </label>
@@ -97,6 +99,7 @@ export default function WordCloudOptions({
                 Math.min(48, Math.max(4, Number(e.target.value) || 14)),
               )
             }
+            onBlur={onCommit}
             className={inputClass}
           />
         </label>
@@ -112,6 +115,7 @@ export default function WordCloudOptions({
                 Math.min(120, Math.max(12, Number(e.target.value) || 72)),
               )
             }
+            onBlur={onCommit}
             className={inputClass}
           />
         </label>
@@ -120,6 +124,7 @@ export default function WordCloudOptions({
           <select
             value={scale}
             onChange={(e) => onScaleChange(e.target.value as ScaleType)}
+            onBlur={onCommit}
             className={inputClass}
           >
             {SCALE_OPTIONS.map((opt) => (
@@ -134,6 +139,7 @@ export default function WordCloudOptions({
           <select
             value={fontFamily}
             onChange={(e) => onFontFamilyChange(e.target.value)}
+            onBlur={onCommit}
             className={inputClass}
           >
             {FONT_FAMILY_OPTIONS.map((opt) => (
@@ -148,10 +154,11 @@ export default function WordCloudOptions({
             type="checkbox"
             checked={deterministic}
             onChange={(e) => onDeterministicChange(e.target.checked)}
+            onBlur={onCommit}
             className="h-4 w-4 rounded border-line text-lagoon focus:ring-lagoon"
           />
           <span className="text-xs font-medium text-sea-ink-soft">
-            Deterministic
+            Keep layout consistent
           </span>
         </label>
         <label className="block">
@@ -163,6 +170,7 @@ export default function WordCloudOptions({
             onChange={(e) =>
               onRotationsChange(Math.max(0, Number(e.target.value) || 0))
             }
+            onBlur={onCommit}
             className={inputClass}
           />
         </label>
@@ -179,6 +187,7 @@ export default function WordCloudOptions({
                 rotationAngles[1],
               ])
             }
+            onBlur={onCommit}
             className={inputClass}
           />
         </label>
@@ -195,6 +204,7 @@ export default function WordCloudOptions({
                 clampRotation(Number(e.target.value)),
               ])
             }
+            onBlur={onCommit}
             className={inputClass}
           />
         </label>
@@ -202,25 +212,29 @@ export default function WordCloudOptions({
           <span className="mb-2 block text-xs font-medium text-sea-ink-soft">
             Background color
           </span>
-          <label className="flex items-center gap-2 rounded-lg border border-line bg-foam px-2 py-1.5">
+          <div className="flex items-center gap-2 rounded-lg border border-line bg-foam px-2 py-1.5">
             <input
               type="color"
               value={backgroundColor}
               onChange={(e) => onBackgroundColorChange(e.target.value)}
+              onBlur={onCommit}
+              aria-label="Background color picker"
               className="h-8 w-8 cursor-pointer rounded border-0 bg-transparent p-0"
             />
             <input
               type="text"
               value={backgroundColor}
               onChange={(e) => onBackgroundColorChange(e.target.value)}
+              onBlur={onCommit}
+              aria-label="Background color hex value"
               placeholder="#ffffff"
               className="w-20 rounded border-0 bg-transparent px-1 py-0.5 text-xs text-sea-ink focus:outline-none focus:ring-1 focus:ring-lagoon"
             />
-          </label>
+          </div>
         </div>
         <div className="block sm:col-span-2">
           <span className="mb-2 block text-xs font-medium text-sea-ink-soft">
-            Foreground colors (words)
+            Word colors
           </span>
           <div className="flex flex-wrap items-center gap-2">
             {colors.map((color, i) => (
@@ -236,6 +250,8 @@ export default function WordCloudOptions({
                     next[i] = e.target.value;
                     onColorsChange(next);
                   }}
+                  onBlur={onCommit}
+                  aria-label={`Word color ${i + 1} picker`}
                   className="h-8 w-8 cursor-pointer rounded border-0 bg-transparent p-0"
                 />
                 <input
@@ -246,15 +262,18 @@ export default function WordCloudOptions({
                     next[i] = e.target.value;
                     onColorsChange(next);
                   }}
+                  onBlur={onCommit}
+                  aria-label={`Word color ${i + 1} hex value`}
                   placeholder="#000000"
                   className="w-20 rounded border-0 bg-transparent px-1 py-0.5 text-xs text-sea-ink focus:outline-none focus:ring-1 focus:ring-lagoon"
                 />
                 {colors.length > 1 && (
                   <button
                     type="button"
-                    onClick={() =>
-                      onColorsChange(colors.filter((_, j) => j !== i))
-                    }
+                    onClick={() => {
+                      onColorsChange(colors.filter((_, j) => j !== i));
+                      onCommit?.();
+                    }}
                     className="rounded p-1 text-sea-ink-soft hover:bg-line/30 hover:text-sea-ink"
                     aria-label="Remove color"
                   >
@@ -278,7 +297,10 @@ export default function WordCloudOptions({
             ))}
             <button
               type="button"
-              onClick={() => onColorsChange([...colors, "#6b7280"])}
+              onClick={() => {
+                onColorsChange([...colors, "#6b7280"]);
+                onCommit?.();
+              }}
               className="flex items-center gap-1.5 rounded-lg border border-dashed border-line px-3 py-1.5 text-xs font-medium text-sea-ink-soft hover:border-lagoon hover:text-lagoon"
             >
               <svg

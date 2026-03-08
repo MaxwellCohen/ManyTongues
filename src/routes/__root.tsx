@@ -19,7 +19,12 @@ export const Route = createRootRoute({
         content: 'width=device-width, initial-scale=1',
       },
       {
-        title: 'TanStack Start Starter',
+        title: 'ManyTongues',
+      },
+      {
+        name: 'description',
+        content:
+          'Create word clouds from source text or translate a short phrase into multiple languages and compare the results visually.',
       },
     ],
     links: [

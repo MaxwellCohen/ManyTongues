@@ -1,4 +1,4 @@
-export const DEFAULT_TEXT = `Enter or paste your text here. Common words like the and is will appear larger when they appear more often. Try pasting an article, a speech, or song lyrics to see which words stand out.`
+export const DEFAULT_TEXT = `Paste any text here to create a word cloud. Words that appear more often will show up larger. Try an article, meeting notes, a speech, or song lyrics to quickly spot the terms that stand out.`
 
 export const DEFAULT_COLORS = ['#173a40', '#328f97', '#4fb8b2', '#2f6a4a']
 export const DEFAULT_BG = '#e8f4f0'

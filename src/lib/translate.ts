@@ -1,59 +1,192 @@
-import { and, eq } from 'drizzle-orm'
 import { createServerFn } from '@tanstack/react-start'
-import { phraseTranslationsTable } from '#/db/schema'
-import { getTursoDb } from '#/lib/db'
-import { TARGET_LANGUAGES } from '#/lib/translatorConstants'
+import {
+  setResponseHeader,
+  setResponseStatus,
+} from '@tanstack/react-start/server'
+import { translatePhraseWithGoogle } from '#/lib/GoogleTraslation'
+import { translatePhraseWithMicrosoft } from '#/lib/MicrosoftTranslation'
+import { consumeTranslatorRateLimit } from '#/lib/rateLimit'
+import {
+  getExistingPhraseTranslation,
+  storePhraseTranslations,
+} from '#/lib/translationDb'
 
-const GOOGLE_TRANSLATE_V2_URL = 'https://translation.googleapis.com/language/translate/v2'
-
-export type TranslateInput = {
-  /** Text to translate (single string or array for batch). */
-  text: string | string[]
-  /** Target language code (e.g. "es", "fr"). */
-  targetLanguage: string
-  /** Source language code (default "en"). */
-  sourceLanguage?: string
-}
-
-export type TranslateResult =
-  | { ok: true; translatedText: string; translatedTexts?: string[] }
-  | { ok: false; error: string }
+const DEFAULT_SOURCE_LANGUAGE = 'en'
+const MAX_PHRASE_LENGTH = 50
 
 export type GetOrTranslateResult =
   | { ok: true; translations: Record<string, string> }
   | { ok: false; error: string }
 
-/**
- * Internal: call Google Translate API for one phrase and one target language.
- * Returns the translated string or null on failure.
- */
-async function translateOneWithGoogle(
+type TranslationStepResult = {
+  callNextStep: boolean
+  result?: GetOrTranslateResult
+  stepError?: string
+}
+
+type TranslationStep = (
   phrase: string,
   sourceLanguage: string,
-  targetLanguage: string,
-): Promise<string | null> {
-  const apiKey = process.env.GOOGLE_TRANSLSTE
-  if (!apiKey?.trim()) return null
+) => Promise<TranslationStepResult>
 
-  const url = `${GOOGLE_TRANSLATE_V2_URL}?key=${encodeURIComponent(apiKey)}`
-  const res = await fetch(url, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json; charset=utf-8' },
-    body: JSON.stringify({
-      q: [phrase],
-      source: sourceLanguage,
-      target: targetLanguage,
-      format: 'text',
-    }),
-  })
-
-  const json = (await res.json()) as {
-    data?: { translations?: Array<{ translatedText: string }> }
-    error?: { message?: string }
+function validatePhrase(
+  phrase: string | undefined,
+): { ok: true; phrase: string } | { ok: false; error: string } {
+  const trimmedPhrase = phrase?.trim()
+  if (!trimmedPhrase) {
+    return { ok: false, error: 'Enter a phrase to translate.' }
   }
-  if (!res.ok || json.error) return null
-  const text = json.data?.translations?.[0]?.translatedText?.trim()
-  return text ?? null
+
+  if (trimmedPhrase.length > MAX_PHRASE_LENGTH) {
+    return {
+      ok: false,
+      error: `Keep the phrase under ${MAX_PHRASE_LENGTH} characters.`,
+    }
+  }
+
+  return { ok: true, phrase: trimmedPhrase }
+}
+
+function parseStoredTranslations(
+  existingTranslationsJson: string | null,
+): Record<string, string> | null {
+  if (!existingTranslationsJson) {
+    return null
+  }
+
+  try {
+    return JSON.parse(existingTranslationsJson) as Record<string, string>
+  } catch {
+    return null
+  }
+}
+
+async function getCachedTranslations(
+  phrase: string,
+  sourceLanguage: string,
+): Promise<
+  | { ok: true; translations: Record<string, string> | null }
+  | { ok: false; error: string }
+> {
+  const lookup = await getExistingPhraseTranslation(phrase, sourceLanguage)
+  if ('error' in lookup) {
+    return { ok: false, error: lookup.error }
+  }
+
+  return {
+    ok: true,
+    translations: parseStoredTranslations(lookup.existingTranslationsJson),
+  }
+}
+
+async function validatePhraseStep(
+  phrase: string,
+  _sourceLanguage: string,
+): Promise<TranslationStepResult> {
+  const validated = validatePhrase(phrase)
+  if (!validated.ok) {
+    return { callNextStep: false, result: validated }
+  }
+
+  return { callNextStep: true }
+}
+
+async function getCachedTranslationsStep(
+  phrase: string,
+  sourceLanguage: string,
+): Promise<TranslationStepResult> {
+  const cached = await getCachedTranslations(phrase, sourceLanguage)
+  if (!cached.ok) {
+    return { callNextStep: false, result: cached }
+  }
+
+  if (cached.translations) {
+    return {
+      callNextStep: false,
+      result: { ok: true, translations: cached.translations },
+    }
+  }
+
+  return { callNextStep: true }
+}
+
+async function getGoogleTranslationsStep(
+  phrase: string,
+  sourceLanguage: string,
+): Promise<TranslationStepResult> {
+  const googleResult = await translatePhraseWithGoogle(phrase, sourceLanguage)
+  if (Object.keys(googleResult.translations).length > 0) {
+    return {
+      callNextStep: false,
+      result: await storePhraseTranslations(phrase, sourceLanguage, googleResult.translations),
+    }
+  }
+
+  return {
+    callNextStep: true,
+    stepError:
+      googleResult.error ?? "We couldn't generate translations for that phrase.",
+  }
+}
+
+async function enforceRateLimitStep(
+  _phrase: string,
+  _sourceLanguage: string,
+): Promise<TranslationStepResult> {
+  try {
+    const rateLimit = await consumeTranslatorRateLimit()
+    if (rateLimit.allowed) {
+      return { callNextStep: true }
+    }
+
+    setResponseStatus(429)
+    setResponseHeader('Retry-After', String(rateLimit.retryAfterSeconds))
+    return {
+      callNextStep: false,
+      result: {
+        ok: false,
+        error: 'Too many translation requests. Try again in a few minutes.',
+      },
+    }
+  } catch {
+    setResponseStatus(503)
+    return {
+      callNextStep: false,
+      result: {
+        ok: false,
+        error: 'Translation service is temporarily unavailable.',
+      },
+    }
+  }
+}
+
+async function getMicrosoftTranslationsStep(
+  phrase: string,
+  sourceLanguage: string,
+): Promise<TranslationStepResult> {
+  try {
+    const microsoftTranslations = await translatePhraseWithMicrosoft(phrase, sourceLanguage)
+    if (Object.keys(microsoftTranslations).length > 0) {
+      return {
+        callNextStep: false,
+        result: await storePhraseTranslations(phrase, sourceLanguage, microsoftTranslations),
+      }
+    }
+  } catch (err) {
+    const microsoftError = err instanceof Error ? err.message : String(err)
+    return {
+      callNextStep: false,
+      result: { ok: false, error: microsoftError },
+    }
+  }
+
+  return {
+    callNextStep: false,
+    result: {
+      ok: false,
+      error: "We couldn't generate translations for that phrase.",
+    },
+  }
 }
 
 /**
@@ -64,148 +197,39 @@ async function translateOneWithGoogle(
 export const getOrTranslatePhrase = createServerFn({ method: 'POST' })
   .inputValidator((data: { phrase: string; sourceLanguage?: string }) => data)
   .handler(async ({ data }): Promise<GetOrTranslateResult> => {
-    const phrase = data.phrase?.trim()
-    if (!phrase) {
-      return { ok: false, error: 'No phrase to translate.' }
-    }
+    const phrase = data.phrase?.trim() ?? ''
+    const sourceLanguage = DEFAULT_SOURCE_LANGUAGE
+    const steps: TranslationStep[] = [
+      validatePhraseStep,
+      getCachedTranslationsStep,
+      // enforceRateLimitStep,
+      getGoogleTranslationsStep,
+      getMicrosoftTranslationsStep,
+    ]
 
-    if (phrase.length > 50) {
-      return { ok: false, error: 'Phrase is too long (max 50 characters).' }
-    }
+    let previousStepError: string | undefined
+    for (const step of steps) {
+      const stepResult = await step(phrase, sourceLanguage)
+      if (stepResult.stepError) {
+        previousStepError = stepResult.stepError
+      }
 
-    const sourceLanguage = data.sourceLanguage ?? 'en'
-
-    const dbUrl = process.env.DB_URL
-    if (!dbUrl?.trim()) {
-      return { ok: false, error: 'Database is not configured (DB_URL).' }
-    }
-
-    const db = getTursoDb()
-    const existing = await db
-      .select()
-      .from(phraseTranslationsTable)
-      .where(
-        and(
-          eq(phraseTranslationsTable.phrase, phrase),
-          eq(phraseTranslationsTable.sourceLanguage, sourceLanguage),
-        ),
-      )
-      .limit(1)
-
-    if (existing.length > 0) {
-      try {
-        const translations = JSON.parse(existing[0]!.translations) as Record<string, string>
-        return { ok: true, translations: translations ?? {} }
-      } catch {
-        // Invalid JSON; fall through to re-translate and overwrite
+      if (!stepResult.callNextStep) {
+        if (!stepResult.result) {
+          return {
+            ok: false,
+            error:
+              previousStepError ??
+              "We couldn't generate translations for that phrase.",
+          }
+        }
+        return stepResult.result
       }
     }
-
-    const apiKey = process.env.GOOGLE_TRANSLSTE
-    if (!apiKey?.trim()) {
-      return { ok: false, error: 'Google Translate API key is not configured (GOOGLE_TRANSLSTE).' }
-    }
-
-    const settled = await Promise.allSettled(
-      TARGET_LANGUAGES.map(async (target) => {
-        const text = await translateOneWithGoogle(phrase, sourceLanguage, target)
-        return { target, text }
-      }),
-    )
-
-    const translations: Record<string, string> = {}
-    let firstError: string | null = null
-    for (const outcome of settled) {
-      if (outcome.status === 'rejected') {
-        if (!firstError) firstError = outcome.reason?.message ?? String(outcome.reason)
-        continue
-      }
-      const { target, text } = outcome.value
-      if (text) translations[target] = text
-    }
-
-    if (Object.keys(translations).length === 0) {
-      return { ok: false, error: firstError ?? 'No translations succeeded.' }
-    }
-
-    try {
-      await db
-        .insert(phraseTranslationsTable)
-        .values({
-          phrase,
-          sourceLanguage,
-          translations: JSON.stringify(translations),
-        })
-        .onConflictDoUpdate({
-          target: [
-            phraseTranslationsTable.phrase,
-            phraseTranslationsTable.sourceLanguage,
-          ],
-          set: { translations: JSON.stringify(translations) },
-        })
-    } catch (err) {
-      const message = err instanceof Error ? err.message : String(err)
-      return { ok: false, error: `Failed to save translations: ${message}` }
-    }
-
-    return { ok: true, translations }
-  })
-
-/**
- * Server function: translate text from English (or given source) to a target
- * language using Google Cloud Translation Basic API (v2).
- * API key is read from process.env.GOOGLE_TRANSLSTE.
- */
-export const translateWithGoogle = createServerFn({ method: 'POST' })
-  .inputValidator((data: TranslateInput) => data)
-  .handler(async ({ data }): Promise<TranslateResult> => {
-    const apiKey = process.env.GOOGLE_TRANSLSTE
-    if (!apiKey?.trim()) {
-      return { ok: false, error: 'Google Translate API key is not configured (GOOGLE_TRANSLSTE).' }
-    }
-
-    const source = data.sourceLanguage ?? 'en'
-    const target = data.targetLanguage
-    const q = Array.isArray(data.text) ? data.text : [data.text]
-    if (q.length === 0 || q.every((t) => !t?.trim())) {
-      return { ok: false, error: 'No text to translate.' }
-    }
-
-    const url = `${GOOGLE_TRANSLATE_V2_URL}?key=${encodeURIComponent(apiKey)}`
-    const body = {
-      q,
-      source,
-      target,
-      format: 'text',
-    }
-
-    const res = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json; charset=utf-8' },
-      body: JSON.stringify(body),
-    })
-
-    const json = (await res.json()) as {
-      data?: { translations?: Array<{ translatedText: string }> }
-      error?: { code?: number; message?: string }
-    }
-
-    if (!res.ok || json.error) {
-      const message = json.error?.message ?? res.statusText ?? 'Translation request failed.'
-      return { ok: false, error: message }
-    }
-
-    const translations = json.data?.translations ?? []
-    if (translations.length === 0) {
-      return { ok: false, error: 'No translation returned.' }
-    }
-
-    const translatedTexts = translations.map((t) => t.translatedText ?? '')
-    const single = translatedTexts.length === 1 ? translatedTexts[0]! : translatedTexts.join('\n')
 
     return {
-      ok: true,
-      translatedText: single,
-      ...(translations.length > 1 ? { translatedTexts } : {}),
+      ok: false,
+      error:
+        previousStepError ?? "We couldn't generate translations for that phrase.",
     }
   })

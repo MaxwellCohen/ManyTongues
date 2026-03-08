@@ -9,18 +9,18 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as TranslatorRouteImport } from './routes/translator'
-import { Route as GeneratorRouteImport } from './routes/generator'
+import { Route as TranslateRouteImport } from './routes/translate'
+import { Route as TextCloudRouteImport } from './routes/text-cloud'
 import { Route as IndexRouteImport } from './routes/index'
 
-const TranslatorRoute = TranslatorRouteImport.update({
-  id: '/translator',
-  path: '/translator',
+const TranslateRoute = TranslateRouteImport.update({
+  id: '/translate',
+  path: '/translate',
   getParentRoute: () => rootRouteImport,
 } as any)
-const GeneratorRoute = GeneratorRouteImport.update({
-  id: '/generator',
-  path: '/generator',
+const TextCloudRoute = TextCloudRouteImport.update({
+  id: '/text-cloud',
+  path: '/text-cloud',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -31,48 +31,48 @@ const IndexRoute = IndexRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/generator': typeof GeneratorRoute
-  '/translator': typeof TranslatorRoute
+  '/text-cloud': typeof TextCloudRoute
+  '/translate': typeof TranslateRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/generator': typeof GeneratorRoute
-  '/translator': typeof TranslatorRoute
+  '/text-cloud': typeof TextCloudRoute
+  '/translate': typeof TranslateRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/generator': typeof GeneratorRoute
-  '/translator': typeof TranslatorRoute
+  '/text-cloud': typeof TextCloudRoute
+  '/translate': typeof TranslateRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/generator' | '/translator'
+  fullPaths: '/' | '/text-cloud' | '/translate'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/generator' | '/translator'
-  id: '__root__' | '/' | '/generator' | '/translator'
+  to: '/' | '/text-cloud' | '/translate'
+  id: '__root__' | '/' | '/text-cloud' | '/translate'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  GeneratorRoute: typeof GeneratorRoute
-  TranslatorRoute: typeof TranslatorRoute
+  TextCloudRoute: typeof TextCloudRoute
+  TranslateRoute: typeof TranslateRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/translator': {
-      id: '/translator'
-      path: '/translator'
-      fullPath: '/translator'
-      preLoaderRoute: typeof TranslatorRouteImport
+    '/translate': {
+      id: '/translate'
+      path: '/translate'
+      fullPath: '/translate'
+      preLoaderRoute: typeof TranslateRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/generator': {
-      id: '/generator'
-      path: '/generator'
-      fullPath: '/generator'
-      preLoaderRoute: typeof GeneratorRouteImport
+    '/text-cloud': {
+      id: '/text-cloud'
+      path: '/text-cloud'
+      fullPath: '/text-cloud'
+      preLoaderRoute: typeof TextCloudRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -87,8 +87,8 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  GeneratorRoute: GeneratorRoute,
-  TranslatorRoute: TranslatorRoute,
+  TextCloudRoute: TextCloudRoute,
+  TranslateRoute: TranslateRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

@@ -5,9 +5,10 @@ type PageHeroProps = {
 }
 
 const DEFAULT_HERO = {
-  kicker: 'Word Cloud',
-  title: 'Word Cloud Generator',
-  description: 'Paste or type text below. Word size reflects frequency.',
+  kicker: 'Text Cloud',
+  title: 'Build a word cloud from any text',
+  description:
+    'Paste text, tune the styling, and export a word cloud that highlights the words used most often.',
 }
 
 export default function PageHero({

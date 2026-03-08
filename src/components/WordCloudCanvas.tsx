@@ -156,7 +156,7 @@ export default function WordCloudCanvas({
   return (
     <section className="island-shell flex min-h-80 flex-col rounded-2xl p-5 sm:p-6">
       <div className="mb-3 flex items-center justify-between">
-        <h2 className="text-sm font-semibold text-sea-ink">Cloud</h2>
+        <h2 className="text-sm font-semibold text-sea-ink">Preview</h2>
         {mounted && hasWords && (
           <button
             type="button"
@@ -178,7 +178,7 @@ export default function WordCloudCanvas({
               <polyline points="7 10 12 15 17 10" />
               <line x1="12" x2="12" y1="15" y2="3" />
             </svg>
-            Download
+            Download PNG
           </button>
         )}
       </div>
@@ -191,7 +191,7 @@ export default function WordCloudCanvas({
         }}
       >
         {!mounted ? (
-          <p className="text-sm text-sea-ink-soft">Loading cloud…</p>
+          <p className="text-sm text-sea-ink-soft">Loading preview...</p>
         ) : hasWords && Array.isArray(words) && words.length > 0 ? (
           <div
             ref={containerRef}
@@ -210,7 +210,7 @@ export default function WordCloudCanvas({
           </div>
         ) : (
           <p className="text-sm text-sea-ink-soft">
-            Add some text to generate a word cloud.
+            Add text or translations to see your word cloud preview.
           </p>
         )}
       </div>
