@@ -1,3 +1,5 @@
+import { startTransition } from "react";
+
 export type XStateFormEvent<FormState> =
   | { type: 'FIELD_CHANGED'; updates: Partial<FormState> }
   | { type: 'COMMIT_TO_URL' }
@@ -10,17 +12,17 @@ export function createXStateFormControls<FormState>(
   send: XStateFormSender<FormState>,
 ) {
   const updateFields = (updates: Partial<FormState>) => {
-    send({ type: 'FIELD_CHANGED', updates })
+    startTransition(() => send({ type: 'FIELD_CHANGED', updates }))
   }
 
   const changeField =
     <Key extends keyof FormState>(key: Key) =>
     (value: FormState[Key]) => {
-      updateFields({ [key]: value } as Pick<FormState, Key>)
+     startTransition(() => updateFields({ [key]: value } as unknown as Partial<FormState>))
     }
 
   const commitToUrl = () => {
-    send({ type: 'COMMIT_TO_URL' })
+    startTransition(() => send({ type: 'COMMIT_TO_URL' }))
   }
 
   return {

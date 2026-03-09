@@ -144,9 +144,12 @@ function WordCloudPage() {
 
       <div className="animate-rise-in mt-10 grid gap-8 lg:grid-cols-[1fr,1.2fr] lg:items-start">
         <SourceTextPanel
-          value={input}
-          onChange={changeField("input")}
-          onBlur={commitToUrl}
+          key={JSON.stringify(resolvedSearch)}
+          defaultValue={input}
+          onBlur={(value) => {
+            changeField("input")(value)
+            commitToUrl()
+          }}
         />
 
         <WordCloudCanvas

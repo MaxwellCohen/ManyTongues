@@ -38,146 +38,162 @@ export default function WordCloudOptions({
   formState: WordCloudOptionFields;
   send: XStateFormSender<WordCloudOptionFields>;
 }) {
-  const { updateFields, commitToUrl } =
-    createXStateFormControls<WordCloudOptionFields>(send);
+  const { updateFields, commitToUrl } = createXStateFormControls<WordCloudOptionFields>(send);
 
   return (
-    <div className="grid gap-3 pt-1 sm:grid-cols-2">
+    <div
+      className="grid gap-3 pt-1 sm:grid-cols-2"
+    >
       <WordCloudOptionNumberField
         label="Max words"
         min={5}
-        value={formState.maxWords}
+        max={1000}
+        defaultValue={formState.maxWords}
         onChange={(value) => updateFields({ maxWords: value })}
-        onBlur={commitToUrl}
+        onBlur={(value) => {
+          if (value !== formState.maxWords) commitToUrl()
+        }}
       />
 
       <WordCloudOptionNumberField
         label="Padding"
         min={0}
-        value={formState.padding}
+        defaultValue={formState.padding}
         onChange={(value) =>
           updateFields({
             padding: Math.max(0, value || 0),
           })
         }
-        onBlur={commitToUrl}
+        onBlur={(value) => {
+          if (value !== formState.padding) commitToUrl()
+        }}
       />
 
       <WordCloudOptionNumberField
         label="Min font size"
         min={4}
         max={48}
-        value={formState.minFontSize}
+        defaultValue={formState.minFontSize}
         onChange={(value) =>
           updateFields({
             minFontSize: Math.min(48, Math.max(4, value || 14)),
           })
         }
-        onBlur={commitToUrl}
+        onBlur={(value) => {
+          if (value !== formState.minFontSize) commitToUrl()
+        }}
       />
 
       <WordCloudOptionNumberField
         label="Max font size"
         min={12}
         max={120}
-        value={formState.maxFontSize}
+        defaultValue={formState.maxFontSize}
         onChange={(value) =>
           updateFields({
             maxFontSize: Math.min(120, Math.max(12, value || 72)),
           })
         }
-        onBlur={commitToUrl}
+        onBlur={(value) => {
+          if (value !== formState.maxFontSize) commitToUrl()
+        }}
       />
 
       <WordCloudOptionSelectField
         label="Scale"
         className="sm:col-span-2"
-        value={formState.scale}
+        defaultValue={formState.scale}
         options={SCALE_OPTIONS}
         onChange={(value) => updateFields({ scale: value as ScaleType })}
-        onBlur={commitToUrl}
+        onBlur={(value) => {
+          if (value !== formState.scale) commitToUrl()
+        }}
       />
 
       <WordCloudOptionSelectField
         label="Font family"
         className="sm:col-span-2"
-        value={formState.fontFamily}
+        defaultValue={formState.fontFamily}
         options={FONT_FAMILY_OPTIONS}
         onChange={(value) => updateFields({ fontFamily: value })}
-        onBlur={commitToUrl}
+        onBlur={(value) => {
+          if (value !== formState.fontFamily) commitToUrl()
+        }}
       />
 
       <WordCloudOptionCheckboxField
         label="Keep layout consistent"
-        checked={formState.deterministic}
+        defaultChecked={formState.deterministic}
         onChange={(checked) => updateFields({ deterministic: checked })}
-        onBlur={commitToUrl}
+        onBlur={(checked) => {
+          if (checked !== formState.deterministic) commitToUrl()
+        }}
       />
 
       <WordCloudOptionNumberField
         label="Rotations"
         min={0}
-        value={formState.rotations}
+        max={12}
+        defaultValue={formState.rotations}
         onChange={(value) =>
           updateFields({
             rotations: Math.max(0, value || 0),
           })
         }
-        onBlur={commitToUrl}
+        onBlur={(value) => {
+          if (value !== formState.rotations) commitToUrl()
+        }}
       />
 
       <WordCloudOptionNumberField
         label="Rotation min (°)"
         min={-360}
         max={360}
-        value={formState.rotationMin}
+        defaultValue={formState.rotationMin}
         onChange={(value) =>
           updateFields({
             rotationMin: clampRotation(value),
           })
         }
-        onBlur={commitToUrl}
+        onBlur={(value) => {
+          if (value !== formState.rotationMin) commitToUrl()
+        }}
       />
 
       <WordCloudOptionNumberField
         label="Rotation max (°)"
         min={-360}
         max={360}
-        value={formState.rotationMax}
+        defaultValue={formState.rotationMax}
         onChange={(value) =>
           updateFields({
             rotationMax: clampRotation(value),
           })
         }
-        onBlur={commitToUrl}
+        onBlur={(value) => {
+          if (value !== formState.rotationMax) commitToUrl()
+        }}
       />
 
       <WordCloudOptionColorField
         label="Background color"
         className="sm:col-span-2"
-        value={formState.backgroundColor}
+        defaultValue={formState.backgroundColor}
         onChange={(value) => updateFields({ backgroundColor: value })}
-        onBlur={commitToUrl}
+        onBlur={(value) => {
+          if (value !== formState.backgroundColor) commitToUrl()
+        }}
       />
 
       <WordCloudOptionPaletteField
-        colors={formState.colors}
-        onChangeColor={(index, value) => {
-          const next = [...formState.colors];
-          next[index] = value;
-          updateFields({ colors: next });
+        defaultColors={formState.colors}
+        onBlur={(colors) => {
+          updateFields({ colors })
+          const same =
+            colors.length === formState.colors.length &&
+            colors.every((c, i) => c === formState.colors[i])
+          if (!same) commitToUrl()
         }}
-        onRemoveColor={(index) => {
-          updateFields({
-            colors: formState.colors.filter((_, j) => j !== index),
-          });
-          commitToUrl();
-        }}
-        onAddColor={() => {
-          updateFields({ colors: [...formState.colors, "#6b7280"] });
-          commitToUrl();
-        }}
-        onBlur={commitToUrl}
       />
     </div>
   );

@@ -1,3 +1,4 @@
+import { useRef } from 'react'
 import { Field, FieldControl, FieldLabel } from '#/components/ui/field'
 import { Select } from '#/components/ui/select'
 
@@ -8,27 +9,37 @@ type SelectOption = {
 
 export default function WordCloudOptionSelectField({
   label,
-  value,
+  defaultValue,
   options,
   onChange,
   onBlur,
   className,
 }: {
   label: string
-  value: string
+  defaultValue: string
   options: ReadonlyArray<SelectOption>
   onChange: (value: string) => void
-  onBlur: () => void
+  onBlur: (value: string) => void
   className?: string
 }) {
+  const selectRef = useRef<HTMLSelectElement>(null)
+
+  const handleBlur = () => {
+    const value = selectRef.current?.value
+    if (value != null) {
+      onChange(value)
+      onBlur(value)
+    }
+  }
+
   return (
     <Field className={className}>
       <FieldLabel>{label}</FieldLabel>
       <FieldControl>
         <Select
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          onBlur={onBlur}
+          ref={selectRef}
+          defaultValue={defaultValue}
+          onBlur={handleBlur}
         >
           {options.map((option) => (
             <option key={option.value} value={option.value}>

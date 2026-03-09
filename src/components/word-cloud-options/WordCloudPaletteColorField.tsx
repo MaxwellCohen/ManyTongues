@@ -1,34 +1,43 @@
+import { useRef } from 'react'
 import { CloseIcon } from '#/components/icons'
 import ColorRow from './ColorRow'
 import ColorTextField from './ColorTextField'
 
 export default function WordCloudPaletteColorField({
-  color,
+  defaultValue,
   index,
   canRemove,
   onChange,
   onRemove,
   onBlur,
 }: {
-  color: string
+  defaultValue: string
   index: number
   canRemove: boolean
   onChange: (value: string) => void
   onRemove: () => void
   onBlur: () => void
 }) {
+  const pickerRef = useRef<HTMLInputElement>(null)
+
+  const handlePickerBlur = () => {
+    const value = pickerRef.current?.value
+    if (value) onChange(value)
+    onBlur()
+  }
+
   return (
     <ColorRow>
       <input
+        ref={pickerRef}
         type="color"
-        value={color}
-        onChange={(e) => onChange(e.target.value)}
-        onBlur={onBlur}
+        defaultValue={defaultValue}
+        onBlur={handlePickerBlur}
         aria-label={`Word color ${index + 1} picker`}
         className="h-8 w-8 cursor-pointer rounded border-0 bg-transparent p-0"
       />
       <ColorTextField
-        value={color}
+        defaultValue={defaultValue}
         onChange={onChange}
         onBlur={onBlur}
         ariaLabel={`Word color ${index + 1} hex value`}

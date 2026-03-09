@@ -18,6 +18,7 @@ describe('createTranslateMachine', () => {
         es: 'hola',
       },
     })
+    const syncToUrl = vi.fn(() => Promise.resolve())
     const actor = createActor(
       createTranslateMachine({
         initialSearch: resolveTranslatorSearch({
@@ -26,6 +27,7 @@ describe('createTranslateMachine', () => {
           hiddenLanguages: ['fr', 'zz'],
         }),
         translatePhrase,
+        syncToUrl,
       }),
     )
 
@@ -45,15 +47,17 @@ describe('createTranslateMachine', () => {
     expect(actor.getSnapshot().context.formState.hiddenLanguages).toEqual([
       'fr',
     ])
-    expect(actor.getSnapshot().context.pendingUrlSearch).toEqual({
+    expect(syncToUrl).toHaveBeenCalledWith({
       hiddenLanguages: ['fr'],
       input: 'hello',
       translated: true,
       weights: 'es:1,fr:1',
     })
+    expect(actor.getSnapshot().context.pendingUrlSearch).toBeNull()
   })
 
   it('queues an error state when translation fails', async () => {
+    const syncToUrl = vi.fn(() => Promise.resolve())
     const actor = createActor(
       createTranslateMachine({
         initialSearch: resolveTranslatorSearch({
@@ -63,6 +67,7 @@ describe('createTranslateMachine', () => {
           ok: false,
           error: 'Translation failed.',
         }),
+        syncToUrl,
       }),
     )
 
@@ -75,9 +80,8 @@ describe('createTranslateMachine', () => {
 
     expect(actor.getSnapshot().context.error).toBe('Translation failed.')
     expect(actor.getSnapshot().context.formState.translated).toBe(false)
-    expect(actor.getSnapshot().context.pendingUrlSearch).toEqual({
-      input: 'hello',
-    })
+    expect(syncToUrl).toHaveBeenCalledWith({ input: 'hello' })
+    expect(actor.getSnapshot().context.pendingUrlSearch).toBeNull()
   })
 
   it('ignores stale translation results after the input changes', async () => {
@@ -99,6 +103,7 @@ describe('createTranslateMachine', () => {
           input: 'hello',
         }),
         translatePhrase,
+        syncToUrl: vi.fn(() => Promise.resolve()),
       }),
     )
 

@@ -1,4 +1,10 @@
 import { assign, fromPromise, setup } from 'xstate'
+
+type TranslateReturnState =
+  | 'notTranslated'
+  | 'translating'
+  | 'translated'
+  | 'translateError'
 import type { GetOrTranslateResult } from '#/lib/translate'
 import {
   clampWeight,
@@ -8,6 +14,8 @@ import {
   parseWeights,
   serializeWeights,
   type TranslatorSearch,
+  WEIGHT_MAX,
+  WEIGHT_MIN,
 } from './translateState'
 
 type TranslateContext = {
@@ -17,6 +25,7 @@ type TranslateContext = {
   error: string | null
   loadedPhrase: string | null
   pendingUrlSearch: Partial<TranslatorSearch> | null
+  returnToState: TranslateReturnState | null
 }
 
 type TranslateEvent =
@@ -31,6 +40,7 @@ type TranslateEvent =
 type TranslateMachineOptions = {
   initialSearch: FullTranslatorSearch
   translatePhrase: (phrase: string) => Promise<GetOrTranslateResult>
+  syncToUrl: (search: Partial<TranslatorSearch>) => void | Promise<void>
 }
 
 function isTranslateSuccess(
@@ -68,6 +78,7 @@ function resetTranslationState(formState: FullTranslatorSearch) {
 export function createTranslateMachine({
   initialSearch,
   translatePhrase,
+  syncToUrl,
 }: TranslateMachineOptions) {
   return setup({
     types: {
@@ -78,6 +89,11 @@ export function createTranslateMachine({
       translatePhrase: fromPromise(
         async ({ input }: { input: { phrase: string } }) =>
           translatePhrase(input.phrase),
+      ),
+      syncToUrl: fromPromise(
+        async ({ input }: { input: Partial<TranslatorSearch> }) => {
+          await syncToUrl(input)
+        },
       ),
     },
   }).createMachine({
@@ -90,10 +106,12 @@ export function createTranslateMachine({
       error: null,
       loadedPhrase: null,
       pendingUrlSearch: null,
+      returnToState: null,
     },
     on: {
       COMMIT_TO_URL: {
         guard: ({ context }) => context.dirty,
+        target: '.syncingToUrl',
         actions: assign(({ context }) => ({
           dirty: false,
           pendingUrlSearch: queueCommittedSearch(context.formState),
@@ -107,6 +125,7 @@ export function createTranslateMachine({
       LANGUAGE_HIDDEN: {
         guard: ({ context, event }) =>
           !context.formState.hiddenLanguages.includes(event.lang),
+        target: '.syncingToUrl',
         actions: assign(({ context, event }) => {
           const nextFormState = {
             ...context.formState,
@@ -184,6 +203,7 @@ export function createTranslateMachine({
         ],
       },
       notTranslated: {
+        entry: [assign({ returnToState: 'notTranslated' as const })],
         on: {
           FIELD_CHANGED: {
             actions: assign(({ context, event }) => ({
@@ -202,6 +222,7 @@ export function createTranslateMachine({
           TRANSLATE_REQUESTED: [
             {
               guard: ({ context }) => !context.formState.input.trim(),
+              target: '#translateWordCloudPage.syncingToUrl',
               actions: assign(({ context }) => {
                 const nextFormState = {
                   ...context.formState,
@@ -229,6 +250,7 @@ export function createTranslateMachine({
         },
       },
       translating: {
+        entry: [assign({ returnToState: 'translating' as const })],
         invoke: {
           src: 'translatePhrase',
           input: ({ context }) => ({
@@ -237,7 +259,7 @@ export function createTranslateMachine({
           onDone: [
             {
               guard: ({ event }) => isTranslateSuccess(event.output),
-              target: 'translated',
+              target: '#translateWordCloudPage.syncingToUrl',
               actions: assign(({ context, event }) => {
                 if (!isTranslateSuccess(event.output)) {
                   return {}
@@ -246,7 +268,22 @@ export function createTranslateMachine({
                 const nextTranslations = new Map(
                   Object.entries(event.output.translations),
                 )
-                const nextWeights = createRandomWeights(nextTranslations.keys())
+                const nextWeights = context.formState.weights
+                  ? (() => {
+                      const existing = parseWeights(context.formState.weights)
+                      const merged = new Map(existing)
+                      for (const lang of nextTranslations.keys()) {
+                        if (!merged.has(lang)) {
+                          merged.set(
+                            lang,
+                            Math.floor(Math.random() * WEIGHT_MAX) +
+                              WEIGHT_MIN,
+                          )
+                        }
+                      }
+                      return merged
+                    })()
+                  : createRandomWeights(nextTranslations.keys())
                 const nextHiddenLanguages =
                   context.formState.hiddenLanguages.filter((lang) =>
                     nextTranslations.has(lang),
@@ -266,11 +303,12 @@ export function createTranslateMachine({
                   error: null,
                   loadedPhrase: nextFormState.input,
                   pendingUrlSearch: queueCommittedSearch(nextFormState),
+                  returnToState: 'translated',
                 }
               }),
             },
             {
-              target: 'translateError',
+              target: '#translateWordCloudPage.syncingToUrl',
               actions: assign(({ context, event }) => {
                 if (!isTranslateFailure(event.output)) {
                   return {}
@@ -288,6 +326,7 @@ export function createTranslateMachine({
                   error: event.output.error,
                   loadedPhrase: null,
                   pendingUrlSearch: queueCommittedSearch(nextFormState),
+                  returnToState: 'translateError',
                 }
               }),
             },
@@ -318,6 +357,7 @@ export function createTranslateMachine({
         },
       },
       translated: {
+        entry: [assign({ returnToState: 'translated' as const })],
         on: {
           FIELD_CHANGED: [
             {
@@ -343,7 +383,7 @@ export function createTranslateMachine({
           TRANSLATE_REQUESTED: [
             {
               guard: ({ context }) => !context.formState.input.trim(),
-              target: 'notTranslated',
+              target: '#translateWordCloudPage.syncingToUrl',
               actions: assign(({ context }) => {
                 const nextFormState = {
                   ...context.formState,
@@ -371,6 +411,7 @@ export function createTranslateMachine({
         },
       },
       translateError: {
+        entry: [assign({ returnToState: 'translateError' as const })],
         on: {
           FIELD_CHANGED: [
             {
@@ -396,7 +437,7 @@ export function createTranslateMachine({
           TRANSLATE_REQUESTED: [
             {
               guard: ({ context }) => !context.formState.input.trim(),
-              target: 'notTranslated',
+              target: '#translateWordCloudPage.syncingToUrl',
               actions: assign(({ context }) => {
                 const nextFormState = {
                   ...context.formState,
@@ -419,6 +460,33 @@ export function createTranslateMachine({
                 loadedPhrase: null,
                 pendingUrlSearch: null,
               }),
+            },
+          ],
+        },
+      },
+      syncingToUrl: {
+        invoke: {
+          src: 'syncToUrl',
+          input: ({ context }) => context.pendingUrlSearch!,
+          onDone: [
+            {
+              guard: ({ context }) => context.returnToState === 'translated',
+              target: 'translated',
+              actions: assign({ pendingUrlSearch: null }),
+            },
+            {
+              guard: ({ context }) => context.returnToState === 'translateError',
+              target: 'translateError',
+              actions: assign({ pendingUrlSearch: null }),
+            },
+            {
+              guard: ({ context }) => context.returnToState === 'translating',
+              target: 'translating',
+              actions: assign({ pendingUrlSearch: null }),
+            },
+            {
+              target: 'notTranslated',
+              actions: assign({ pendingUrlSearch: null }),
             },
           ],
         },

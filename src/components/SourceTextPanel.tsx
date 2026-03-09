@@ -1,16 +1,17 @@
+import { useRef } from 'react'
 import IslandPanel from '#/components/IslandPanel'
 import { Field, FieldControl, FieldLabel } from '#/components/ui/field'
 import { Textarea } from '#/components/ui/textarea'
 
 export default function SourceTextPanel({
-  value,
-  onChange,
+  defaultValue,
   onBlur,
 }: {
-  value: string
-  onChange: (value: string) => void
-  onBlur: () => void
+  defaultValue: string
+  onBlur: (value: string) => void
 }) {
+  const textareaRef = useRef<HTMLTextAreaElement>(null)
+
   return (
     <IslandPanel className="space-y-5 rounded-2xl p-5 sm:p-6">
       <Field id="wordcloud-input">
@@ -19,9 +20,9 @@ export default function SourceTextPanel({
         </FieldLabel>
         <FieldControl>
           <Textarea
-            value={value}
-            onChange={(e) => onChange(e.target.value)}
-            onBlur={onBlur}
+            ref={textareaRef}
+            defaultValue={defaultValue}
+            onBlur={() => onBlur(textareaRef.current?.value ?? '')}
             placeholder="Paste text, notes, a transcript, or lyrics..."
             rows={10}
           />

@@ -4,16 +4,16 @@ ManyTongues is a small web app for turning text into visual word clouds.
 
 It has two main tools:
 
-- `Generator`: paste or type any text and the app sizes each word by how often it appears.
-- `Translator`: enter a short phrase, translate it into many languages, and render those translations as a word cloud.
+- **Text Cloud**: paste or type any text and the app sizes each word by how often it appears.
+- **Translator**: enter a short phrase, translate it into many languages, and render those translations as a word cloud.
 
 The app is built with `TanStack Start`, `React`, and `react-wordcloud`.
 
 ## What The App Does
 
-### Word Cloud Generator
+### Text Cloud
 
-The generator page lets you:
+The text cloud page lets you:
 
 - paste raw text into a text area
 - automatically count repeated words
@@ -23,7 +23,7 @@ The generator page lets you:
 
 This is useful for quickly visualizing themes, repeated terms, or the dominant vocabulary in a block of text.
 
-### Multi-language Translator
+### Translator
 
 The translator page lets you:
 
@@ -38,8 +38,8 @@ Translations are looked up in a Turso database first. If the phrase has already 
 ## Routes
 
 - `/` home page with links to both tools
-- `/generator` text-to-word-cloud generator
-- `/translator` phrase translator and multilingual word cloud
+- `/text-cloud` text-to-word-cloud generator
+- `/translate` phrase translator and multilingual word cloud
 
 ## Local Setup
 
@@ -57,7 +57,7 @@ pnpm dev
 
 ## Environment Variables
 
-The generator works without external services. The translator needs API keys and database configuration.
+The text cloud works without external services. The translator needs API keys and database configuration.
 
 Create a `.env` file with:
 
@@ -78,11 +78,17 @@ Notes:
 
 ```bash
 pnpm dev
+pnpm build
+pnpm preview
 pnpm test
+pnpm typecheck
 pnpm lint
 pnpm format
 pnpm check
-pnpm build
+pnpm db:generate
+pnpm db:migrate
+pnpm db:push
+pnpm db:studio
 ```
 
 ## Tech Stack
@@ -92,6 +98,8 @@ pnpm build
 - `React` for UI
 - `Tailwind CSS` for styling
 - `react-wordcloud` and `d3-cloud` for cloud layout/rendering
+- `XState` for state machines (translate flow)
+- `nuqs` for URL search params
 - `Drizzle ORM` with `@libsql/client` for Turso persistence
 - `Vitest` for tests
 - `Biome` for linting and formatting

@@ -112,3 +112,78 @@ export function getTranslatorSearchForUrl(
 export function getTranslatorPalette(colors: string[]): string[] {
   return getValidPalette(colors, DEFAULT_COLORS)
 }
+
+/** Set of hidden language codes for quick lookup. */
+export function getHiddenLanguagesSet(
+  formState: FullTranslatorSearch,
+): Set<string> {
+  return new Set(formState.hiddenLanguages)
+}
+
+/** Translations filtered to those not hidden. */
+export function getVisibleTranslations(
+  translations: Map<string, string>,
+  hiddenLanguages: Set<string>,
+): [string, string][] {
+  return Array.from(translations.entries()).filter(
+    ([lang]) => !hiddenLanguages.has(lang),
+  )
+}
+
+export type TranslatorCloudWord = { text: string; value: number }
+
+/** Word cloud items: source phrase (if any) plus visible translations with clamped weights. */
+export function getCloudData(
+  formState: FullTranslatorSearch,
+  translations: Map<string, string>,
+  weights: Map<string, number>,
+  hiddenLanguages: Set<string>,
+): TranslatorCloudWord[] {
+  if (
+    !formState.translated ||
+    (!formState.input.trim() && translations.size === 0)
+  ) {
+    return []
+  }
+
+  const items: TranslatorCloudWord[] = []
+  const phrase = formState.input.trim()
+  if (phrase) {
+    items.push({ text: phrase, value: 1000 })
+  }
+  translations.forEach((translatedText, lang) => {
+    if (hiddenLanguages.has(lang)) return
+    const weight = weights.get(lang) ?? DEFAULT_WEIGHT
+    items.push({ text: translatedText, value: clampWeight(weight) })
+  })
+  return items
+}
+
+export type TranslatorCloudOptions = {
+  minFontSize: number
+  maxFontSize: number
+  padding: number
+  scale: FullTranslatorSearch['scale']
+  rotationAngles: [number, number]
+  rotations: number
+  deterministic: boolean
+  fontFamily: string
+  randomSeed: string
+}
+
+/** Cloud layout options derived from form state. */
+export function getCloudOptions(
+  formState: FullTranslatorSearch,
+): TranslatorCloudOptions {
+  return {
+    minFontSize: formState.minFontSize,
+    maxFontSize: formState.maxFontSize,
+    padding: formState.padding,
+    scale: formState.scale,
+    rotationAngles: [formState.rotationMin, formState.rotationMax],
+    rotations: formState.rotations,
+    deterministic: formState.deterministic,
+    fontFamily: formState.fontFamily,
+    randomSeed: 'translator',
+  }
+}
