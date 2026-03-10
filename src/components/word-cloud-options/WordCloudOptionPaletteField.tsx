@@ -6,16 +6,22 @@ import WordCloudPaletteColorField from './WordCloudPaletteColorField'
 
 export default function WordCloudOptionPaletteField({
   defaultColors,
+  onChange,
   onBlur,
   className,
 }: {
   defaultColors: string[]
+  onChange?: (colors: string[]) => void
   onBlur: (colors: string[]) => void
   className?: string
 }) {
   const [localColors, setLocalColors] = useState(defaultColors)
   const colorsRef = useRef(localColors)
   colorsRef.current = localColors
+
+  const notifyChange = (next: string[]) => {
+    onChange?.(next)
+  }
 
   const handleBlur = () => onBlur(colorsRef.current)
 
@@ -29,25 +35,28 @@ export default function WordCloudOptionPaletteField({
             defaultValue={color}
             index={i}
             canRemove={localColors.length > 1}
-            onChange={(value) =>
-              setLocalColors((prev) => {
-                const next = [...prev]
-                next[i] = value
-                return next
-              })
-            }
-            onRemove={() =>
-              setLocalColors((prev) => prev.filter((_, j) => j !== i))
-            }
+            onChange={(value) => {
+              const next = [...localColors]
+              next[i] = value
+              setLocalColors(next)
+              notifyChange(next)
+            }}
+            onRemove={() => {
+              const next = localColors.filter((_, j) => j !== i)
+              setLocalColors(next)
+              notifyChange(next)
+            }}
             onBlur={handleBlur}
           />
         ))}
 
         <button
           type="button"
-          onClick={() =>
-            setLocalColors((prev) => [...prev, '#6b7280'])
-          }
+          onClick={() => {
+            const next = [...localColors, '#6b7280']
+            setLocalColors(next)
+            notifyChange(next)
+          }}
           className="flex items-center gap-1.5 rounded-lg border border-dashed border-line px-3 py-1.5 text-xs font-medium text-sea-ink-soft hover:border-lagoon hover:text-lagoon"
         >
           <PlusIcon className="h-3.5 w-3.5" />

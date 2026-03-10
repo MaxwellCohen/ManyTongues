@@ -187,6 +187,7 @@ export default function WordCloudOptions({
 
       <WordCloudOptionPaletteField
         defaultColors={formState.colors}
+        onChange={(colors) => updateFields({ colors })}
         onBlur={(colors) => {
           updateFields({ colors })
           const same =
