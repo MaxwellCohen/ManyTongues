@@ -6,9 +6,12 @@ import {
   getExistingPhraseTranslation,
   storePhraseTranslations,
 } from '#/lib/translationDb'
+import {
+  parseStoredTranslations,
+  validatePhrase,
+} from '#/lib/translateValidation'
 
 const DEFAULT_SOURCE_LANGUAGE = 'en'
-const MAX_PHRASE_LENGTH = 50
 
 type TranslationStepResult = {
   callNextStep: boolean
@@ -20,38 +23,6 @@ type TranslationStep = (
   phrase: string,
   sourceLanguage: string,
 ) => Promise<TranslationStepResult>
-
-function validatePhrase(
-  phrase: string | undefined,
-): { ok: true; phrase: string } | { ok: false; error: string } {
-  const trimmedPhrase = phrase?.trim()
-  if (!trimmedPhrase) {
-    return { ok: false, error: 'Enter a phrase to translate.' }
-  }
-
-  if (trimmedPhrase.length > MAX_PHRASE_LENGTH) {
-    return {
-      ok: false,
-      error: `Keep the phrase under ${MAX_PHRASE_LENGTH} characters.`,
-    }
-  }
-
-  return { ok: true, phrase: trimmedPhrase }
-}
-
-function parseStoredTranslations(
-  existingTranslationsJson: string | null,
-): Record<string, string> | null {
-  if (!existingTranslationsJson) {
-    return null
-  }
-
-  try {
-    return JSON.parse(existingTranslationsJson) as Record<string, string>
-  } catch {
-    return null
-  }
-}
 
 async function getCachedTranslations(
   phrase: string,
@@ -161,6 +132,49 @@ async function getMicrosoftTranslationsStep(
   }
 }
 
+/** Internal: runs the translation pipeline. Exported for testing. */
+export async function runGetOrTranslatePhrase(data: {
+  phrase?: string
+  sourceLanguage?: string
+}): Promise<GetOrTranslateResult> {
+  const phrase = data.phrase?.trim() ?? ''
+  const sourceLanguage = data.sourceLanguage ?? DEFAULT_SOURCE_LANGUAGE
+
+  const steps: TranslationStep[] = [
+    validatePhraseStep,
+    getCachedTranslationsStep,
+    getGoogleTranslationsStep,
+    getMicrosoftTranslationsStep,
+  ]
+
+  let previousStepError: string | undefined
+  for (const step of steps) {
+    const stepResult = await step(phrase, sourceLanguage)
+    if (stepResult.stepError) {
+      previousStepError = stepResult.stepError
+    }
+
+    if (!stepResult.callNextStep) {
+      if (!stepResult.result) {
+        return {
+          ok: false,
+          error:
+            previousStepError ??
+            "We couldn't generate translations for that phrase.",
+        }
+      }
+
+      return stepResult.result
+    }
+  }
+
+  return {
+    ok: false,
+    error:
+      previousStepError ?? "We couldn't generate translations for that phrase.",
+  }
+}
+
 /**
  * Server function: get all translations for a phrase. If the phrase exists in
  * the database, return cached translations; otherwise translate to all target
@@ -168,41 +182,4 @@ async function getMicrosoftTranslationsStep(
  */
 export const getOrTranslatePhrase = createServerFn({ method: 'POST' })
   .inputValidator((data: { phrase: string; sourceLanguage?: string }) => data)
-  .handler(async ({ data }): Promise<GetOrTranslateResult> => {
-    const phrase = data.phrase?.trim() ?? ''
-    const sourceLanguage = DEFAULT_SOURCE_LANGUAGE
-
-    const steps: TranslationStep[] = [
-      validatePhraseStep,
-      getCachedTranslationsStep,
-      getGoogleTranslationsStep,
-      getMicrosoftTranslationsStep,
-    ]
-
-    let previousStepError: string | undefined
-    for (const step of steps) {
-      const stepResult = await step(phrase, sourceLanguage)
-      if (stepResult.stepError) {
-        previousStepError = stepResult.stepError
-      }
-
-      if (!stepResult.callNextStep) {
-        if (!stepResult.result) {
-          return {
-            ok: false,
-            error:
-              previousStepError ??
-              "We couldn't generate translations for that phrase.",
-          }
-        }
-
-        return stepResult.result
-      }
-    }
-
-    return {
-      ok: false,
-      error:
-        previousStepError ?? "We couldn't generate translations for that phrase.",
-    }
-  })
+  .handler((ctx) => runGetOrTranslatePhrase(ctx.data))

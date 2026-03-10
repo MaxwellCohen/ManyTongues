@@ -52,4 +52,19 @@ describe('createTextCloudMachine', () => {
     expect(actor.getSnapshot().context.formState.maxWords).toBe(25)
     expect(actor.getSnapshot().context.formState.colors).toEqual(['#123456'])
   })
+
+  it('handles multiple FIELD_CHANGED in dirty state', () => {
+    const actor = createActor(
+      createTextCloudMachine(resolveGeneratorSearch({})),
+    )
+
+    actor.start()
+    actor.send({ type: 'FIELD_CHANGED', updates: { input: 'first' } })
+    expect(actor.getSnapshot().context.formState.input).toBe('first')
+
+    actor.send({ type: 'FIELD_CHANGED', updates: { maxWords: 50 } })
+    expect(actor.getSnapshot().context.formState.input).toBe('first')
+    expect(actor.getSnapshot().context.formState.maxWords).toBe(50)
+    expect(actor.getSnapshot().matches('dirty')).toBe(true)
+  })
 })

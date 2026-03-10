@@ -6,15 +6,9 @@ import Accordion from "#/components/Accordion";
 import IslandPanel from "#/components/IslandPanel";
 import TranslationsAccordion from "#/components/TranslationsAccordion";
 import PageHero from "#/components/PageHero";
+import { TranslatorInputForm } from "#/components/TranslatorInputForm";
 import WordCloudCanvas from "#/components/WordCloudCanvas";
 import WordCloudOptions from "#/components/WordCloudOptions";
-import {
-  Field,
-  FieldControl,
-  FieldLabel,
-  FieldMessage,
-} from "#/components/ui/field";
-import { Input } from "#/components/ui/input";
 import {
   booleanSearchParam,
   csvSearchParam,
@@ -99,7 +93,6 @@ function TranslatorWordCloudContent({
   const {
     formState,
     send,
-    updateFields,
     commitToUrl,
     loading,
     error,
@@ -119,43 +112,21 @@ function TranslatorWordCloudContent({
     <div className="animate-rise-in mt-10 grid gap-8 lg:grid-cols-[1fr,1.2fr] lg:items-start">
       <IslandPanel className="space-y-5 rounded-2xl p-5 sm:p-6">
         <Accordion title="Phrase" defaultOpen>
-          <Field id="translator-input">
-            <FieldLabel className="mb-2 text-sm font-semibold text-sea-ink">
-              Text to translate
-            </FieldLabel>
-            <FieldControl invalid={Boolean(error)}>
-              <Input
-                type="text"
-                uiSize="lg"
-                value={formState.input}
-                onChange={(e) => updateFields({ input: e.target.value })}
-                onKeyDown={(e) => {
-                  if (e.key !== "Enter") return;
-                  e.preventDefault();
-                  send({ type: "TRANSLATE_REQUESTED" });
-                }}
-                onBlur={commitToUrl}
-                placeholder="For example: everything will be great"
-              />
-            </FieldControl>
-            <FieldMessage role="alert">{error}</FieldMessage>
-          </Field>
-
-          <button
-            type="button"
-            onClick={() => send({ type: "TRANSLATE_REQUESTED" })}
-            disabled={loading || !formState.input.trim()}
-            className="mt-3 w-full rounded-xl bg-lagoon px-4 py-3 text-sm font-semibold text-white hover:bg-lagoon/90 disabled:opacity-50 disabled:pointer-events-none"
-          >
-            {loading ? "Translating..." : "Translate phrase"}
-          </button>
-
-          {translations.size > 0 && !loading && (
-            <p className="mt-2 text-sm text-sea-ink-soft">
-              {translations.size} translation
-              {translations.size !== 1 ? "s are" : " is"} ready.
-            </p>
-          )}
+          <TranslatorInputForm
+            key={resolvedSearch.input ?? "empty"}
+            initialInput={resolvedSearch.input ?? ""}
+            loading={loading}
+            error={error}
+            translationCount={translations.size}
+            onTranslate={(input: string) => {
+              send({ type: "FIELD_CHANGED", updates: { input } });
+              send({ type: "TRANSLATE_REQUESTED" });
+            }}
+            onBlur={(input: string) => {
+              send({ type: "FIELD_CHANGED", updates: { input } });
+              commitToUrl();
+            }}
+          />
         </Accordion>
 
         {translations.size > 0 && (
