@@ -32,9 +32,10 @@ export default function WordCloudPaletteColorField({
         ref={pickerRef}
         type="color"
         defaultValue={defaultValue}
+        onChange={(e) => onChange(e.target.value)}
         onBlur={handlePickerBlur}
         aria-label={`Word color ${index + 1} picker`}
-        className="h-8 w-8 cursor-pointer rounded border-0 bg-transparent p-0"
+        className="h-8 w-8 shrink-0 cursor-pointer overflow-visible rounded border-0 bg-transparent p-0"
       />
       <ColorTextField
         defaultValue={defaultValue}

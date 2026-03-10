@@ -16,6 +16,11 @@ export default function ColorTextField({
 }) {
   const inputRef = useRef<HTMLInputElement>(null)
 
+  const handleChange = () => {
+    const value = inputRef.current?.value ?? ''
+    onChange(value)
+  }
+
   const handleBlur = () => {
     const value = inputRef.current?.value ?? ''
     onChange(value)
@@ -27,6 +32,7 @@ export default function ColorTextField({
       ref={inputRef}
       type="text"
       defaultValue={defaultValue}
+      onChange={handleChange}
       onBlur={handleBlur}
       aria-label={ariaLabel}
       placeholder={placeholder}
