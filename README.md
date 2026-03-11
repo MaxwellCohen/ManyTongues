@@ -74,12 +74,11 @@ Notes:
 - `GOOGLE_TRANSLSTE` is the Google Translate API key variable currently used by the codebase.
 - `MICROSOFT_TRANSLATE_KEY` is used as a fallback translation provider.
 
-### Optional (analytics, error tracking)
+### Optional (analytics)
 
 ```bash
 VITE_PUBLIC_POSTHOG_KEY=
 VITE_PUBLIC_POSTHOG_HOST=https://us.i.posthog.com
-SENTRY_AUTH_TOKEN=
 ```
 
 ## Deploying to Vercel

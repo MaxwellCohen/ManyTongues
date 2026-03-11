@@ -6,7 +6,7 @@
     "#/*": "./src/*"
   },
   "scripts": {
-    "dev": "NODE_OPTIONS='--import ./instrument.server.mjs' vite dev",
+    "dev": "vite dev",
     "build": "vite build",
     "preview": "vite preview",
     "typecheck": "tsgo --noEmit",
@@ -23,7 +23,6 @@
   "dependencies": {
     "@libsql/client": "^0.17.0",
     "@posthog/react": "^1.8.2",
-    "@sentry/tanstackstart-react": "^10.43.0",
     "@tailwindcss/vite": "^4.1.18",
     "@tanstack/react-devtools": "^0.7.0",
     "@tanstack/react-router": "^1.132.0",

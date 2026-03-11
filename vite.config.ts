@@ -1,4 +1,3 @@
-import { sentryTanstackStart } from "@sentry/tanstackstart-react/vite";
 import tailwindcss from "@tailwindcss/vite";
 import { devtools } from "@tanstack/devtools-vite";
 import { tanstackStart } from "@tanstack/react-start/plugin/vite";
@@ -35,11 +34,6 @@ const config = defineConfig({
 			babel: {
 				plugins: [ReactCompiler],
 			},
-		}),
-		sentryTanstackStart({
-			org: "maxwell-cohen",
-			project: "manytongues",
-			authToken: process.env.SENTRY_AUTH_TOKEN,
 		}),
 	],
 });
