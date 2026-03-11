@@ -81,6 +81,20 @@ VITE_PUBLIC_POSTHOG_KEY=
 VITE_PUBLIC_POSTHOG_HOST=https://us.i.posthog.com
 ```
 
+### Optional (error tracking)
+
+If you are using Sentry on Vercel, the Vercel integration can populate these for you:
+
+```bash
+SENTRY_ORG=
+SENTRY_PROJECT=
+SENTRY_AUTH_TOKEN=
+NEXT_PUBLIC_SENTRY_DSN=
+```
+
+If you are not using the Vercel integration, set `VITE_PUBLIC_SENTRY_DSN` instead of
+`NEXT_PUBLIC_SENTRY_DSN`.
+
 ## Deploying to Vercel
 
 The app is configured for Vercel deployment with Nitro. To deploy:
@@ -90,6 +104,10 @@ The app is configured for Vercel deployment with Nitro. To deploy:
 3. Deploy. Vercel will auto-detect the Nitro/TanStack Start setup.
 
 The `nitro.config.ts` sets the Vercel preset and proxies `/ingest` to PostHog for analytics.
+Sentry is configured using the TanStack Start SDK and works on Vercel by importing
+`instrument.server.mjs` directly from `src/server.ts`, which matches Sentry's
+[TanStack Start guide](https://docs.sentry.io/platforms/javascript/guides/tanstackstart-react/)
+for serverless deployments.
 
 ## Scripts
 
