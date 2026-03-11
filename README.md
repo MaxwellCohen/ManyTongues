@@ -74,6 +74,24 @@ Notes:
 - `GOOGLE_TRANSLSTE` is the Google Translate API key variable currently used by the codebase.
 - `MICROSOFT_TRANSLATE_KEY` is used as a fallback translation provider.
 
+### Optional (analytics, error tracking)
+
+```bash
+VITE_PUBLIC_POSTHOG_KEY=
+VITE_PUBLIC_POSTHOG_HOST=https://us.i.posthog.com
+SENTRY_AUTH_TOKEN=
+```
+
+## Deploying to Vercel
+
+The app is configured for Vercel deployment with Nitro. To deploy:
+
+1. Push your repo to GitHub and [import it in Vercel](https://vercel.com/new).
+2. Add the environment variables above in **Project Settings → Environment Variables**.
+3. Deploy. Vercel will auto-detect the Nitro/TanStack Start setup.
+
+The `nitro.config.ts` sets the Vercel preset and proxies `/ingest` to PostHog for analytics.
+
 ## Scripts
 
 ```bash
