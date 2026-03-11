@@ -1,7 +1,7 @@
 import { forwardRef, type ComponentPropsWithoutRef } from 'react'
 import { cn } from '#/lib/cn'
 
-export type CheckboxProps = ComponentPropsWithoutRef<'input'>
+type CheckboxProps = ComponentPropsWithoutRef<'input'>
 
 export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
   function Checkbox({ className, type, ...props }, ref) {

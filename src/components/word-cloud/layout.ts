@@ -1,12 +1,15 @@
 import 'd3-transition';
 
-import { descending } from 'd3-array';
 import d3Cloud from 'd3-cloud';
+
+/** Comparator for Array.prototype.sort: higher values first (descending). */
+function descending(a: number, b: number): number {
+  return b - a;
+}
 import type { Selection } from 'd3-selection';
 import seedrandom from 'seedrandom';
 
-import optimizedD3Cloud from './optimized-d3-cloud';
-import type { Callbacks, CloudLayout, MinMaxPair, Options, Word } from './types';
+import type { CloudLayout, MinMaxPair, Options, Word } from './types';
 import {
   choose,
   getFontScale,
@@ -16,37 +19,29 @@ import {
   rotate,
 } from './utils';
 
-export interface RenderParams {
-  callbacks: Callbacks;
+interface RenderParams {
   options: Options;
   random: () => number;
   selection: Selection<SVGGElement, unknown, SVGSVGElement | null, unknown>;
   words: Word[];
 }
 
-export function render({
-  callbacks,
+function render({
   options,
   random,
   selection,
   words,
 }: RenderParams): void {
   const {
-    getWordColor,
-    onWordClick,
-    onWordMouseOver,
-    onWordMouseOut,
-  } = callbacks;
-  const {
     colors,
+    fontFamily,
     fontStyle,
     fontWeight,
     textAttributes,
   } = options;
-  const { fontFamily, transitionDuration } = options;
 
-  function getFill(word: Word): string {
-    return getWordColor ? getWordColor(word) : choose(colors, random);
+  function getFill(): string {
+    return choose(colors, random);
   }
 
   // Load words
@@ -55,22 +50,6 @@ export function render({
     (enter) => {
       let textSelection = enter
         .append('text')
-        .on('click', function  textSelection(this: SVGTextElement, datum: Word) {
-          if (onWordClick) {
-            onWordClick(datum, (globalThis as unknown as { event?: MouseEvent }).event);
-          }
-        })
-        .on('mouseover', function  textSelection(this: SVGTextElement, datum: Word) {
-          if (onWordMouseOver) {
-            onWordMouseOver(datum, (globalThis as unknown as { event?: MouseEvent }).event);
-          }
-        })
-        .on('mouseout', function  textSelection(this: SVGTextElement, datum: Word) {
-          if (onWordMouseOut) {
-            onWordMouseOut(datum, (globalThis as unknown as { event?: MouseEvent }).event);
-          }
-        })
-        .attr('cursor', onWordClick ? 'pointer' : 'default')
         .attr('fill', getFill as (word: Word) => string)
         .attr('font-family', fontFamily)
         .attr('font-style', fontStyle)
@@ -85,33 +64,26 @@ export function render({
       }
 
       textSelection
-        .transition()
-        .duration(transitionDuration)
         .attr('font-size', getFontSize as (word: Word) => string)
         .attr('transform', getTransform as (word: Word) => string)
         .text(getText as (word: Word) => string);
       return textSelection;
     },
     (update) => update
-        .transition()
-        .duration(transitionDuration)
-        .attr('fill', getFill as (word: Word) => string)
-        .attr('font-family', fontFamily)
-        .attr('font-size', getFontSize as (word: Word) => string)
-        .attr('transform', getTransform as (word: Word) => string)
-        .text(getText as (word: Word) => string) as unknown as typeof update,
+      .attr('fill', getFill as (word: Word) => string)
+      .attr('font-family', fontFamily)
+      .attr('font-size', getFontSize as (word: Word) => string)
+      .attr('transform', getTransform as (word: Word) => string)
+      .text(getText as (word: Word) => string) as unknown as typeof update,
     (exit) => {
       exit
-        .transition()
-        .duration(transitionDuration)
         .attr('fill-opacity', 0)
         .remove();
     },
   );
 }
 
-export interface LayoutParams {
-  callbacks: Callbacks;
+interface LayoutParams {
   maxWords: number;
   options: Options;
   selection: Selection<SVGGElement, unknown, SVGSVGElement | null, unknown>;
@@ -120,7 +92,6 @@ export interface LayoutParams {
 }
 
 export function layout({
-  callbacks,
   maxWords,
   options,
   selection,
@@ -131,7 +102,6 @@ export function layout({
   const SHRINK_FACTOR = 0.95;
   const {
     deterministic,
-    enableOptimizations,
     fontFamily,
     fontStyle,
     fontSizes,
@@ -146,24 +116,20 @@ export function layout({
 
   const sortedWords = words
     .concat()
-    .toSorted((x: Word, y: Word) => descending(x.value, y.value))
+    .sort((x: Word, y: Word) => descending(Number(x.value), Number(y.value)))
     .slice(0, maxWords);
 
   const random = seedrandom(
     deterministic ? (randomSeed || 'deterministic') : undefined,
   ) as () => number;
 
-  let cloud: CloudLayout;
-  if (enableOptimizations) {
-    cloud = optimizedD3Cloud();
-  } else {
-    cloud = d3Cloud() as unknown as CloudLayout;
-  }
+  let cloud: CloudLayout = d3Cloud() as unknown as CloudLayout;
+
 
   cloud
     .size(size)
     .padding(padding)
-    .words(structuredClone(sortedWords) as Word[])
+    .words(structuredClone(sortedWords))
     .rotate(() => {
       if (rotations === undefined) {
         return (~~(random() * 6) - 3) * 30;
@@ -178,10 +144,6 @@ export function layout({
     .fontWeight(fontWeight);
 
   function draw(fontSizeRange: MinMaxPair, attempts = 1): void {
-    if (enableOptimizations && cloud.revive) {
-      cloud.revive();
-    }
-
     cloud
       .fontSize((word) => {
         const fontScale = getFontScale(sortedWords, fontSizeRange, scale);
@@ -194,8 +156,7 @@ export function layout({
         ) {
           if (attempts === MAX_LAYOUT_ATTEMPTS) {
             console.warn(
-              `Unable to layout ${
-                sortedWords.length - computedWords.length
+              `Unable to layout ${sortedWords.length - computedWords.length
               } word(s) after ${attempts} attempts.  Consider: (1) Increasing the container/component size. (2) Lowering the max font size. (3) Limiting the rotation angles.`,
             );
           }
@@ -209,7 +170,6 @@ export function layout({
           draw([minFontSize, maxFontSize], attempts + 1);
         } else {
           render({
-            callbacks,
             options,
             random,
             selection,

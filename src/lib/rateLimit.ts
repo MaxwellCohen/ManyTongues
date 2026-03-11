@@ -34,7 +34,7 @@ export function normalizeIpCandidate(value: string | null): string | null {
     : firstValue
 }
 
-export async function consumeTranslatorRateLimit({
+async function consumeTranslatorRateLimit({
   ip = 'unknown',
   maxRequests = DEFAULT_MAX_REQUESTS,
   windowMs = DEFAULT_WINDOW_MS,

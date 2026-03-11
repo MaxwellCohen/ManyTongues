@@ -13,7 +13,7 @@ import {
   type XStateFormSender,
 } from "#/lib/xstateForm";
 
-export type WordCloudOptionFields = {
+type WordCloudOptionFields = {
   maxWords: number;
   padding: number;
   minFontSize: number;

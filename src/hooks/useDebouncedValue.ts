@@ -25,6 +25,3 @@ export function useDebounceValue<T>(value: T, delayMs: number = DEBOUNCE_DELAY_M
 
   return debouncedValue
 }
-
-/** Alias for useDebounceValue. */
-export const useDebouncedValue = useDebounceValue

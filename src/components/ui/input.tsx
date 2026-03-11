@@ -9,12 +9,12 @@ const inputSizeClassNames = {
   lg: 'rounded-xl px-4 py-3',
 } as const
 
-export type InputProps = Omit<ComponentPropsWithoutRef<'input'>, 'size'> & {
+type InputProps = Omit<ComponentPropsWithoutRef<'input'>, 'size'> & {
   uiSize?: keyof typeof inputSizeClassNames
 }
 
 export const inputClassName = cn(inputBaseClassName, inputSizeClassNames.sm)
-export const inputLargeClassName = cn(inputBaseClassName, inputSizeClassNames.lg)
+const inputLargeClassName = cn(inputBaseClassName, inputSizeClassNames.lg)
 
 export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
   { className, uiSize = 'sm', ...props },

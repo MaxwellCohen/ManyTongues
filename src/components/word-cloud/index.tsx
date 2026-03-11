@@ -1,17 +1,15 @@
-import debounce from 'lodash.debounce';
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, startTransition } from 'react';
 
 import { useResponsiveSvgSelection } from './hooks';
 import { layout } from './layout';
-import type { CallbacksProp, OptionsProp, Props } from './types';
+import type { CallbacksProp, OptionsProp, Props, Options } from './types';
 import { getDefaultColors } from './utils';
 
-export const defaultCallbacks: CallbacksProp = {};
+const defaultCallbacks: CallbacksProp = {};
 
-export const defaultOptions: OptionsProp = {
+const defaultOptions: OptionsProp = {
   colors: getDefaultColors(),
   deterministic: false,
-  enableOptimizations: false,
   fontFamily: 'times new roman',
   fontSizes: [4, 32],
   fontStyle: 'normal',
@@ -22,8 +20,8 @@ export const defaultOptions: OptionsProp = {
   spiral: 'rectangular',
   svgAttributes: {},
   textAttributes: {},
-  transitionDuration: 600,
 };
+// const renderRef = useRef(debounce(layout, 100));
 
 export default function ReactWordCloud({
   callbacks = defaultCallbacks,
@@ -40,20 +38,18 @@ export default function ReactWordCloud({
     options.svgAttributes as Record<string, string> | undefined,
   );
 
-  const renderRef = useRef(debounce(layout, 100));
-
   useEffect(() => {
     if (selection && size) {
-      const mergedCallbacks = { ...defaultCallbacks, ...callbacks };
-      const mergedOptions = { ...defaultOptions, ...options };
+      startTransition(() => {
+      const mergedOptions = { ...defaultOptions, ...options } as Options;
 
-      renderRef.current({
-        callbacks: mergedCallbacks,
+      layout({
         maxWords,
-        options: mergedOptions as import('./types').Options,
+        options: mergedOptions,
         selection,
         size,
         words,
+      });
       });
     }
   }, [maxWords, callbacks, options, selection, size, words]);

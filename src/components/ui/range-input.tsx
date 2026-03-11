@@ -1,7 +1,7 @@
 import { forwardRef, type ComponentPropsWithoutRef } from 'react'
 import { cn } from '#/lib/cn'
 
-export type RangeInputProps = ComponentPropsWithoutRef<'input'>
+type RangeInputProps = ComponentPropsWithoutRef<'input'>
 
 export const RangeInput = forwardRef<HTMLInputElement, RangeInputProps>(
   function RangeInput({ className, type, ...props }, ref) {

@@ -38,10 +38,8 @@ const generatorSearchSchema = z.object({
 	backgroundColor: z.string().optional(),
 });
 
-export type GeneratorSearch = z.infer<typeof generatorSearchSchema>;
 
-export const Route = createFileRoute("/text-cloud")({
-	ssr: false,
+export const Route = createFileRoute("/text-cloud")({	
 	validateSearch: zodValidator(generatorSearchSchema),
 	head: () => ({
 		meta: [

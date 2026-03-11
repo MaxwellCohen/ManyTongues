@@ -3,7 +3,7 @@ export const DEFAULT_TEXT = `Paste any text here to create a word cloud. Words t
 export const DEFAULT_COLORS = ['#173a40', '#328f97', '#4fb8b2', '#2f6a4a']
 export const DEFAULT_BG = '#e8f4f0'
 
-export type CloudWord = {
+type CloudWord = {
   text: string
   value: number
   x?: number

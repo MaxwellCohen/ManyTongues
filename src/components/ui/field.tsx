@@ -20,8 +20,8 @@ type FieldContextValue = {
 const FieldContext = createContext<FieldContextValue | null>(null)
 
 export const fieldLabelClassName = 'mb-1 block text-xs font-medium text-sea-ink-soft'
-export const fieldDescriptionClassName = 'mt-1 text-xs text-sea-ink-soft'
-export const fieldMessageClassName = 'mt-1 text-sm text-red-600 dark:text-red-400'
+const fieldDescriptionClassName = 'mt-1 text-xs text-sea-ink-soft'
+const fieldMessageClassName = 'mt-1 text-sm text-red-600 dark:text-red-400'
 
 type FieldProps = ComponentPropsWithoutRef<'div'> & {
   id?: string
@@ -95,7 +95,7 @@ export function FieldControl({
   })
 }
 
-export function FieldDescription({
+function FieldDescription({
   className,
   children,
   ...props

@@ -9,11 +9,11 @@ const textareaSizeClassNames = {
   lg: 'resize-y rounded-xl px-4 py-3',
 } as const
 
-export type TextareaProps = ComponentPropsWithoutRef<'textarea'> & {
+type TextareaProps = ComponentPropsWithoutRef<'textarea'> & {
   size?: keyof typeof textareaSizeClassNames
 }
 
-export const textareaClassName = cn(
+const textareaClassName = cn(
   textareaBaseClassName,
   textareaSizeClassNames.lg,
 )

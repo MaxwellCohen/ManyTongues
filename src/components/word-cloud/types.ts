@@ -11,9 +11,6 @@ export type Scale = 'linear' | 'log' | 'sqrt';
 
 export type Spiral = 'archimedean' | 'rectangular';
 
-export type WordToStringCallback = (word: Word) => string;
-
-export type WordEventCallback = (word: Word, event?: MouseEvent) => void;
 
 export type AttributeValue = string | ((word: Word) => string);
 
@@ -24,24 +21,7 @@ export type Optional<T> = {
 /**
  * Public typings
  */
-export interface Callbacks {
-  /**
-   * Set the word color using the word object.
-   */
-  getWordColor?: WordToStringCallback;
-  /**
-   * Capture the word and mouse event on click.
-   */
-  onWordClick?: WordEventCallback;
-  /**
-   * Capture the word and mouse event on mouse-out.
-   */
-  onWordMouseOut?: WordEventCallback;
-  /**
-   * Capture the word and mouse event on mouse over.
-   */
-  onWordMouseOver?: WordEventCallback;
-}
+export interface Callbacks {}
 
 export type CallbacksProp = Optional<Callbacks>;
 
@@ -54,10 +34,6 @@ export interface Options {
    * By default, words are randomly positioned and rotated.  If true, the wordcloud will produce the same rendering output for any input.
    */
   deterministic: boolean;
-  /**
-   * (BETA) This feature is not formally supported.  For more details, refer to the docs.  Enables optimizations for rendering larger wordclouds.  Note that this uses a custom cloud layout that batches the data into smaller subsets.
-   */
-  enableOptimizations: boolean;
   /**
    * Customize the font family.
    */
@@ -106,10 +82,6 @@ export interface Options {
    * Customizable attributes to set on the rendererd text nodes
    */
   textAttributes: Record<string, AttributeValue>;
-  /**
-   * Sets the animation transition time in milliseconds.
-   */
-  transitionDuration: number;
 }
 
 export type OptionsProp = Optional<Options>;

@@ -82,7 +82,7 @@ function TranslationRow({
   );
 }
 
-export type TranslationsAccordionProps = {
+type TranslationsAccordionProps = {
   visibleTranslations: [string, string][];
   weights: Map<string, number>;
   onWeightChange: (lang: string, value: number) => void;

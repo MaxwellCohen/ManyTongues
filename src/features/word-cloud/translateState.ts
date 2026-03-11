@@ -1,8 +1,8 @@
 import { DEFAULT_COLORS, DEFAULT_FONT_FAMILY, type ScaleType } from '#/lib/wordCloudUtils'
 import { getSearchDiffFromDefaults, getValidPalette, mergeSearchWithDefaults } from './search'
 
-export const TRANSLATOR_BG = '#c9a227'
-export const TRANSLATOR_TEXT_COLOR = '#000000'
+const TRANSLATOR_BG = '#c9a227'
+const TRANSLATOR_TEXT_COLOR = '#000000'
 export const translatorScaleOptions = ['linear', 'sqrt', 'log'] as const
 
 export type TranslatorSearch = {
@@ -130,7 +130,7 @@ export function getVisibleTranslations(
   )
 }
 
-export type TranslatorCloudWord = { text: string; value: number }
+type TranslatorCloudWord = { text: string; value: number }
 
 /** Word cloud items: source phrase (if any) plus visible translations with clamped weights. */
 export function getCloudData(
@@ -159,7 +159,7 @@ export function getCloudData(
   return items
 }
 
-export type TranslatorCloudOptions = {
+type TranslatorCloudOptions = {
   minFontSize: number
   maxFontSize: number
   padding: number

@@ -1,6 +1,6 @@
 import { useMachine } from '@xstate/react'
 import { useEffect, useMemo, useState } from 'react'
-import { useDebouncedValue } from '#/hooks/useDebouncedValue'
+import { useDebounceValue } from '#/hooks/useDebouncedValue'
 import { createTranslateMachine } from '#/features/word-cloud/translateMachine'
 import {
   type FullTranslatorSearch,
@@ -15,7 +15,7 @@ import {
 import { getOrTranslatePhrase } from '#/lib/translate'
 import { createXStateFormControls } from '#/lib/xstateForm'
 
-export type UseTranslatePageOptions = {
+type UseTranslatePageOptions = {
   resolvedSearch: FullTranslatorSearch
   onSyncToUrl: (search: Partial<TranslatorSearch>) => void
 }
@@ -50,7 +50,7 @@ export function useTranslatePage({
     () => parseWeights(formState.weights),
     [formState.weights],
   )
-  const debouncedWeightsString = useDebouncedValue(formState.weights, 150)
+  const debouncedWeightsString = useDebounceValue(formState.weights, 150)
   const debouncedWeights = useMemo(
     () => parseWeights(debouncedWeightsString),
     [debouncedWeightsString],

@@ -1,17 +1,69 @@
-import { max, min, range } from 'd3-array';
-import { scaleLinear, scaleLog, scaleOrdinal, scaleSqrt } from 'd3-scale';
-import { schemeCategory10 } from 'd3-scale-chromatic';
-
 import type { MinMaxPair, Scale, Word } from './types';
+
+/** D3 Category10 categorical colors (10 distinct hex values). */
+const SCHEME_CATEGORY_10 = [
+  '#1f77b4',
+  '#ff7f0e',
+  '#2ca02c',
+  '#d62728',
+  '#9467bd',
+  '#8c564b',
+  '#e377c2',
+  '#7f7f7f',
+  '#bcbd22',
+  '#17becf',
+];
 
 export function choose<T>(array: T[], random: () => number): T {
   return array[Math.floor(random() * array.length)];
 }
 
 export function getDefaultColors(): string[] {
-  return range(20)
-    .map((number) => number.toString())
-    .map(scaleOrdinal(schemeCategory10));
+  return Array.from({ length: 20 }, (_, i) => SCHEME_CATEGORY_10[i % 10]);
+}
+
+function scaleLinear(
+  domainMin: number,
+  domainMax: number,
+  rangeMin: number,
+  rangeMax: number,
+): (value: number) => number {
+  const span = domainMax - domainMin || 1;
+  return (t) => rangeMin + (rangeMax - rangeMin) * ((t - domainMin) / span);
+}
+
+function scaleSqrt(
+  domainMin: number,
+  domainMax: number,
+  rangeMin: number,
+  rangeMax: number,
+): (value: number) => number {
+  const sqrtMin = Math.sqrt(domainMin);
+  const sqrtMax = Math.sqrt(domainMax);
+  const span = sqrtMax - sqrtMin || 1;
+  return (t) =>
+    rangeMin + (rangeMax - rangeMin) * ((Math.sqrt(t) - sqrtMin) / span);
+}
+
+const LOG_EPSILON = 1e-10;
+
+function scaleLog(
+  domainMin: number,
+  domainMax: number,
+  rangeMin: number,
+  rangeMax: number,
+): (value: number) => number {
+  const safeMin = Math.max(domainMin, LOG_EPSILON);
+  const safeMax = Math.max(domainMax, LOG_EPSILON);
+  const logMin = Math.log(safeMin);
+  const logMax = Math.log(safeMax);
+  const span = logMax - logMin || 1;
+  return (t) => {
+    const safeT = Math.max(t, LOG_EPSILON);
+    const u = (Math.log(safeT) - logMin) / span;
+    const clamped = Math.max(0, Math.min(1, u));
+    return rangeMin + (rangeMax - rangeMin) * clamped;
+  };
 }
 
 export function getFontScale(
@@ -19,17 +71,20 @@ export function getFontScale(
   fontSizes: MinMaxPair,
   scale: Scale,
 ): (value: number) => number {
-  const minVal = min(words, (word) => Number(word.value));
-  const maxVal = max(words, (word) => Number(word.value));
+  const values = words.map((word) => Number(word.value));
+  const minVal = values.length ? Math.min(...values) : undefined;
+  const maxVal = values.length ? Math.max(...values) : undefined;
   const minSize = minVal ?? 0;
   const maxSize = maxVal ?? 1;
+  const [rangeMin, rangeMax] = fontSizes;
+
   if (scale === 'log') {
-    return scaleLog().domain([minSize, maxSize]).range(fontSizes) as (value: number) => number;
+    return scaleLog(minSize, maxSize, rangeMin, rangeMax);
   }
   if (scale === 'sqrt') {
-    return scaleSqrt().domain([minSize, maxSize]).range(fontSizes) as (value: number) => number;
+    return scaleSqrt(minSize, maxSize, rangeMin, rangeMax);
   }
-  return scaleLinear().domain([minSize, maxSize]).range(fontSizes) as (value: number) => number;
+  return scaleLinear(minSize, maxSize, rangeMin, rangeMax);
 }
 
 export function getFontSize(word: Word): string {

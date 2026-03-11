@@ -8,7 +8,7 @@ import { DEFAULT_BG, DEFAULT_COLORS } from "#/lib/wordCloudUtils";
 /** Never pass empty colors to react-wordcloud (it reads colors[0]). */
 const FALLBACK_PALETTE = DEFAULT_COLORS;
 
-export type WordCloudOptions = {
+type WordCloudOptions = {
 	minFontSize: number;
 	maxFontSize: number;
 	padding: number;
