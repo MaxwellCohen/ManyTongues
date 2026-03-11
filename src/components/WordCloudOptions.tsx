@@ -176,6 +176,7 @@ export default function WordCloudOptions({
       />
 
       <WordCloudOptionColorField
+      key={`background-color-${formState.backgroundColor}`}
         label="Background color"
         className="sm:col-span-2"
         defaultValue={formState.backgroundColor}
@@ -186,6 +187,7 @@ export default function WordCloudOptions({
       />
 
       <WordCloudOptionPaletteField
+        key={`text-color-${formState.colors.join('-')}`}
         defaultColors={formState.colors}
         onChange={(colors) => updateFields({ colors })}
         onBlur={(colors) => {

@@ -21,6 +21,7 @@ export default function WordCloudOptionPaletteField({
 
   const notifyChange = (next: string[]) => {
     onChange?.(next)
+    onBlur(next)
   }
 
   const handleBlur = () => onBlur(colorsRef.current)

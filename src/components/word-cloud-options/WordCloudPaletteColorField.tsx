@@ -16,14 +16,16 @@ export default function WordCloudPaletteColorField({
   canRemove: boolean
   onChange: (value: string) => void
   onRemove: () => void
-  onBlur: () => void
+  onBlur: (value: string) => void
 }) {
   const pickerRef = useRef<HTMLInputElement>(null)
 
   const handlePickerBlur = () => {
     const value = pickerRef.current?.value
-    if (value) onChange(value)
-    onBlur()
+    if (value) {
+      onChange(value)
+      onBlur(value)
+    }
   }
 
   return (
@@ -39,8 +41,8 @@ export default function WordCloudPaletteColorField({
       />
       <ColorTextField
         defaultValue={defaultValue}
-        onChange={onChange}
-        onBlur={onBlur}
+        onChange={(_: string) => {}}
+        onBlur={(v) => {onBlur(v); onChange(v)}}
         ariaLabel={`Word color ${index + 1} hex value`}
         placeholder="#000000"
       />
