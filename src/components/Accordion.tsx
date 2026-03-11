@@ -1,4 +1,5 @@
 import { ChevronDownIcon } from '#/components/icons'
+import { cn } from '#/lib/cn'
 import type { DetailsHTMLAttributes } from 'react'
 
 export default function Accordion({
@@ -13,7 +14,7 @@ export default function Accordion({
   return (
     <details
       {...props}
-      className="group rounded-xl border border-line bg-foam/50"
+      className={cn("group rounded-xl border border-line bg-foam/50", props.className)}
       open={defaultOpen}
     >
       <summary className="flex cursor-pointer list-none items-center justify-between gap-2 px-4 py-3 text-sm font-semibold text-sea-ink hover:bg-line/20 [&::-webkit-details-marker]:hidden">

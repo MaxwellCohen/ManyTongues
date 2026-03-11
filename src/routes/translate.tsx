@@ -158,7 +158,7 @@ function TranslatorWordCloudContent({
 				hasWords={hasWords}
 				options={cloudOptions}
 			>
-				<Accordion title="Cloud styling" className="pt-5">
+				<Accordion title="Cloud styling" className="mt-5">
 					<WordCloudOptions formState={formState} send={send} />
 				</Accordion>
 			</WordCloudCanvas>
