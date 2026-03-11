@@ -1,6 +1,6 @@
 import { usePostHog } from "@posthog/react";
 import { useCallback, useMemo, useRef } from "react";
-import ReactWordcloud from "react-wordcloud";
+import ReactWordcloud from "#/components/word-cloud";
 import IslandPanel from "#/components/IslandPanel";
 import { DownloadIcon } from "#/components/icons";
 import { DEFAULT_BG, DEFAULT_COLORS } from "#/lib/wordCloudUtils";
