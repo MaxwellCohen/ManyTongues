@@ -12,7 +12,7 @@ import seedrandom from 'seedrandom';
 import type { CloudLayout, MinMaxPair, Options, Word } from './types';
 import {
   choose,
-  getFontScale,
+  getFontScaleFromDomain,
   getFontSize,
   getText,
   getTransform,
@@ -119,6 +119,21 @@ export function layout({
     .sort((x: Word, y: Word) => descending(Number(x.value), Number(y.value)))
     .slice(0, maxWords);
 
+  let valueMin = 0;
+  let valueMax = 1;
+  if (sortedWords.length > 0) {
+    for (let i = 0; i < sortedWords.length; i++) {
+      const v = Number(sortedWords[i].value);
+      if (i === 0) {
+        valueMin = v;
+        valueMax = v;
+      } else {
+        if (v < valueMin) valueMin = v;
+        if (v > valueMax) valueMax = v;
+      }
+    }
+  }
+
   const random = seedrandom(
     deterministic ? (randomSeed || 'deterministic') : undefined,
   ) as () => number;
@@ -129,7 +144,7 @@ export function layout({
   cloud
     .size(size)
     .padding(padding)
-    .words(structuredClone(sortedWords))
+    .words(sortedWords.map((w) => (w)))
     .rotate(() => {
       if (rotations === undefined) {
         return (~~(random() * 6) - 3) * 30;
@@ -144,12 +159,16 @@ export function layout({
     .fontWeight(fontWeight);
 
   function draw(fontSizeRange: MinMaxPair, attempts = 1): void {
+    const fontScale = getFontScaleFromDomain(
+      valueMin,
+      valueMax,
+      fontSizeRange,
+      scale,
+    );
     cloud
-      .fontSize((word) => {
-        const fontScale = getFontScale(sortedWords, fontSizeRange, scale);
-        return fontScale(word.value);
-      })
+      .fontSize((word) => fontScale(word.value))
       .on('end', (computedWords) => {
+        console.log('computedWords', computedWords);
         if (
           sortedWords.length !== computedWords.length &&
           attempts <= MAX_LAYOUT_ATTEMPTS

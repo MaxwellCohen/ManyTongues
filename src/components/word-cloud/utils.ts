@@ -19,7 +19,7 @@ export function choose<T>(array: T[], random: () => number): T {
 }
 
 export function getDefaultColors(): string[] {
-  return Array.from({ length: 20 }, (_, i) => SCHEME_CATEGORY_10[i % 10]);
+  return Array.from({ length: 10 }, (_, i) => SCHEME_CATEGORY_10[i % 10]);
 }
 
 function scaleLinear(
@@ -76,15 +76,27 @@ export function getFontScale(
   const maxVal = values.length ? Math.max(...values) : undefined;
   const minSize = minVal ?? 0;
   const maxSize = maxVal ?? 1;
-  const [rangeMin, rangeMax] = fontSizes;
+  return getFontScaleFromDomain(minSize, maxSize, fontSizes, scale);
+}
 
+/**
+ * Build a font scale from a precomputed value domain. Use when the same
+ * extent is reused (e.g. layout retries) to avoid recomputing min/max.
+ */
+export function getFontScaleFromDomain(
+  domainMin: number,
+  domainMax: number,
+  fontSizes: MinMaxPair,
+  scale: Scale,
+): (value: number) => number {
+  const [rangeMin, rangeMax] = fontSizes;
   if (scale === 'log') {
-    return scaleLog(minSize, maxSize, rangeMin, rangeMax);
+    return scaleLog(domainMin, domainMax, rangeMin, rangeMax);
   }
   if (scale === 'sqrt') {
-    return scaleSqrt(minSize, maxSize, rangeMin, rangeMax);
+    return scaleSqrt(domainMin, domainMax, rangeMin, rangeMax);
   }
-  return scaleLinear(minSize, maxSize, rangeMin, rangeMax);
+  return scaleLinear(domainMin, domainMax, rangeMin, rangeMax);
 }
 
 export function getFontSize(word: Word): string {
