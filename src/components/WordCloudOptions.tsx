@@ -133,7 +133,6 @@ export default function WordCloudOptions({
       <WordCloudOptionNumberField
         label="Rotations"
         min={0}
-        max={12}
         defaultValue={formState.rotations}
         onChange={(value) =>
           updateFields({

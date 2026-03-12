@@ -19,7 +19,7 @@ export function choose<T>(array: T[], random: () => number): T {
 }
 
 export function getDefaultColors(): string[] {
-  return Array.from({ length: 10 }, (_, i) => SCHEME_CATEGORY_10[i % 10]);
+  return SCHEME_CATEGORY_10;
 }
 
 function scaleLinear(
@@ -66,18 +66,6 @@ function scaleLog(
   };
 }
 
-export function getFontScale(
-  words: Word[],
-  fontSizes: MinMaxPair,
-  scale: Scale,
-): (value: number) => number {
-  const values = words.map((word) => Number(word.value));
-  const minVal = values.length ? Math.min(...values) : undefined;
-  const maxVal = values.length ? Math.max(...values) : undefined;
-  const minSize = minVal ?? 0;
-  const maxSize = maxVal ?? 1;
-  return getFontScaleFromDomain(minSize, maxSize, fontSizes, scale);
-}
 
 /**
  * Build a font scale from a precomputed value domain. Use when the same
@@ -114,6 +102,24 @@ export function getTransform(word: Word): string {
   return translate + rotate;
 }
 
+const anglesMap = new Map<string, number[]>();
+
+function getAngles(rotations: number, rotationAngles: MinMaxPair): number[] {
+  const key = `${rotations}-${rotationAngles[0]}-${rotationAngles[1]}`;
+  if (anglesMap.has(key)) {
+    return anglesMap.get(key)!;
+  }
+  let angles = [...rotationAngles];
+  const increment = (rotationAngles[1] - rotationAngles[0]) / (rotations - 1);
+  let angle = rotationAngles[0] + increment;
+  while (angle < rotationAngles[1]) {
+    angles.push(angle);
+    angle += increment;
+  }
+  anglesMap.set(key, angles);
+  return angles;
+}
+
 export function rotate(
   rotations: number,
   rotationAngles: MinMaxPair,
@@ -123,18 +129,10 @@ export function rotate(
     return 0;
   }
 
-  let angles: number[];
   if (rotations === 1) {
-    angles = [rotationAngles[0]];
-  } else {
-    angles = [...rotationAngles];
-    const increment = (rotationAngles[1] - rotationAngles[0]) / (rotations - 1);
-    let angle = rotationAngles[0] + increment;
-    while (angle < rotationAngles[1]) {
-      angles.push(angle);
-      angle += increment;
-    }
+    return rotationAngles[0];
+  } else if (rotations === 2) {
+    return choose(rotationAngles, random);
   }
-
-  return choose(angles, random);
+  return choose(getAngles(rotations, rotationAngles), random);
 }

@@ -31,7 +31,7 @@ const translatorSearchSchema = z.object({
 	scale: z.enum(translatorScaleOptions).optional(),
 	rotationMin: z.coerce.number().int().min(-360).max(360).optional(),
 	rotationMax: z.coerce.number().int().min(-360).max(360).optional(),
-	rotations: z.coerce.number().int().min(0).max(12).optional(),
+	rotations: z.coerce.number().int().min(0).optional(),
 	deterministic: booleanSearchParam.optional(),
 	fontFamily: z.string().optional(),
 	backgroundColor: z.string().optional(),
