@@ -10,12 +10,10 @@ describe('resolveGeneratorSearch', () => {
   it('returns defaults when search is empty', () => {
     const result = resolveGeneratorSearch({})
     expect(result.input).toBe(DEFAULT_GENERATOR_SEARCH.input)
-    expect(result.maxWords).toBe(1000)
   })
 
   it('merges partial search', () => {
-    const result = resolveGeneratorSearch({ maxWords: 50, input: 'custom' })
-    expect(result.maxWords).toBe(50)
+    const result = resolveGeneratorSearch({ input: 'custom' })
     expect(result.input).toBe('custom')
   })
 
@@ -27,8 +25,8 @@ describe('resolveGeneratorSearch', () => {
 
 describe('getGeneratorSearchForUrl', () => {
   it('returns diff from defaults', () => {
-    const state = { ...DEFAULT_GENERATOR_SEARCH, maxWords: 100 }
-    expect(getGeneratorSearchForUrl(state)).toEqual({ maxWords: 100 })
+    const state = { ...DEFAULT_GENERATOR_SEARCH, input: 'custom' }
+    expect(getGeneratorSearchForUrl(state)).toEqual({ input: 'custom' })
   })
 
   it('returns empty when no diff', () => {

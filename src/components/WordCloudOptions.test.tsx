@@ -98,7 +98,6 @@ vi.mock('#/components/word-cloud-options/WordCloudOptionPaletteField', () => ({
 import WordCloudOptions from './WordCloudOptions'
 
 const defaultFormState = {
-  maxWords: 1000,
   padding: 1,
   minFontSize: 14,
   maxFontSize: 72,
@@ -118,8 +117,8 @@ describe('WordCloudOptions', () => {
     const { container } = render(
       <WordCloudOptions formState={defaultFormState} send={send} />,
     )
-    expect(container.textContent).toContain('Max words')
-    expect(container.textContent).toContain('1000')
+    expect(container.textContent).toContain('Padding')
+    expect(container.textContent).toContain('1')
   })
 
   it('sends FIELD_CHANGED when field changes', () => {
@@ -128,12 +127,12 @@ describe('WordCloudOptions', () => {
       <WordCloudOptions formState={defaultFormState} send={send} />,
     )
     const changeButton = container.querySelector(
-      '[data-testid="number-Max words"] button',
+      '[data-testid="number-Padding"] button',
     )
     fireEvent.click(changeButton!)
     expect(send).toHaveBeenCalledWith({
       type: 'FIELD_CHANGED',
-      updates: { maxWords: 1001 },
+      updates: { padding: 2 },
     })
   })
 

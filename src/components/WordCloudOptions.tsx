@@ -14,7 +14,6 @@ import {
 } from "#/lib/xstateForm";
 
 type WordCloudOptionFields = {
-  maxWords: number;
   padding: number;
   minFontSize: number;
   maxFontSize: number;
@@ -44,17 +43,6 @@ export default function WordCloudOptions({
     <div
       className="grid gap-3 pt-1 sm:grid-cols-2"
     >
-      <WordCloudOptionNumberField
-        label="Max words"
-        min={5}
-        max={1000}
-        defaultValue={formState.maxWords}
-        onChange={(value) => updateFields({ maxWords: value })}
-        onBlur={(value) => {
-          if (value !== formState.maxWords) commitToUrl()
-        }}
-      />
-
       <WordCloudOptionNumberField
         label="Padding"
         min={0}

@@ -97,9 +97,8 @@ describe('resolveTranslatorSearch', () => {
   })
 
   it('merges partial search', () => {
-    const result = resolveTranslatorSearch({ input: 'hello', maxWords: 10 })
+    const result = resolveTranslatorSearch({ input: 'hello' })
     expect(result.input).toBe('hello')
-    expect(result.maxWords).toBe(10)
   })
 
   it('handles array keys', () => {

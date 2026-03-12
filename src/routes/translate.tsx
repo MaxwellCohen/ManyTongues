@@ -24,7 +24,6 @@ import { useTranslatePage } from "#/features/word-cloud/useTranslatePage";
 const translatorSearchSchema = z.object({
 	input: z.string().optional(),
 	translated: booleanSearchParam.optional(),
-	maxWords: z.coerce.number().int().min(1).max(1000).optional(),
 	minFontSize: z.coerce.number().int().min(1).max(200).optional(),
 	maxFontSize: z.coerce.number().int().min(1).max(200).optional(),
 	padding: z.coerce.number().int().min(0).max(20).optional(),

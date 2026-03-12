@@ -24,7 +24,6 @@ import { createXStateFormControls } from "#/lib/xstateForm";
 
 const generatorSearchSchema = z.object({
 	input: z.string().optional(),
-	maxWords: z.coerce.number().int().min(1).max(1000).optional(),
 	minFontSize: z.coerce.number().int().min(1).max(200).optional(),
 	maxFontSize: z.coerce.number().int().min(1).max(200).optional(),
 	padding: z.coerce.number().int().min(0).max(20).optional(),
@@ -84,7 +83,6 @@ function WordCloudPage() {
 
 	const {
 		input,
-		maxWords,
 		minFontSize,
 		maxFontSize,
 		padding,
@@ -99,7 +97,7 @@ function WordCloudPage() {
 	} = formState;
 
 	const words = useMemo(() => tokenizeAndCount(input), [input]);
-	const cloudData = useMemo(() => words.slice(0, maxWords), [words, maxWords]);
+	const cloudData = words;
 	const hasWords = words.length > 0;
 	const rotationAngles = useMemo(
 		() => [rotationMin, rotationMax] as [number, number],
@@ -114,7 +112,6 @@ function WordCloudPage() {
 			maxFontSize,
 			padding,
 			scale,
-			maxWords,
 			rotationAngles,
 			rotations,
 			deterministic,
@@ -126,7 +123,6 @@ function WordCloudPage() {
 			maxFontSize,
 			padding,
 			scale,
-			maxWords,
 			rotationAngles,
 			rotations,
 			deterministic,

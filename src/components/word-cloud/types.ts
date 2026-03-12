@@ -21,9 +21,6 @@ export type Optional<T> = {
 /**
  * Public typings
  */
-export interface Callbacks {}
-
-export type CallbacksProp = Optional<Callbacks>;
 
 export interface Options {
   /**
@@ -88,23 +85,4 @@ export interface Word {
   value: number;
 }
 
-/**
- * Chainable API for d3-cloud and optimized-d3-cloud layout.
- * Used so layout.ts can type the cloud without @ts-ignore.
- */
-export interface CloudLayout {
-  size(size: MinMaxPair): CloudLayout;
-  padding(padding: number): CloudLayout;
-  words(words: Word[]): CloudLayout;
-  rotate(rotate: () => number): CloudLayout;
-  spiral(spiral: Spiral): CloudLayout;
-  random(random: () => number): CloudLayout;
-  text(text: (word: Word) => string): CloudLayout;
-  font(font: string): CloudLayout;
-  fontStyle(fontStyle: string): CloudLayout;
-  fontWeight(fontWeight: string): CloudLayout;
-  fontSize(fontSize: (word: Word) => number): CloudLayout;
-  on(event: 'end', callback: (computedWords: Word[]) => void): CloudLayout;
-  start(): CloudLayout;
-  revive?(): CloudLayout;
-}
+

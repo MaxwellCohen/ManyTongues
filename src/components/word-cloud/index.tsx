@@ -21,15 +21,10 @@ const defaultOptions: OptionsProp = {
 // const renderRef = useRef(debounce(layout, 100));
 
 export default function ReactWordCloud({
-  maxWords = 100,
   minSize = [300, 300],
   options = defaultOptions,
   words,
 }: {
-  /**
-   * Maximum number of words to display.
-   */
-  maxWords?: number;
   /**
    * Set minimum [width, height] values for the SVG container.
    */
@@ -51,14 +46,13 @@ export default function ReactWordCloud({
     startTransition(() => {
       const mergedOptions = { ...defaultOptions, ...options } as Options;
       layout({
-        maxWords,
         onComplete: setLaidOutWords,
         options: mergedOptions,
         size,
         words,
       });
     });
-  }, [maxWords, options, size, words]);
+  }, [options, size, words]);
 
   const mergedOptions = { ...defaultOptions, ...options } as Options;
   const { fontFamily, fontStyle, fontWeight, textAttributes } = mergedOptions;

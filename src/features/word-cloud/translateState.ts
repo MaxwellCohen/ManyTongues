@@ -8,7 +8,6 @@ export const translatorScaleOptions = ['linear', 'sqrt', 'log'] as const
 export type TranslatorSearch = {
   input?: string
   translated?: boolean
-  maxWords?: number
   minFontSize?: number
   maxFontSize?: number
   padding?: number
@@ -29,7 +28,6 @@ export type FullTranslatorSearch = Required<TranslatorSearch>
 export const DEFAULT_TRANSLATOR_SEARCH: FullTranslatorSearch = {
   input: 'everything will be great',
   translated: false,
-  maxWords: 1000,
   minFontSize: 14,
   maxFontSize: 72,
   padding: 1,

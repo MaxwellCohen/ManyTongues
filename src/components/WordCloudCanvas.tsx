@@ -13,7 +13,6 @@ type WordCloudOptions = {
   maxFontSize: number;
   padding: number;
   scale: "linear" | "sqrt" | "log";
-  maxWords?: number;
   rotationAngles?: [number, number];
   rotations?: number;
   randomSeed?: string;
@@ -194,7 +193,6 @@ export default function WordCloudCanvas({
               words={words}
               minSize={[640, 360]}
               options={cloudOptions}
-              maxWords={options.maxWords}
             />
           </div>
         ) : (

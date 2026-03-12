@@ -14,7 +14,7 @@ const SCHEME_CATEGORY_10 = [
   '#17becf',
 ];
 
-export function choose<T>(array: T[], random: () => number): T {
+function choose<T>(array: T[], random: () => number): T {
   return array[Math.floor(random() * array.length)];
 }
 

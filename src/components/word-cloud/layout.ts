@@ -15,8 +15,7 @@ import {
   rotate,
 } from './utils';
 
-export interface LayoutParams {
-  maxWords: number;
+interface LayoutParams {
   onComplete: (words: Word[]) => void;
   options: Options;
   size: MinMaxPair;
@@ -29,13 +28,11 @@ export interface LayoutParams {
 
 
 export function layout({
-  // maxWords,
   onComplete,
   options,
   size,
   words,
 }: LayoutParams): void {
-
   const {
     deterministic,
     fontFamily,
@@ -52,8 +49,7 @@ export function layout({
 
   const sortedWords = words
     .concat()
-    .sort((x: Word, y: Word) => descending(Number(x.value), Number(y.value)))
-    // .slice(0, maxWords);
+    .sort((x: Word, y: Word) => descending(Number(x.value), Number(y.value)));
 
   let valueMax = Number(sortedWords[0].value);
   let valueMin = Number(sortedWords[sortedWords.length - 1].value);
@@ -80,9 +76,7 @@ export function layout({
       return rotate(rotations ?? 3, rotationAngles, random);
     })
     .fontSize((word: Word) => fontScale(Number(word.value)))
-    .on('end', (computedWords) => {
-      onComplete(computedWords);
-    })
+    .on('end', onComplete)
     .start();
 
 }

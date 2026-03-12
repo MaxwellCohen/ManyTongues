@@ -38,18 +38,18 @@ describe('createTextCloudMachine', () => {
     actor.start()
     actor.send({
       type: 'FIELD_CHANGED',
-      updates: { maxWords: 42 },
+      updates: { padding: 5 },
     })
     actor.send({
       type: 'URL_CHANGED',
       search: resolveGeneratorSearch({
-        maxWords: 25,
+        padding: 2,
         colors: ['#123456'],
       }),
     })
 
     expect(actor.getSnapshot().matches('clean')).toBe(true)
-    expect(actor.getSnapshot().context.formState.maxWords).toBe(25)
+    expect(actor.getSnapshot().context.formState.padding).toBe(2)
     expect(actor.getSnapshot().context.formState.colors).toEqual(['#123456'])
   })
 
@@ -62,9 +62,9 @@ describe('createTextCloudMachine', () => {
     actor.send({ type: 'FIELD_CHANGED', updates: { input: 'first' } })
     expect(actor.getSnapshot().context.formState.input).toBe('first')
 
-    actor.send({ type: 'FIELD_CHANGED', updates: { maxWords: 50 } })
+    actor.send({ type: 'FIELD_CHANGED', updates: { padding: 3 } })
     expect(actor.getSnapshot().context.formState.input).toBe('first')
-    expect(actor.getSnapshot().context.formState.maxWords).toBe(50)
+    expect(actor.getSnapshot().context.formState.padding).toBe(3)
     expect(actor.getSnapshot().matches('dirty')).toBe(true)
   })
 })

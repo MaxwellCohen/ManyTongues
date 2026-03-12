@@ -10,7 +10,6 @@ export const generatorScaleOptions = ['linear', 'sqrt', 'log'] as const
 
 export type GeneratorSearch = {
   input?: string
-  maxWords?: number
   minFontSize?: number
   maxFontSize?: number
   padding?: number
@@ -28,7 +27,6 @@ export type FullGeneratorSearch = Required<GeneratorSearch>
 
 export const DEFAULT_GENERATOR_SEARCH: FullGeneratorSearch = {
   input: DEFAULT_TEXT,
-  maxWords: 1000,
   minFontSize: 14,
   maxFontSize: 72,
   padding: 1,
