@@ -1,19 +1,49 @@
-import { useMachine } from '@xstate/react'
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useDebounceValue } from '#/hooks/useDebouncedValue'
-import { createTranslateMachine } from '#/features/word-cloud/translateMachine'
 import {
   type FullTranslatorSearch,
   type TranslatorSearch,
   getCloudData,
   getCloudOptions,
   getHiddenLanguagesSet,
+  getTranslatorSearchForUrl,
   getTranslatorPalette,
   getVisibleTranslations,
   parseWeights,
+  serializeWeights,
+  createRandomWeights,
+  WEIGHT_MAX,
+  WEIGHT_MIN,
 } from '#/features/word-cloud/translateState'
 import { getOrTranslatePhrase } from '#/lib/translate'
-import { createXStateFormControls } from '#/lib/xstateForm'
+import type { GetOrTranslateResult } from '#/lib/translate'
+
+function isTranslateSuccess(
+  result: GetOrTranslateResult,
+): result is Extract<GetOrTranslateResult, { ok: true }> {
+  return result.ok
+}
+
+function shouldLoadTranslatedPhrase(search: FullTranslatorSearch): boolean {
+  return Boolean(search.input.trim())
+}
+
+function mergeWeightsForTranslations(
+  existingWeights: string,
+  translationLangs: Iterable<string>,
+): Map<string, number> {
+  const existing = parseWeights(existingWeights)
+  const merged = new Map(existing)
+  for (const lang of translationLangs) {
+    if (!merged.has(lang)) {
+      merged.set(
+        lang,
+        Math.floor(Math.random() * WEIGHT_MAX) + WEIGHT_MIN,
+      )
+    }
+  }
+  return merged
+}
 
 type UseTranslatePageOptions = {
   resolvedSearch: FullTranslatorSearch
@@ -24,23 +54,152 @@ export function useTranslatePage({
   resolvedSearch,
   onSyncToUrl,
 }: UseTranslatePageOptions) {
-  const [machine] = useState(() =>
-    createTranslateMachine({
-      initialSearch: resolvedSearch,
-      translatePhrase: (phrase) =>
-        getOrTranslatePhrase({ data: { phrase } }),
-      syncToUrl: (search) => onSyncToUrl(search),
-    }),
+  const formState = resolvedSearch
+
+  const [translations, setTranslations] = useState<Map<string, string>>(
+    () => new Map(),
   )
-  const [snapshot, send] = useMachine(machine)
-  const formState = snapshot.context.formState
-  const { updateFields, commitToUrl } =
-    createXStateFormControls<typeof formState>(send)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const loadedPhraseRef = useRef<string | null>(null)
+
+  const updateSearch = useCallback(
+    (updates: Partial<FullTranslatorSearch>) => {
+      const next = { ...resolvedSearch, ...updates }
+      onSyncToUrl(getTranslatorSearchForUrl(next))
+    },
+    [resolvedSearch, onSyncToUrl],
+  )
 
   useEffect(() => {
-    if (JSON.stringify(resolvedSearch) === JSON.stringify(formState)) return
-    send({ type: 'URL_CHANGED', search: resolvedSearch })
-  }, [resolvedSearch, formState, send])
+    if (!shouldLoadTranslatedPhrase(resolvedSearch)) {
+      setTranslations(new Map())
+      setError(null)
+      loadedPhraseRef.current = null
+      return
+    }
+    const phrase = resolvedSearch.input.trim()
+    if (loadedPhraseRef.current === phrase && translations.size > 0) {
+      return
+    }
+    loadedPhraseRef.current = phrase
+    setLoading(true)
+    setError(null)
+    getOrTranslatePhrase({ data: { phrase } })
+      .then((result) => {
+        if (isTranslateSuccess(result)) {
+          setTranslations(new Map(Object.entries(result.translations)))
+          setError(null)
+          const nextWeights = resolvedSearch.weights
+            ? mergeWeightsForTranslations(
+                resolvedSearch.weights,
+                Object.keys(result.translations),
+              )
+            : createRandomWeights(Object.keys(result.translations))
+          const nextHiddenLanguages = resolvedSearch.hiddenLanguages.filter(
+            (lang) => result.translations[lang] !== undefined,
+          )
+          onSyncToUrl(
+            getTranslatorSearchForUrl({
+              ...resolvedSearch,
+              input: phrase,
+              translated: true,
+              weights: serializeWeights(nextWeights),
+              hiddenLanguages: nextHiddenLanguages,
+            }),
+          )
+        } else {
+          setError(result.error)
+          setTranslations(new Map())
+          onSyncToUrl(
+            getTranslatorSearchForUrl({
+              ...resolvedSearch,
+              translated: false,
+            }),
+          )
+        }
+      })
+      .finally(() => {
+        setLoading(false)
+      })
+  }, [resolvedSearch.input, resolvedSearch.translated, onSyncToUrl])
+
+  const requestTranslate = useCallback(
+    (phraseOverride?: string) => {
+      const trimmed = (phraseOverride ?? formState.input).trim()
+      if (!trimmed) {
+        setError('Enter some text to translate.')
+        setTranslations(new Map())
+        updateSearch({ translated: false })
+        return
+      }
+      setLoading(true)
+      setError(null)
+      loadedPhraseRef.current = null
+      getOrTranslatePhrase({ data: { phrase: trimmed } })
+      .then((result) => {
+        if (isTranslateSuccess(result)) {
+          setTranslations(new Map(Object.entries(result.translations)))
+          setError(null)
+          const nextWeights = formState.weights
+            ? mergeWeightsForTranslations(
+                formState.weights,
+                Object.keys(result.translations),
+              )
+            : createRandomWeights(Object.keys(result.translations))
+          const nextHiddenLanguages = formState.hiddenLanguages.filter((lang) =>
+            result.translations[lang] !== undefined,
+          )
+          onSyncToUrl(
+            getTranslatorSearchForUrl({
+              ...formState,
+              input: trimmed,
+              translated: true,
+              weights: serializeWeights(nextWeights),
+              hiddenLanguages: nextHiddenLanguages,
+            }),
+          )
+        } else {
+          setError(result.error)
+          setTranslations(new Map())
+          onSyncToUrl(
+            getTranslatorSearchForUrl({
+              ...formState,
+              input: trimmed,
+              translated: false,
+            }),
+          )
+        }
+      })
+      .finally(() => {
+        setLoading(false)
+      })
+    },
+    [formState, updateSearch, onSyncToUrl],
+  )
+
+  const hideLanguage = useCallback(
+    (lang: string) => {
+      if (formState.hiddenLanguages.includes(lang)) return
+      const nextHidden = [...formState.hiddenLanguages, lang]
+      onSyncToUrl(
+        getTranslatorSearchForUrl({
+          ...formState,
+          hiddenLanguages: nextHidden,
+        }),
+      )
+    },
+    [formState, onSyncToUrl],
+  )
+
+  const setWeight = useCallback(
+    (lang: string, value: number) => {
+      const weights = parseWeights(formState.weights)
+      weights.set(lang, value)
+      updateSearch({ weights: serializeWeights(weights) })
+    },
+    [formState.weights, updateSearch],
+  )
 
   const hiddenLanguages = useMemo(
     () => getHiddenLanguagesSet(formState),
@@ -55,7 +214,6 @@ export function useTranslatePage({
     () => parseWeights(debouncedWeightsString),
     [debouncedWeightsString],
   )
-  const translations = snapshot.context.translations
   const visibleTranslations = useMemo(
     () => getVisibleTranslations(translations, hiddenLanguages),
     [translations, hiddenLanguages],
@@ -70,14 +228,13 @@ export function useTranslatePage({
       ),
     [
       formState.input,
-      formState.translated,
       debouncedWeightsString,
       translations,
       hiddenLanguages,
       debouncedWeights,
     ],
   )
-  const cloudData = formState.translated ? cloudDataRaw : []
+  const cloudData = cloudDataRaw
   const hasWords = cloudData.length > 0
   const palette = useMemo(
     () => getTranslatorPalette(formState.colors),
@@ -90,6 +247,7 @@ export function useTranslatePage({
       formState.maxFontSize,
       formState.padding,
       formState.scale,
+      formState.spiral,
       formState.rotationMin,
       formState.rotationMax,
       formState.rotations,
@@ -100,11 +258,12 @@ export function useTranslatePage({
 
   return {
     formState,
-    send,
-    updateFields,
-    commitToUrl,
-    loading: snapshot.value === 'translating',
-    error: snapshot.context.error,
+    updateSearch,
+    requestTranslate,
+    hideLanguage,
+    setWeight,
+    loading,
+    error,
     translations,
     visibleTranslations,
     weights,

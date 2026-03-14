@@ -4,6 +4,7 @@ import { Input } from '#/components/ui/input'
 
 export default function WordCloudOptionNumberField({
   label,
+  value,
   defaultValue,
   onChange,
   onBlur,
@@ -12,6 +13,8 @@ export default function WordCloudOptionNumberField({
   className,
 }: {
   label: string
+  /** When provided, the input is controlled and stays in sync with parent state. */
+  value?: number
   defaultValue: number
   onChange: (value: number) => void
   onBlur: (value: number) => void
@@ -20,8 +23,9 @@ export default function WordCloudOptionNumberField({
   className?: string
 }) {
   const inputRef = useRef<HTMLInputElement>(null)
+  const isControlled = value !== undefined
 
-  const handleBlur = () => {
+  const readAndClamp = (): number | null => {
     const raw = Number(inputRef.current?.value)
     const clamped =
       min != null && max != null
@@ -31,9 +35,19 @@ export default function WordCloudOptionNumberField({
           : max != null
             ? Math.min(max, raw)
             : raw
-    if (Number.isFinite(clamped)) {
-      onChange(clamped)
-      onBlur(clamped)
+    return Number.isFinite(clamped) ? clamped : null
+  }
+
+  const handleChange = () => {
+    const next = readAndClamp()
+    if (next != null) onChange(next)
+  }
+
+  const handleBlur = () => {
+    const next = readAndClamp()
+    if (next != null) {
+      onChange(next)
+      onBlur(next)
     }
   }
 
@@ -46,7 +60,8 @@ export default function WordCloudOptionNumberField({
           type="number"
           min={min}
           max={max}
-          defaultValue={defaultValue}
+          {...(isControlled ? { value: value } : { defaultValue })}
+          onChange={handleChange}
           onBlur={handleBlur}
         />
       </FieldControl>

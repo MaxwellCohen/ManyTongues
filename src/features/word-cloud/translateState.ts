@@ -1,9 +1,10 @@
-import { DEFAULT_COLORS, DEFAULT_FONT_FAMILY, type ScaleType } from '#/lib/wordCloudUtils'
+import { DEFAULT_COLORS, DEFAULT_FONT_FAMILY, type ScaleType, type SpiralType } from '#/lib/wordCloudUtils'
 import { getSearchDiffFromDefaults, getValidPalette, mergeSearchWithDefaults } from './search'
 
 const TRANSLATOR_BG = '#c9a227'
 const TRANSLATOR_TEXT_COLOR = '#000000'
 export const translatorScaleOptions = ['linear', 'sqrt', 'log'] as const
+export const translatorSpiralOptions = ['archimedean', 'rectangular'] as const
 
 export type TranslatorSearch = {
   input?: string
@@ -12,6 +13,7 @@ export type TranslatorSearch = {
   maxFontSize?: number
   padding?: number
   scale?: (typeof translatorScaleOptions)[number]
+  spiral?: (typeof translatorSpiralOptions)[number]
   rotationMin?: number
   rotationMax?: number
   rotations?: number
@@ -32,6 +34,7 @@ export const DEFAULT_TRANSLATOR_SEARCH: FullTranslatorSearch = {
   maxFontSize: 72,
   padding: 1,
   scale: 'sqrt' as ScaleType,
+  spiral: 'archimedean' as SpiralType,
   rotationMin: -90,
   rotationMax: 90,
   rotations: 3,
@@ -137,10 +140,7 @@ export function getCloudData(
   weights: Map<string, number>,
   hiddenLanguages: Set<string>,
 ): TranslatorCloudWord[] {
-  if (
-    !formState.translated ||
-    (!formState.input.trim() && translations.size === 0)
-  ) {
+  if (!formState.input.trim() && translations.size === 0) {
     return []
   }
 
@@ -162,6 +162,7 @@ type TranslatorCloudOptions = {
   maxFontSize: number
   padding: number
   scale: FullTranslatorSearch['scale']
+  spiral: FullTranslatorSearch['spiral']
   rotationAngles: [number, number]
   rotations: number
   deterministic: boolean
@@ -178,6 +179,7 @@ export function getCloudOptions(
     maxFontSize: formState.maxFontSize,
     padding: formState.padding,
     scale: formState.scale,
+    spiral: formState.spiral,
     rotationAngles: [formState.rotationMin, formState.rotationMax],
     rotations: formState.rotations,
     deterministic: formState.deterministic,

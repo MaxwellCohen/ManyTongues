@@ -102,6 +102,7 @@ const defaultFormState = {
   minFontSize: 14,
   maxFontSize: 72,
   scale: 'sqrt' as const,
+  spiral: 'archimedean' as const,
   rotationMin: -90,
   rotationMax: 90,
   rotations: 3,
@@ -113,57 +114,59 @@ const defaultFormState = {
 
 describe('WordCloudOptions', () => {
   it('renders with form state', () => {
-    const send = vi.fn()
+    const onUpdateSearch = vi.fn()
     const { container } = render(
-      <WordCloudOptions formState={defaultFormState} send={send} />,
+      <WordCloudOptions
+        formState={defaultFormState}
+        onUpdateSearch={onUpdateSearch}
+      />,
     )
     expect(container.textContent).toContain('Padding')
     expect(container.textContent).toContain('1')
   })
 
-  it('sends FIELD_CHANGED when field changes', () => {
-    const send = vi.fn()
+  it('calls onUpdateSearch when field changes', () => {
+    const onUpdateSearch = vi.fn()
     const { container } = render(
-      <WordCloudOptions formState={defaultFormState} send={send} />,
+      <WordCloudOptions
+        formState={defaultFormState}
+        onUpdateSearch={onUpdateSearch}
+      />,
     )
     const changeButton = container.querySelector(
       '[data-testid="number-Padding"] button',
     )
     fireEvent.click(changeButton!)
-    expect(send).toHaveBeenCalledWith({
-      type: 'FIELD_CHANGED',
-      updates: { padding: 2 },
-    })
+    expect(onUpdateSearch).toHaveBeenCalledWith({ padding: 2 })
   })
 
-  it('sends FIELD_CHANGED when scale select changes', () => {
-    const send = vi.fn()
+  it('calls onUpdateSearch when scale select changes', () => {
+    const onUpdateSearch = vi.fn()
     const { container } = render(
-      <WordCloudOptions formState={defaultFormState} send={send} />,
+      <WordCloudOptions
+        formState={defaultFormState}
+        onUpdateSearch={onUpdateSearch}
+      />,
     )
     const scaleSelect = container.querySelector(
       '[data-testid="select-Scale"] select',
     )
     fireEvent.change(scaleSelect!, { target: { value: 'log' } })
-    expect(send).toHaveBeenCalledWith({
-      type: 'FIELD_CHANGED',
-      updates: { scale: 'log' },
-    })
+    expect(onUpdateSearch).toHaveBeenCalledWith({ scale: 'log' })
   })
 
-  it('sends FIELD_CHANGED when font family changes', () => {
-    const send = vi.fn()
+  it('calls onUpdateSearch when font family changes', () => {
+    const onUpdateSearch = vi.fn()
     const { container } = render(
-      <WordCloudOptions formState={defaultFormState} send={send} />,
+      <WordCloudOptions
+        formState={defaultFormState}
+        onUpdateSearch={onUpdateSearch}
+      />,
     )
     const fontSelect = container.querySelector(
       '[data-testid="select-Font family"] select',
     )
     fireEvent.change(fontSelect!, { target: { value: 'Georgia' } })
-    expect(send).toHaveBeenCalledWith({
-      type: 'FIELD_CHANGED',
-      updates: { fontFamily: 'Georgia' },
-    })
+    expect(onUpdateSearch).toHaveBeenCalledWith({ fontFamily: 'Georgia' })
   })
-
 })

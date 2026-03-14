@@ -115,7 +115,6 @@ pnpm db:studio
 - `React` for UI
 - `Tailwind CSS` for styling
 - `react-wordcloud` and `d3-cloud` for cloud layout/rendering
-- `XState` for state machines (translate flow)
 - `nuqs` for URL search params
 - `Drizzle ORM` with `@libsql/client` for Turso persistence
 - `Vitest` for tests

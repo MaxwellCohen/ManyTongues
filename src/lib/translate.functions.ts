@@ -14,6 +14,20 @@ import { getPostHogClient } from "#/utils/posthog-server";
 
 const DEFAULT_SOURCE_LANGUAGE = "en";
 
+/** Keep one language per unique translation text so duplicate results collapse to one. */
+function deduplicateTranslationsByValue(
+	translations: Record<string, string>,
+): Record<string, string> {
+	const valueToKey = new Map<string, string>();
+	for (const [lang, text] of Object.entries(translations)) {
+		if (!text) continue;
+		if (!valueToKey.has(text)) valueToKey.set(text, lang);
+	}
+	const out: Record<string, string> = {};
+	for (const [text, lang] of valueToKey) out[lang] = text;
+	return out;
+}
+
 type TranslationStepResult = {
 	callNextStep: boolean;
 	result?: GetOrTranslateResult;
@@ -67,7 +81,10 @@ async function getCachedTranslationsStep(
 	if (cached.translations) {
 		return {
 			callNextStep: false,
-			result: { ok: true, translations: cached.translations },
+			result: {
+				ok: true,
+				translations: deduplicateTranslationsByValue(cached.translations),
+			},
 		};
 	}
 
@@ -79,13 +96,14 @@ async function getGoogleTranslationsStep(
 	sourceLanguage: string,
 ): Promise<TranslationStepResult> {
 	const googleResult = await translatePhraseWithGoogle(phrase, sourceLanguage);
-	if (Object.keys(googleResult.translations).length > 0) {
+	const deduped = deduplicateTranslationsByValue(googleResult.translations);
+	if (Object.keys(deduped).length > 0) {
 		return {
 			callNextStep: false,
 			result: await storePhraseTranslations(
 				phrase,
 				sourceLanguage,
-				googleResult.translations,
+				deduped,
 			),
 		};
 	}
@@ -107,13 +125,14 @@ async function getMicrosoftTranslationsStep(
 			phrase,
 			sourceLanguage,
 		);
-		if (Object.keys(microsoftTranslations).length > 0) {
+		const deduped = deduplicateTranslationsByValue(microsoftTranslations);
+		if (Object.keys(deduped).length > 0) {
 			return {
 				callNextStep: false,
 				result: await storePhraseTranslations(
 					phrase,
 					sourceLanguage,
-					microsoftTranslations,
+					deduped,
 				),
 			};
 		}

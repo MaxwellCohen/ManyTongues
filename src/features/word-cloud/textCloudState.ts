@@ -3,10 +3,12 @@ import {
   DEFAULT_COLORS,
   DEFAULT_FONT_FAMILY,
   DEFAULT_TEXT,
+  type SpiralType,
 } from '#/lib/wordCloudUtils'
 import { getSearchDiffFromDefaults, getValidPalette, mergeSearchWithDefaults } from './search'
 
 export const generatorScaleOptions = ['linear', 'sqrt', 'log'] as const
+export const generatorSpiralOptions = ['archimedean', 'rectangular'] as const
 
 export type GeneratorSearch = {
   input?: string
@@ -14,6 +16,7 @@ export type GeneratorSearch = {
   maxFontSize?: number
   padding?: number
   scale?: (typeof generatorScaleOptions)[number]
+  spiral?: (typeof generatorSpiralOptions)[number]
   rotationMin?: number
   rotationMax?: number
   rotations?: number
@@ -31,6 +34,7 @@ export const DEFAULT_GENERATOR_SEARCH: FullGeneratorSearch = {
   maxFontSize: 72,
   padding: 1,
   scale: 'sqrt',
+  spiral: 'archimedean' as SpiralType,
   rotationMin: -90,
   rotationMax: 0,
   rotations: 2,

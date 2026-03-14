@@ -158,11 +158,18 @@ describe('getVisibleTranslations', () => {
 })
 
 describe('getCloudData', () => {
-  it('returns empty when not translated', () => {
-    const formState = { ...DEFAULT_TRANSLATOR_SEARCH, translated: false }
-    expect(
-      getCloudData(formState, new Map([['fr', 'x']]), new Map(), new Set()),
-    ).toEqual([])
+  it('returns phrase and visible translations when input and translations exist', () => {
+    const formState = {
+      ...DEFAULT_TRANSLATOR_SEARCH,
+      translated: false,
+      input: 'hello',
+    }
+    const translations = new Map([['fr', 'x']])
+    const weights = new Map([['fr', 50]])
+    expect(getCloudData(formState, translations, weights, new Set())).toEqual([
+      { text: 'hello', value: 1000 },
+      { text: 'x', value: 50 },
+    ])
   })
 
   it('returns phrase and visible translations when translated', () => {
@@ -210,7 +217,6 @@ describe('getCloudData', () => {
   it('returns empty when no input and no translations', () => {
     const formState = {
       ...DEFAULT_TRANSLATOR_SEARCH,
-      translated: true,
       input: '   ',
     }
     expect(getCloudData(formState, new Map(), new Map(), new Set())).toEqual([])

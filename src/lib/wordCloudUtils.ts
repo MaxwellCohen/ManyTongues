@@ -41,6 +41,13 @@ export const SCALE_OPTIONS = [
 
 export type ScaleType = (typeof SCALE_OPTIONS)[number]['value']
 
+export const SPIRAL_OPTIONS = [
+  { value: 'archimedean', label: 'Archimedean' },
+  { value: 'rectangular', label: 'Rectangular' },
+] as const
+
+export type SpiralType = (typeof SPIRAL_OPTIONS)[number]['value']
+
 export const FONT_FAMILY_OPTIONS = [
   { value: 'system-ui', label: 'System UI' },
   { value: 'Inter', label: 'Inter' },

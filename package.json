@@ -30,7 +30,6 @@
     "@tanstack/react-router-devtools": "^1.132.0",
     "@tanstack/react-start": "^1.132.0",
     "@tanstack/zod-adapter": "^1.166.2",
-    "@xstate/react": "^6.1.0",
     "class-variance-authority": "^0.7.1",
     "d3-cloud": "^1.2.9",
     "d3-selection": "^3.0.0",
@@ -44,7 +43,7 @@
     "seedrandom": "^3.0.5",
     "tailwind-merge": "^3.5.0",
     "tailwindcss": "^4.1.18",
-    "xstate": "^5.28.0",
+    "wordcloud": "^1.2.3",
     "zod": "^3.25.76"
   },
   "devDependencies": {

@@ -32,9 +32,6 @@ importers:
       '@tanstack/zod-adapter':
         specifier: ^1.166.2
         version: 1.166.2(@tanstack/react-router@1.166.2(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(zod@3.25.76)
-      '@xstate/react':
-        specifier: ^6.1.0
-        version: 6.1.0(@types/react@19.2.14)(react@19.2.4)(xstate@5.28.0)
       class-variance-authority:
         specifier: ^0.7.1
         version: 0.7.1
@@ -74,9 +71,9 @@ importers:
       tailwindcss:
         specifier: ^4.1.18
         version: 4.2.1
-      xstate:
-        specifier: ^5.28.0
-        version: 5.28.0
+      wordcloud:
+        specifier: ^1.2.3
+        version: 1.2.3
       zod:
         specifier: ^3.25.76
         version: 3.25.76
@@ -2082,15 +2079,6 @@ packages:
   '@vitest/utils@3.2.4':
     resolution: {integrity: sha512-fB2V0JFrQSMsCo9HiSq3Ezpdv4iYaXRG1Sx8edX3MwxfyNn83mKiGzOcH+Fkxt4MHxr3y42fQi1oeAInqgX2QA==}
 
-  '@xstate/react@6.1.0':
-    resolution: {integrity: sha512-ep9F0jGTI63B/jE8GHdMpUqtuz7yRebNaKv8EMUaiSi29NOglywc2X2YSOV/ygbIK+LtmgZ0q9anoEA2iBSEOw==}
-    peerDependencies:
-      react: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
-      xstate: ^5.28.0
-    peerDependenciesMeta:
-      xstate:
-        optional: true
-
   acorn@8.16.0:
     resolution: {integrity: sha512-UVJyE9MttOsBQIDKw1skb9nAwQuR5wuGD3+82K6JgJlm/Y+KI92oNsMNGZCYdDsVtRHSak0pcV5Dno5+4jh9sw==}
     engines: {node: '>=0.4.0'}
@@ -3461,15 +3449,6 @@ packages:
     peerDependencies:
       browserslist: '>= 4.21.0'
 
-  use-isomorphic-layout-effect@1.2.1:
-    resolution: {integrity: sha512-tpZZ+EX0gaghDAiFR37hj5MgY6ZN55kLiPkJsKxBMZ6GZdOSPJXiOzPM984oPYZ5AnehYx5WQp1+ME8I/P/pRA==}
-    peerDependencies:
-      '@types/react': '*'
-      react: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
-    peerDependenciesMeta:
-      '@types/react':
-        optional: true
-
   use-sync-external-store@1.6.0:
     resolution: {integrity: sha512-Pp6GSwGP/NrPIrxVFAIkOQeyw8lFenOHijQWkUTrDvrF4ALqylP2C/KCkeS9dpUM3KvYRQhna5vt7IL95+ZQ9w==}
     peerDependencies:
@@ -3622,6 +3601,9 @@ packages:
     engines: {node: '>=8'}
     hasBin: true
 
+  wordcloud@1.2.3:
+    resolution: {integrity: sha512-9by77b7Sd9e1K75kSmVeAD+JnGpiLR1Z4EX1mYQL91jKrU1/4bHw4h4DExQ+dzfT+PvihDcH7OS7V4Y5UkbF2w==}
+
   wrap-ansi@7.0.0:
     resolution: {integrity: sha512-YVGIj2kamLSTxw6NsZjoBxfSwsn0ycdesmc4p+Q21c5zPuZ1pl+NfxVdxPtdHvmNVOQ6XSYG4AUtyt/Fi7D16Q==}
     engines: {node: '>=10'}
@@ -3652,9 +3634,6 @@ packages:
 
   xmlchars@2.2.0:
     resolution: {integrity: sha512-JZnDKK8B0RCDw84FNdDAIpZK+JuJw+s7Lz8nksI7SIuU3UXJJslUthsi+uWBUYOwPFwW7W7PRLRfUKpxjtjFCw==}
-
-  xstate@5.28.0:
-    resolution: {integrity: sha512-Iaqq6ZrUzqeUtA3hC5LQKZfR8ZLzEFTImMHJM3jWEdVvXWdKvvVLXZEiNQWm3SCA9ZbEou/n5rcsna1wb9t28A==}
 
   xtend@4.0.2:
     resolution: {integrity: sha512-LKYU1iAXJXUgAXn9URjiu+MWhyUXHsvfp7mcuYm9dSUKK0/CjtrUwFAxD82/mCWbtLsGjFIad0wIsod4zrTAEQ==}
@@ -5286,16 +5265,6 @@ snapshots:
       loupe: 3.2.1
       tinyrainbow: 2.0.0
 
-  '@xstate/react@6.1.0(@types/react@19.2.14)(react@19.2.4)(xstate@5.28.0)':
-    dependencies:
-      react: 19.2.4
-      use-isomorphic-layout-effect: 1.2.1(@types/react@19.2.14)(react@19.2.4)
-      use-sync-external-store: 1.6.0(react@19.2.4)
-    optionalDependencies:
-      xstate: 5.28.0
-    transitivePeerDependencies:
-      - '@types/react'
-
   acorn@8.16.0: {}
 
   agent-base@7.1.4: {}
@@ -6619,12 +6588,6 @@ snapshots:
       escalade: 3.2.0
       picocolors: 1.1.1
 
-  use-isomorphic-layout-effect@1.2.1(@types/react@19.2.14)(react@19.2.4):
-    dependencies:
-      react: 19.2.4
-    optionalDependencies:
-      '@types/react': 19.2.14
-
   use-sync-external-store@1.6.0(react@19.2.4):
     dependencies:
       react: 19.2.4
@@ -6768,6 +6731,8 @@ snapshots:
       siginfo: 2.0.0
       stackback: 0.0.2
 
+  wordcloud@1.2.3: {}
+
   wrap-ansi@7.0.0:
     dependencies:
       ansi-styles: 4.3.0
@@ -6792,8 +6757,6 @@ snapshots:
       js-yaml: 4.1.1
 
   xmlchars@2.2.0: {}
-
-  xstate@5.28.0: {}
 
   xtend@4.0.2:
     optional: true

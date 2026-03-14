@@ -13,6 +13,7 @@ type WordCloudOptions = {
   maxFontSize: number;
   padding: number;
   scale: "linear" | "sqrt" | "log";
+  spiral?: "archimedean" | "rectangular";
   rotationAngles?: [number, number];
   rotations?: number;
   randomSeed?: string;
@@ -47,6 +48,16 @@ function hashWord(text: string): number {
     h |= 0;
   }
   return Math.abs(h);
+}
+
+/** Stable key so only phrase/language set changes remount; weight/option updates re-layout in place. */
+function wordsKey(words: { text: string; value: number }[]): string {
+  if (!words.length) return "empty";
+  const texts = words
+    .map((w) => w.text)
+    .slice()
+    .sort((a, b) => a.localeCompare(b));
+  return texts.join("|");
 }
 
 export default function WordCloudCanvas({
@@ -125,7 +136,7 @@ export default function WordCloudCanvas({
       fontFamily: options.fontFamily ?? "system-ui",
       padding: options.padding,
       scale: options.scale,
-      spiral: "archimedean",
+      spiral: options.spiral ?? "archimedean",
       deterministic: options.deterministic ?? true,
       randomSeed: options.randomSeed ?? "wordcloud",
       enableTooltip: false,
@@ -140,23 +151,13 @@ export default function WordCloudCanvas({
     options.fontFamily,
     options.padding,
     options.scale,
+    options.spiral,
     options.deterministic,
     options.randomSeed,
     options.rotationAngles,
     options.rotations,
     safePalette,
   ]);
-
-  const callbacks = useMemo(
-    () => ({
-      getWordColor: (word: { text: string }) => {
-        const colors = safePalette;
-        const i = hashWord(word.text) % colors.length;
-        return colors[i] ?? colors[0];
-      },
-    }),
-    [safePalette],
-  );
 
   return (
     <IslandPanel className="flex min-h-80 flex-col rounded-2xl p-5 sm:p-6">
@@ -189,7 +190,7 @@ export default function WordCloudCanvas({
             className="relative h-full w-full flex items-center justify-center [&_svg]:block [&_svg]:m-auto [&_svg]:max-h-full [&_svg]:max-w-full"
           >
             <ReactWordcloud
-              key={JSON.stringify(cloudOptions) + JSON.stringify(callbacks)}
+              key={wordsKey(words)}
               words={words}
               minSize={[640, 360]}
               options={cloudOptions}

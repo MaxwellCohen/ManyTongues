@@ -1,8 +1,7 @@
 import { usePostHog } from "@posthog/react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { zodValidator } from "@tanstack/zod-adapter";
-import { useMachine } from "@xstate/react";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo } from "react";
 import { z } from "zod";
 import Accordion from "#/components/Accordion";
 import PageHero from "#/components/PageHero";
@@ -13,14 +12,15 @@ import {
 	booleanSearchParam,
 	csvSearchParam,
 } from "#/features/word-cloud/searchParams";
-import { createTextCloudMachine } from "#/features/word-cloud/textCloudMachine";
 import {
+	type FullGeneratorSearch,
 	generatorScaleOptions,
+	generatorSpiralOptions,
 	getGeneratorPalette,
+	getGeneratorSearchForUrl,
 	resolveGeneratorSearch,
 } from "#/features/word-cloud/textCloudState";
 import { tokenizeAndCount } from "#/lib/wordCloudUtils";
-import { createXStateFormControls } from "#/lib/xstateForm";
 
 const generatorSearchSchema = z.object({
 	input: z.string().optional(),
@@ -28,6 +28,7 @@ const generatorSearchSchema = z.object({
 	maxFontSize: z.coerce.number().int().min(1).max(200).optional(),
 	padding: z.coerce.number().int().min(0).max(20).optional(),
 	scale: z.enum(generatorScaleOptions).optional(),
+	spiral: z.enum(generatorSpiralOptions).optional(),
 	rotationMin: z.coerce.number().int().min(-360).max(360).optional(),
 	rotationMax: z.coerce.number().int().min(-360).max(360).optional(),
 	rotations: z.coerce.number().int().min(0).optional(),
@@ -37,8 +38,7 @@ const generatorSearchSchema = z.object({
 	backgroundColor: z.string().optional(),
 });
 
-
-export const Route = createFileRoute("/text-cloud")({	
+export const Route = createFileRoute("/text-cloud")({
 	validateSearch: zodValidator(generatorSearchSchema),
 	head: () => ({
 		meta: [
@@ -58,28 +58,16 @@ function WordCloudPage() {
 		() => resolveGeneratorSearch(searchFromUrl),
 		[searchFromUrl],
 	);
-	const [machine] = useState(() => createTextCloudMachine(resolvedSearch));
-	const [snapshot, send] = useMachine(machine);
-	const formState = snapshot.context.formState;
-	const { changeField, commitToUrl } =
-		createXStateFormControls<typeof formState>(send);
 
-	useEffect(() => {
-		send({ type: "URL_CHANGED", search: resolvedSearch });
-	}, [resolvedSearch, send]);
-
-	useEffect(() => {
-		const pendingUrlSearch = snapshot.context.pendingUrlSearch;
-		if (!pendingUrlSearch) return;
-
+	const updateSearch = (updates: Partial<FullGeneratorSearch>) => {
+		const next = { ...resolvedSearch, ...updates };
 		navigate({
 			to: "/text-cloud",
-			search: pendingUrlSearch,
+			search: getGeneratorSearchForUrl(next),
 			replace: true,
 			resetScroll: false,
 		});
-		send({ type: "URL_COMMITTED" });
-	}, [navigate, send, snapshot.context.pendingUrlSearch]);
+	};
 
 	const {
 		input,
@@ -87,6 +75,7 @@ function WordCloudPage() {
 		maxFontSize,
 		padding,
 		scale,
+		spiral,
 		rotationMin,
 		rotationMax,
 		rotations,
@@ -94,7 +83,7 @@ function WordCloudPage() {
 		fontFamily,
 		colors,
 		backgroundColor,
-	} = formState;
+	} = resolvedSearch;
 
 	const words = useMemo(() => tokenizeAndCount(input), [input]);
 	const cloudData = words;
@@ -112,6 +101,7 @@ function WordCloudPage() {
 			maxFontSize,
 			padding,
 			scale,
+			spiral,
 			rotationAngles,
 			rotations,
 			deterministic,
@@ -123,6 +113,7 @@ function WordCloudPage() {
 			maxFontSize,
 			padding,
 			scale,
+			spiral,
 			rotationAngles,
 			rotations,
 			deterministic,
@@ -143,8 +134,7 @@ function WordCloudPage() {
 					key={JSON.stringify(resolvedSearch)}
 					defaultValue={input}
 					onBlur={(value) => {
-						changeField("input")(value);
-						commitToUrl();
+						updateSearch({ input: value });
 						if (value.trim()) {
 							const wordCount = value.trim().split(/\s+/).length;
 							posthog.capture("text_cloud_text_entered", {
@@ -164,7 +154,10 @@ function WordCloudPage() {
 					options={cloudOptions}
 				>
 					<Accordion title="Cloud styling" className="mt-5">
-						<WordCloudOptions formState={formState} send={send} />
+						<WordCloudOptions
+							formState={resolvedSearch}
+							onUpdateSearch={updateSearch}
+						/>
 					</Accordion>
 				</WordCloudCanvas>
 			</div>

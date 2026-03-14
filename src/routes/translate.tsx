@@ -18,6 +18,7 @@ import {
 	resolveTranslatorSearch,
 	type TranslatorSearch,
 	translatorScaleOptions,
+	translatorSpiralOptions,
 } from "#/features/word-cloud/translateState";
 import { useTranslatePage } from "#/features/word-cloud/useTranslatePage";
 
@@ -28,6 +29,7 @@ const translatorSearchSchema = z.object({
 	maxFontSize: z.coerce.number().int().min(1).max(200).optional(),
 	padding: z.coerce.number().int().min(0).max(20).optional(),
 	scale: z.enum(translatorScaleOptions).optional(),
+	spiral: z.enum(translatorSpiralOptions).optional(),
 	rotationMin: z.coerce.number().int().min(-360).max(360).optional(),
 	rotationMax: z.coerce.number().int().min(-360).max(360).optional(),
 	rotations: z.coerce.number().int().min(0).optional(),
@@ -93,8 +95,10 @@ function TranslatorWordCloudContent({
 	const posthog = usePostHog();
 	const {
 		formState,
-		send,
-		commitToUrl,
+		updateSearch,
+		requestTranslate,
+		hideLanguage,
+		setWeight,
 		loading,
 		error,
 		translations,
@@ -120,12 +124,14 @@ function TranslatorWordCloudContent({
 						error={error}
 						translationCount={translations.size}
 						onTranslate={(input: string) => {
-							send({ type: "FIELD_CHANGED", updates: { input } });
-							send({ type: "TRANSLATE_REQUESTED" });
+							updateSearch({ input });
+							requestTranslate(input);
 						}}
 						onBlur={(input: string) => {
-							send({ type: "FIELD_CHANGED", updates: { input } });
-							commitToUrl();
+							const inputChanged = input !== formState.input;
+							updateSearch(
+								inputChanged ? { input, translated: false } : { input },
+							);
 						}}
 					/>
 				</Accordion>
@@ -134,17 +140,15 @@ function TranslatorWordCloudContent({
 					<TranslationsAccordion
 						visibleTranslations={visibleTranslations}
 						weights={weights}
-						onWeightChange={(lang, value) =>
-							send({ type: "WEIGHT_CHANGED", lang, value })
-						}
+						onWeightChange={setWeight}
 						onRemoveLanguage={(lang) => {
 							posthog.capture("translation_language_removed", {
 								language: lang,
 								remaining_languages: visibleTranslations.length - 1,
 							});
-							startTransition(() => send({ type: "LANGUAGE_HIDDEN", lang }));
+							startTransition(() => hideLanguage(lang));
 						}}
-						onBlur={commitToUrl}
+						onBlur={() => {}}
 					/>
 				)}
 			</IslandPanel>
@@ -158,7 +162,10 @@ function TranslatorWordCloudContent({
 				options={cloudOptions}
 			>
 				<Accordion title="Cloud styling" className="mt-5">
-					<WordCloudOptions formState={formState} send={send} />
+					<WordCloudOptions
+						formState={formState}
+						onUpdateSearch={updateSearch}
+					/>
 				</Accordion>
 			</WordCloudCanvas>
 		</div>

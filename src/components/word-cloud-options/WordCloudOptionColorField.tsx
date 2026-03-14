@@ -19,6 +19,11 @@ export default function WordCloudOptionColorField({
 }) {
   const colorPickerRef = useRef<HTMLInputElement>(null)
 
+  const handlePickerChange = () => {
+    const value = colorPickerRef.current?.value
+    if (value) onChange(value)
+  }
+
   const handlePickerBlur = () => {
     const value = colorPickerRef.current?.value
     if (value) {
@@ -35,6 +40,7 @@ export default function WordCloudOptionColorField({
           ref={colorPickerRef}
           type="color"
           defaultValue={defaultValue}
+          onChange={handlePickerChange}
           onBlur={handlePickerBlur}
           aria-label={`${label} picker`}
           className="h-8 w-8 cursor-pointer rounded border-0 bg-transparent p-0"

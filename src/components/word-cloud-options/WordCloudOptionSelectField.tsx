@@ -9,6 +9,7 @@ type SelectOption = {
 
 export default function WordCloudOptionSelectField({
   label,
+  value,
   defaultValue,
   options,
   onChange,
@@ -16,6 +17,8 @@ export default function WordCloudOptionSelectField({
   className,
 }: {
   label: string
+  /** When provided, the select is controlled and stays in sync with parent state. */
+  value?: string
   defaultValue: string
   options: ReadonlyArray<SelectOption>
   onChange: (value: string) => void
@@ -23,12 +26,18 @@ export default function WordCloudOptionSelectField({
   className?: string
 }) {
   const selectRef = useRef<HTMLSelectElement>(null)
+  const isControlled = value !== undefined
+
+  const handleChange = () => {
+    const next = selectRef.current?.value
+    if (next != null) onChange(next)
+  }
 
   const handleBlur = () => {
-    const value = selectRef.current?.value
-    if (value != null) {
-      onChange(value)
-      onBlur(value)
+    const next = selectRef.current?.value
+    if (next != null) {
+      onChange(next)
+      onBlur(next)
     }
   }
 
@@ -38,7 +47,8 @@ export default function WordCloudOptionSelectField({
       <FieldControl>
         <Select
           ref={selectRef}
-          defaultValue={defaultValue}
+          {...(isControlled ? { value } : { defaultValue })}
+          onChange={handleChange}
           onBlur={handleBlur}
         >
           {options.map((option) => (

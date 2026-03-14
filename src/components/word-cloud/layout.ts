@@ -46,7 +46,6 @@ export function layout({
     spiral,
     scale,
   } = options;
-
   const sortedWords = words
     .concat()
     .sort((x: Word, y: Word) => descending(Number(x.value), Number(y.value)));

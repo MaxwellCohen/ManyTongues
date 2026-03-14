@@ -6,18 +6,17 @@ import WordCloudOptionSelectField from "#/components/word-cloud-options/WordClou
 import {
   FONT_FAMILY_OPTIONS,
   SCALE_OPTIONS,
+  SPIRAL_OPTIONS,
   type ScaleType,
+  type SpiralType,
 } from "#/lib/wordCloudUtils";
-import {
-  createXStateFormControls,
-  type XStateFormSender,
-} from "#/lib/xstateForm";
 
-type WordCloudOptionFields = {
+export type WordCloudOptionFields = {
   padding: number;
   minFontSize: number;
   maxFontSize: number;
   scale: ScaleType;
+  spiral: SpiralType;
   rotationMin: number;
   rotationMax: number;
   rotations: number;
@@ -32,13 +31,11 @@ const clampRotation = (n: number) =>
 
 export default function WordCloudOptions({
   formState,
-  send,
+  onUpdateSearch,
 }: {
   formState: WordCloudOptionFields;
-  send: XStateFormSender<WordCloudOptionFields>;
+  onUpdateSearch: (updates: Partial<WordCloudOptionFields>) => void;
 }) {
-  const { updateFields, commitToUrl } = createXStateFormControls<WordCloudOptionFields>(send);
-
   return (
     <div
       className="grid gap-3 pt-1 sm:grid-cols-2"
@@ -46,14 +43,15 @@ export default function WordCloudOptions({
       <WordCloudOptionNumberField
         label="Padding"
         min={0}
+        value={formState.padding}
         defaultValue={formState.padding}
         onChange={(value) =>
-          updateFields({
+          onUpdateSearch({
             padding: Math.max(0, value || 0),
           })
         }
         onBlur={(value) => {
-          if (value !== formState.padding) commitToUrl()
+          if (value !== formState.padding) onUpdateSearch({ padding: Math.max(0, value || 0) });
         }}
       />
 
@@ -61,14 +59,15 @@ export default function WordCloudOptions({
         label="Min font size"
         min={4}
         max={48}
+        value={formState.minFontSize}
         defaultValue={formState.minFontSize}
         onChange={(value) =>
-          updateFields({
+          onUpdateSearch({
             minFontSize: Math.min(48, Math.max(4, value || 14)),
           })
         }
         onBlur={(value) => {
-          if (value !== formState.minFontSize) commitToUrl()
+          if (value !== formState.minFontSize) onUpdateSearch({ minFontSize: Math.min(48, Math.max(4, value || 14)) });
         }}
       />
 
@@ -76,59 +75,76 @@ export default function WordCloudOptions({
         label="Max font size"
         min={12}
         max={120}
+        value={formState.maxFontSize}
         defaultValue={formState.maxFontSize}
         onChange={(value) =>
-          updateFields({
+          onUpdateSearch({
             maxFontSize: Math.min(120, Math.max(12, value || 72)),
           })
         }
         onBlur={(value) => {
-          if (value !== formState.maxFontSize) commitToUrl()
+          if (value !== formState.maxFontSize) onUpdateSearch({ maxFontSize: Math.min(120, Math.max(12, value || 72)) });
         }}
       />
 
       <WordCloudOptionSelectField
         label="Scale"
         className="sm:col-span-2"
+        value={formState.scale}
         defaultValue={formState.scale}
         options={SCALE_OPTIONS}
-        onChange={(value) => updateFields({ scale: value as ScaleType })}
+        onChange={(value) => onUpdateSearch({ scale: value as ScaleType })}
         onBlur={(value) => {
-          if (value !== formState.scale) commitToUrl()
+          if (value !== formState.scale) onUpdateSearch({ scale: value as ScaleType });
+        }}
+      />
+
+      <WordCloudOptionSelectField
+        label="Spiral"
+        className="sm:col-span-2"
+        value={formState.spiral}
+        defaultValue={formState.spiral}
+        options={SPIRAL_OPTIONS}
+        onChange={(value) => onUpdateSearch({ spiral: value as SpiralType })}
+        onBlur={(value) => {
+          if (value !== formState.spiral) onUpdateSearch({ spiral: value as SpiralType });
         }}
       />
 
       <WordCloudOptionSelectField
         label="Font family"
         className="sm:col-span-2"
+        value={formState.fontFamily}
         defaultValue={formState.fontFamily}
         options={FONT_FAMILY_OPTIONS}
-        onChange={(value) => updateFields({ fontFamily: value })}
+        onChange={(value) => onUpdateSearch({ fontFamily: value })}
         onBlur={(value) => {
-          if (value !== formState.fontFamily) commitToUrl()
+          if (value !== formState.fontFamily) onUpdateSearch({ fontFamily: value });
         }}
       />
 
       <WordCloudOptionCheckboxField
         label="Keep layout consistent"
+        checked={formState.deterministic}
         defaultChecked={formState.deterministic}
-        onChange={(checked) => updateFields({ deterministic: checked })}
+        onChange={(checked) => onUpdateSearch({ deterministic: checked })}
         onBlur={(checked) => {
-          if (checked !== formState.deterministic) commitToUrl()
+          if (checked !== formState.deterministic) onUpdateSearch({ deterministic: checked });
         }}
       />
 
       <WordCloudOptionNumberField
         label="Rotations"
         min={0}
+        value={formState.rotations}
         defaultValue={formState.rotations}
         onChange={(value) =>
-          updateFields({
+          onUpdateSearch({
             rotations: Math.max(0, value || 0),
           })
         }
         onBlur={(value) => {
-          if (value !== formState.rotations) commitToUrl()
+          if (value !== formState.rotations) onUpdateSearch({ rotations: Math.max(0, value || 0) });
         }}
       />
 
@@ -136,14 +152,15 @@ export default function WordCloudOptions({
         label="Rotation min (°)"
         min={-360}
         max={360}
+        value={formState.rotationMin}
         defaultValue={formState.rotationMin}
         onChange={(value) =>
-          updateFields({
+          onUpdateSearch({
             rotationMin: clampRotation(value),
           })
         }
         onBlur={(value) => {
-          if (value !== formState.rotationMin) commitToUrl()
+          if (value !== formState.rotationMin) onUpdateSearch({ rotationMin: clampRotation(value) });
         }}
       />
 
@@ -151,14 +168,15 @@ export default function WordCloudOptions({
         label="Rotation max (°)"
         min={-360}
         max={360}
+        value={formState.rotationMax}
         defaultValue={formState.rotationMax}
         onChange={(value) =>
-          updateFields({
+          onUpdateSearch({
             rotationMax: clampRotation(value),
           })
         }
         onBlur={(value) => {
-          if (value !== formState.rotationMax) commitToUrl()
+          if (value !== formState.rotationMax) onUpdateSearch({ rotationMax: clampRotation(value) });
         }}
       />
 
@@ -167,22 +185,21 @@ export default function WordCloudOptions({
         label="Background color"
         className="sm:col-span-2"
         defaultValue={formState.backgroundColor}
-        onChange={(value) => updateFields({ backgroundColor: value })}
+        onChange={(value) => onUpdateSearch({ backgroundColor: value })}
         onBlur={(value) => {
-          if (value !== formState.backgroundColor) commitToUrl()
+          if (value !== formState.backgroundColor) onUpdateSearch({ backgroundColor: value });
         }}
       />
 
       <WordCloudOptionPaletteField
         key={`text-color-${formState.colors.join('-')}`}
         defaultColors={formState.colors}
-        onChange={(colors) => updateFields({ colors })}
+        onChange={(colors) => onUpdateSearch({ colors })}
         onBlur={(colors) => {
-          updateFields({ colors })
           const same =
             colors.length === formState.colors.length &&
-            colors.every((c, i) => c === formState.colors[i])
-          if (!same) commitToUrl()
+            colors.every((c, i) => c === formState.colors[i]);
+          if (!same) onUpdateSearch({ colors });
         }}
       />
     </div>
