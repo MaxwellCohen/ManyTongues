@@ -59,7 +59,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
 					}}
 				>
 					<Header />
-					<main className="mx-auto w-[min(1080px,calc(100%-2rem))] py-8 sm:py-12">
+					<main className="px-4 py-8 sm:py-12">
 						{children}
 					</main>
 					<Footer />

@@ -1,10 +1,33 @@
 import { DEFAULT_COLORS, DEFAULT_FONT_FAMILY, type ScaleType, type SpiralType } from '#/lib/wordCloudUtils'
+
+/** Simple hash for word -> stable index into palette. */
+export function hashWordForColor(word: string): number {
+  let h = 0
+  for (let i = 0; i < word.length; i++) {
+    h = (h << 5) - h + word.charCodeAt(i)
+    h |= 0
+  }
+  return Math.abs(h)
+}
 import { getSearchDiffFromDefaults, getValidPalette, mergeSearchWithDefaults } from './search'
 
 const TRANSLATOR_BG = '#c9a227'
 const TRANSLATOR_TEXT_COLOR = '#000000'
 export const translatorScaleOptions = ['linear', 'sqrt', 'log'] as const
 export const translatorSpiralOptions = ['archimedean', 'rectangular'] as const
+
+export const translatorCloud2ShapeOptions = [
+  'circle',
+  'cardioid',
+  'diamond',
+  'square',
+  'triangle-forward',
+  'triangle',
+  'pentagon',
+  'star',
+] as const
+export const translatorCloud2ColorOptions = ['random-dark', 'random-light', 'custom'] as const
+export const translatorCloud2FontWeightOptions = ['normal', 'bold'] as const
 
 export type TranslatorSearch = {
   input?: string
@@ -23,6 +46,18 @@ export type TranslatorSearch = {
   colors?: string[]
   hiddenLanguages?: string[]
   weights?: string
+  /** wordcloud2.js options (translation page). Rotation in degrees for URL/form. */
+  cloud2Shape?: (typeof translatorCloud2ShapeOptions)[number]
+  cloud2Ellipticity?: number
+  cloud2Shuffle?: boolean
+  cloud2RotateRatio?: number
+  cloud2Color?: (typeof translatorCloud2ColorOptions)[number]
+  cloud2GridSize?: number
+  cloud2MinRotation?: number
+  cloud2MaxRotation?: number
+  cloud2RotationSteps?: number
+  cloud2MinSize?: number
+  cloud2FontWeight?: (typeof translatorCloud2FontWeightOptions)[number]
 }
 
 export type FullTranslatorSearch = Required<TranslatorSearch>
@@ -44,11 +79,22 @@ export const DEFAULT_TRANSLATOR_SEARCH: FullTranslatorSearch = {
   colors: [TRANSLATOR_TEXT_COLOR],
   hiddenLanguages: [],
   weights: '',
+  cloud2Shape: 'circle',
+  cloud2Ellipticity: 0.65,
+  cloud2Shuffle: true,
+  cloud2RotateRatio: 0.1,
+  cloud2Color: 'random-dark',
+  cloud2GridSize: 8,
+  cloud2MinRotation: -90,
+  cloud2MaxRotation: 90,
+  cloud2RotationSteps: 0,
+  cloud2MinSize: 0,
+  cloud2FontWeight: 'normal',
 }
 
-export const DEFAULT_WEIGHT = 50
+export const DEFAULT_WEIGHT = 3
 export const WEIGHT_MIN = 1
-export const WEIGHT_MAX = 200
+export const WEIGHT_MAX = 5
 
 const translatorArrayKeys = ['colors', 'hiddenLanguages'] as const satisfies readonly (keyof FullTranslatorSearch)[]
 
@@ -147,7 +193,7 @@ export function getCloudData(
   const items: TranslatorCloudWord[] = []
   const phrase = formState.input.trim()
   if (phrase) {
-    items.push({ text: phrase, value: 1000 })
+    items.push({ text: phrase, value: 12 })
   }
   translations.forEach((translatedText, lang) => {
     if (hiddenLanguages.has(lang)) return
@@ -155,6 +201,22 @@ export function getCloudData(
     items.push({ text: translatedText, value: clampWeight(weight) })
   })
   return items
+}
+
+/**
+ * Deduplicate cloud items by text value: keep one entry per unique string with the
+ * maximum weight. Ensures the original phrase (value 12) is included and wins
+ * when a translation equals it.
+ */
+export function deduplicateCloudDataByValue(
+  items: TranslatorCloudWord[],
+): TranslatorCloudWord[] {
+  const byText = new Map<string, number>()
+  for (const item of items) {
+    const existing = byText.get(item.text)
+    byText.set(item.text, Math.max(existing ?? 0, item.value))
+  }
+  return Array.from(byText.entries(), ([text, value]) => ({ text, value }))
 }
 
 type TranslatorCloudOptions = {

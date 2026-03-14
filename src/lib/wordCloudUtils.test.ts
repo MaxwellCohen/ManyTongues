@@ -3,6 +3,7 @@ import {
   DEFAULT_BG,
   DEFAULT_COLORS,
   DEFAULT_FONT_FAMILY,
+  DEFAULT_STOPWORDS,
   DEFAULT_TEXT,
   FONT_FAMILY_OPTIONS,
   SCALE_OPTIONS,
@@ -48,6 +49,23 @@ describe('tokenizeAndCount', () => {
       { text: 'résumé', value: 1 },
     ])
   })
+
+  it('excludes words in options.exclude set', () => {
+    const result = tokenizeAndCount('the cat and the dog', {
+      exclude: new Set(['the', 'and']),
+    })
+    expect(result).toEqual([
+      { text: 'cat', value: 1 },
+      { text: 'dog', value: 1 },
+    ])
+  })
+
+  it('exclude is case-insensitive (tokens are lowercased)', () => {
+    const result = tokenizeAndCount('The Cat', {
+      exclude: new Set(['the']),
+    })
+    expect(result).toEqual([{ text: 'cat', value: 1 }])
+  })
 })
 
 describe('wordCloudUtils constants', () => {
@@ -65,6 +83,12 @@ describe('wordCloudUtils constants', () => {
 
   it('exports DEFAULT_FONT_FAMILY', () => {
     expect(DEFAULT_FONT_FAMILY).toBe('system-ui')
+  })
+
+  it('exports DEFAULT_STOPWORDS with common English words', () => {
+    expect(DEFAULT_STOPWORDS).toContain('the')
+    expect(DEFAULT_STOPWORDS).toContain('of')
+    expect(DEFAULT_STOPWORDS).toContain('and')
   })
 
   it('exports SCALE_OPTIONS', () => {

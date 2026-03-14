@@ -1,7 +1,6 @@
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { TextCloudIcon, TranslateIcon } from '#/components/icons'
 import LinkButton from '#/components/LinkButton'
-import { useEffect } from 'react'
 
 const featureCards = [
   {
@@ -19,6 +18,22 @@ const featureCards = [
     description:
       'Translate one short phrase into multiple languages, then explore the translated versions together in a single word cloud.',
     ctaLabel: 'Open Translator →',
+  },
+  {
+    to: '/words' as const,
+    Icon: TextCloudIcon,
+    title: 'Words',
+    description:
+      'Paste text and see word frequency as a word cloud. Built with wordcloud2.js.',
+    ctaLabel: 'Open Words →',
+  },
+  {
+    to: '/translation' as const,
+    Icon: TranslateIcon,
+    title: 'Translation',
+    description:
+      'Translate a phrase into multiple languages and view the results as a word cloud. Built with wordcloud2.js.',
+    ctaLabel: 'Open Translation →',
   },
 ]
 

@@ -23,7 +23,7 @@ describe('clampWeight', () => {
   })
 
   it('uses DEFAULT_WEIGHT for 0 (falsy)', () => {
-    expect(clampWeight(0)).toBe(50)
+    expect(clampWeight(0)).toBe(3)
   })
 
   it('clamps to WEIGHT_MAX when above', () => {
@@ -32,20 +32,20 @@ describe('clampWeight', () => {
   })
 
   it('rounds and uses DEFAULT_WEIGHT for NaN', () => {
-    expect(clampWeight(NaN)).toBe(50)
+    expect(clampWeight(NaN)).toBe(3)
   })
 
   it('returns value within range', () => {
-    expect(clampWeight(50)).toBe(50)
-    expect(clampWeight(100)).toBe(100)
+    expect(clampWeight(3)).toBe(3)
+    expect(clampWeight(5)).toBe(5)
   })
 })
 
 describe('parseWeights', () => {
   it('parses "lang:weight" format', () => {
-    const m = parseWeights('fr:50,es:100')
-    expect(m.get('fr')).toBe(50)
-    expect(m.get('es')).toBe(100)
+    const m = parseWeights('fr:3,es:5')
+    expect(m.get('fr')).toBe(3)
+    expect(m.get('es')).toBe(5)
   })
 
   it('skips invalid parts', () => {
@@ -54,7 +54,7 @@ describe('parseWeights', () => {
   })
 
   it('clamps to valid range', () => {
-    const m = parseWeights('fr:500')
+    const m = parseWeights('fr:10')
     expect(m.get('fr')).toBe(WEIGHT_MAX)
   })
 
@@ -66,15 +66,15 @@ describe('parseWeights', () => {
 describe('serializeWeights', () => {
   it('serializes map to sorted string', () => {
     const m = new Map([
-      ['es', 100],
-      ['fr', 50],
+      ['es', 5],
+      ['fr', 3],
     ])
-    expect(serializeWeights(m)).toBe('es:100,fr:50')
+    expect(serializeWeights(m)).toBe('es:5,fr:3')
   })
 
   it('clamps values when serializing', () => {
     const m = new Map([['fr', 500]])
-    expect(serializeWeights(m)).toBe('fr:200')
+    expect(serializeWeights(m)).toBe('fr:5')
   })
 })
 
@@ -165,10 +165,10 @@ describe('getCloudData', () => {
       input: 'hello',
     }
     const translations = new Map([['fr', 'x']])
-    const weights = new Map([['fr', 50]])
+    const weights = new Map([['fr', 3]])
     expect(getCloudData(formState, translations, weights, new Set())).toEqual([
-      { text: 'hello', value: 1000 },
-      { text: 'x', value: 50 },
+      { text: 'hello', value: 12 },
+      { text: 'x', value: 3 },
     ])
   })
 
@@ -183,13 +183,13 @@ describe('getCloudData', () => {
       ['es', 'hola'],
     ])
     const weights = new Map([
-      ['fr', 50],
-      ['es', 100],
+      ['fr', 3],
+      ['es', 5],
     ])
     expect(getCloudData(formState, translations, weights, new Set())).toEqual([
-      { text: 'hello', value: 1000 },
-      { text: 'bonjour', value: 50 },
-      { text: 'hola', value: 100 },
+      { text: 'hello', value: 12 },
+      { text: 'bonjour', value: 3 },
+      { text: 'hola', value: 5 },
     ])
   })
 
@@ -204,13 +204,13 @@ describe('getCloudData', () => {
       ['es', 'hola'],
     ])
     const weights = new Map([
-      ['fr', 50],
-      ['es', 50],
+      ['fr', 3],
+      ['es', 3],
     ])
     const hidden = new Set(['fr'])
     expect(getCloudData(formState, translations, weights, hidden)).toEqual([
-      { text: 'hello', value: 1000 },
-      { text: 'hola', value: 50 },
+      { text: 'hello', value: 12 },
+      { text: 'hola', value: 3 },
     ])
   })
 

@@ -10,6 +10,7 @@ export default function WordCloudOptionNumberField({
   onBlur,
   min,
   max,
+  step,
   className,
 }: {
   label: string
@@ -20,6 +21,7 @@ export default function WordCloudOptionNumberField({
   onBlur: (value: number) => void
   min?: number
   max?: number
+  step?: number
   className?: string
 }) {
   const inputRef = useRef<HTMLInputElement>(null)
@@ -60,6 +62,7 @@ export default function WordCloudOptionNumberField({
           type="number"
           min={min}
           max={max}
+          step={step}
           {...(isControlled ? { value: value } : { defaultValue })}
           onChange={handleChange}
           onBlur={handleBlur}

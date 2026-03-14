@@ -15,8 +15,21 @@ type CloudWord = {
   weight?: string
 }
 
+/** Common English words excluded when "filter common words" is on. */
+export const DEFAULT_STOPWORDS = [
+  'a', 'an', 'and', 'are', 'as', 'at', 'be', 'by', 'for', 'from',
+  'has', 'he', 'in', 'is', 'it', 'its', 'of', 'on', 'that', 'the',
+  'to', 'was', 'were', 'will', 'with',
+] as const
+
+export type TokenizeOptions = {
+  /** When set, tokens in this set (lowercased) are excluded from counts. */
+  exclude?: Set<string>
+}
+
 export function tokenizeAndCount(
   text: string,
+  options?: TokenizeOptions,
 ): { text: string; value: number }[] {
   const normalized = text
     .toLowerCase()
@@ -24,8 +37,10 @@ export function tokenizeAndCount(
     .trim()
   if (!normalized) return []
   const tokens = normalized.split(/\s+/).filter(Boolean)
+  const exclude = options?.exclude
   const counts = new Map<string, number>()
   for (const token of tokens) {
+    if (exclude?.has(token)) continue
     counts.set(token, (counts.get(token) ?? 0) + 1)
   }
   return Array.from(counts.entries())

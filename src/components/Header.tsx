@@ -21,6 +21,8 @@ export default function Header() {
             <NavLink to="/">Home</NavLink>
             <NavLink to="/text-cloud">Text Cloud</NavLink>
             <NavLink to="/translate">Translate</NavLink>
+            <NavLink to="/words">Words</NavLink>
+            <NavLink to="/translation">Translation</NavLink>
           </div>
         </div>
 

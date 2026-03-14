@@ -129,7 +129,7 @@ function WordCloudPage() {
 				description="Paste text, adjust the layout and colors, then export a clean word cloud image."
 			/>
 
-			<div className="animate-rise-in mt-10 grid gap-8 lg:grid-cols-[1fr,1.2fr] lg:items-start">
+			<div className="animate-rise-in mt-10 grid gap-8 lg:grid-cols-[1fr_617px] lg:items-start">
 				<SourceTextPanel
 					key={JSON.stringify(resolvedSearch)}
 					defaultValue={input}

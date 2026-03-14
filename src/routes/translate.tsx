@@ -114,7 +114,7 @@ function TranslatorWordCloudContent({
 	});
 
 	return (
-		<div className="animate-rise-in mt-10 grid gap-8 lg:grid-cols-[1fr,1.2fr] lg:items-start">
+		<div className="animate-rise-in mt-10 grid gap-8 lg:grid-cols-[1fr_617px] lg:items-start">
 			<IslandPanel className="space-y-5 rounded-2xl p-5 sm:p-6">
 				<Accordion title="Phrase" defaultOpen>
 					<TranslatorInputForm
@@ -128,10 +128,7 @@ function TranslatorWordCloudContent({
 							requestTranslate(input);
 						}}
 						onBlur={(input: string) => {
-							const inputChanged = input !== formState.input;
-							updateSearch(
-								inputChanged ? { input, translated: false } : { input },
-							);
+							updateSearch({ input, translated: false });
 						}}
 					/>
 				</Accordion>

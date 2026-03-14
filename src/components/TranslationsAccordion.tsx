@@ -88,6 +88,8 @@ type TranslationsAccordionProps = {
   onWeightChange: (lang: string, value: number) => void;
   onRemoveLanguage: (lang: string) => void;
   onBlur: () => void;
+  /** Open by default when there are translations (e.g. after first translate). */
+  defaultOpen?: boolean;
 };
 
 export default function TranslationsAccordion({
@@ -96,9 +98,10 @@ export default function TranslationsAccordion({
   onWeightChange,
   onRemoveLanguage,
   onBlur,
+  defaultOpen = false,
 }: TranslationsAccordionProps) {
   return (
-    <Accordion title="Translations" defaultOpen={false}>
+    <Accordion title="Translations" defaultOpen={defaultOpen}>
       <p className="mb-3 text-sm text-sea-ink-soft">
         Remove languages or adjust the weight to control how large each
         translation appears in the cloud.
