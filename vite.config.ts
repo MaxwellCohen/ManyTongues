@@ -1,14 +1,17 @@
+/// <reference path="./vite.config.env.d.ts" />
 import tailwindcss from "@tailwindcss/vite";
 import { devtools } from "@tanstack/devtools-vite";
 import { tanstackStart } from "@tanstack/react-start/plugin/vite";
-import viteReact from "@vitejs/plugin-react";
+import babel from "@rolldown/plugin-babel";
+import viteReact, { reactCompilerPreset } from "@vitejs/plugin-react";
 
-import ReactCompiler from "babel-plugin-react-compiler";
 import { nitro } from "nitro/vite";
 import { defineConfig } from "vite";
-import tsconfigPaths from "vite-tsconfig-paths";
 
 const config = defineConfig({
+	resolve: {
+		tsconfigPaths: true,
+	},
 	server: {
 		port: 3500,
 		proxy: {
@@ -27,14 +30,10 @@ const config = defineConfig({
 			},
 		}),
 		nitro(),
-		tsconfigPaths({ projects: ["./tsconfig.json"] }),
 		tailwindcss(),
 		tanstackStart(),
-		viteReact({
-			babel: {
-				plugins: [ReactCompiler],
-			},
-		}),
+		viteReact(),
+		babel({ presets: [reactCompilerPreset()] }),
 	],
 });
 

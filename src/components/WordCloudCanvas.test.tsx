@@ -1,10 +1,9 @@
 import { fireEvent, render } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 
-vi.mock('react-wordcloud', () => ({
+vi.mock('#/components/word-cloud', () => ({
   default: ({
     words,
-    options,
   }: {
     words: { text: string; value: number }[]
     options: Record<string, unknown>
