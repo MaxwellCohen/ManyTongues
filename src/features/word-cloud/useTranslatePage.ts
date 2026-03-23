@@ -1,276 +1,318 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { useDebounceValue } from '#/hooks/useDebouncedValue'
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useDebounceValue } from "#/hooks/useDebouncedValue";
 import {
-  type FullTranslatorSearch,
-  type TranslatorSearch,
-  getCloudData,
-  getCloudOptions,
-  getHiddenLanguagesSet,
-  getTranslatorSearchForUrl,
-  getTranslatorPalette,
-  getVisibleTranslations,
-  parseWeights,
-  serializeWeights,
-  createRandomWeights,
-  WEIGHT_MAX,
-  WEIGHT_MIN,
-} from '#/features/word-cloud/translateState'
-import { getOrTranslatePhrase } from '#/lib/translate'
-import type { GetOrTranslateResult } from '#/lib/translate'
+	type FullTranslatorSearch,
+	type TranslatorSearch,
+	getCloudData,
+	getCloudOptions,
+	getHiddenLanguagesSet,
+	getTranslatorSearchForUrl,
+	getTranslatorPalette,
+	getVisibleTranslations,
+	parseWeights,
+	serializeWeights,
+	createRandomWeights,
+	WEIGHT_MAX,
+	WEIGHT_MIN,
+} from "#/features/word-cloud/translateState";
+import { getOrTranslatePhrase } from "#/lib/translate";
+import type { GetOrTranslateResult } from "#/lib/translate";
 
 function isTranslateSuccess(
-  result: GetOrTranslateResult,
+	result: GetOrTranslateResult,
 ): result is Extract<GetOrTranslateResult, { ok: true }> {
-  return result.ok
+	return result.ok;
+}
+
+function formatTranslateFailure(
+	result: Extract<GetOrTranslateResult, { ok: false }>,
+): string {
+	let msg = result.error;
+	if (result.failedProviders?.length) {
+		const labels = result.failedProviders.map((p) =>
+			p === "google" ? "Google" : "Microsoft",
+		);
+		msg = `${msg} (${labels.join(" and ")} could not complete translation.)`;
+	}
+	return msg;
 }
 
 function shouldLoadTranslatedPhrase(search: FullTranslatorSearch): boolean {
-  return Boolean(search.input.trim())
+	return Boolean(search.input.trim());
 }
 
 function mergeWeightsForTranslations(
-  existingWeights: string,
-  translationLangs: Iterable<string>,
+	existingWeights: string,
+	translationLangs: Iterable<string>,
 ): Map<string, number> {
-  const existing = parseWeights(existingWeights)
-  const merged = new Map(existing)
-  for (const lang of translationLangs) {
-    if (!merged.has(lang)) {
-      merged.set(
-        lang,
-        Math.floor(Math.random() * WEIGHT_MAX) + WEIGHT_MIN,
-      )
-    }
-  }
-  return merged
+	const existing = parseWeights(existingWeights);
+	const merged = new Map(existing);
+	for (const lang of translationLangs) {
+		if (!merged.has(lang)) {
+			merged.set(
+				lang,
+				Math.floor(Math.random() * WEIGHT_MAX) + WEIGHT_MIN,
+			);
+		}
+	}
+	return merged;
+}
+
+function phraseLoadKey(search: FullTranslatorSearch, phrase: string): string {
+	return `${search.sourceLanguage}:${phrase}`;
 }
 
 type UseTranslatePageOptions = {
-  resolvedSearch: FullTranslatorSearch
-  onSyncToUrl: (search: Partial<TranslatorSearch>) => void
-}
+	resolvedSearch: FullTranslatorSearch;
+	onSyncToUrl: (search: Partial<TranslatorSearch>) => void;
+};
 
 export function useTranslatePage({
-  resolvedSearch,
-  onSyncToUrl,
+	resolvedSearch,
+	onSyncToUrl,
 }: UseTranslatePageOptions) {
-  const formState = resolvedSearch
+	const formState = resolvedSearch;
 
-  const [translations, setTranslations] = useState<Map<string, string>>(
-    () => new Map(),
-  )
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const loadedPhraseRef = useRef<string | null>(null)
+	const [translations, setTranslations] = useState<Map<string, string>>(
+		() => new Map(),
+	);
+	const [loading, setLoading] = useState(false);
+	const [error, setError] = useState<string | null>(null);
+	const loadedPhraseRef = useRef<string | null>(null);
+	const requestSeqRef = useRef(0);
 
-  const updateSearch = useCallback(
-    (updates: Partial<FullTranslatorSearch>) => {
-      const next = { ...resolvedSearch, ...updates }
-      onSyncToUrl(getTranslatorSearchForUrl(next))
-    },
-    [resolvedSearch, onSyncToUrl],
-  )
+	const updateSearch = useCallback(
+		(updates: Partial<FullTranslatorSearch>) => {
+			const next = { ...resolvedSearch, ...updates };
+			onSyncToUrl(getTranslatorSearchForUrl(next));
+		},
+		[resolvedSearch, onSyncToUrl],
+	);
 
-  useEffect(() => {
-    if (!shouldLoadTranslatedPhrase(resolvedSearch)) {
-      setTranslations(new Map())
-      setError(null)
-      loadedPhraseRef.current = null
-      return
-    }
-    const phrase = resolvedSearch.input.trim()
-    if (loadedPhraseRef.current === phrase && translations.size > 0) {
-      return
-    }
-    loadedPhraseRef.current = phrase
-    setLoading(true)
-    setError(null)
-    getOrTranslatePhrase({ data: { phrase } })
-      .then((result) => {
-        if (isTranslateSuccess(result)) {
-          setTranslations(new Map(Object.entries(result.translations)))
-          setError(null)
-          const nextWeights = resolvedSearch.weights
-            ? mergeWeightsForTranslations(
-                resolvedSearch.weights,
-                Object.keys(result.translations),
-              )
-            : createRandomWeights(Object.keys(result.translations))
-          const nextHiddenLanguages = resolvedSearch.hiddenLanguages.filter(
-            (lang) => result.translations[lang] !== undefined,
-          )
-          onSyncToUrl(
-            getTranslatorSearchForUrl({
-              ...resolvedSearch,
-              input: phrase,
-              translated: true,
-              weights: serializeWeights(nextWeights),
-              hiddenLanguages: nextHiddenLanguages,
-            }),
-          )
-        } else {
-          setError(result.error)
-          setTranslations(new Map())
-          onSyncToUrl(
-            getTranslatorSearchForUrl({
-              ...resolvedSearch,
-              translated: false,
-            }),
-          )
-        }
-      })
-      .finally(() => {
-        setLoading(false)
-      })
-  }, [resolvedSearch.input, resolvedSearch.translated, onSyncToUrl])
+	useEffect(() => {
+		if (!shouldLoadTranslatedPhrase(resolvedSearch)) {
+			setTranslations(new Map());
+			setError(null);
+			loadedPhraseRef.current = null;
+			return;
+		}
+		const phrase = resolvedSearch.input.trim();
+		const loadKey = phraseLoadKey(resolvedSearch, phrase);
+		if (loadedPhraseRef.current === loadKey && translations.size > 0) {
+			return;
+		}
+		loadedPhraseRef.current = loadKey;
+		const seq = ++requestSeqRef.current;
+		setLoading(true);
+		setError(null);
+		getOrTranslatePhrase({
+			data: {
+				phrase,
+				sourceLanguage: resolvedSearch.sourceLanguage,
+			},
+		})
+			.then((result) => {
+				if (seq !== requestSeqRef.current) return;
+				if (isTranslateSuccess(result)) {
+					setTranslations(new Map(Object.entries(result.translations)));
+					setError(null);
+					const nextWeights = resolvedSearch.weights
+						? mergeWeightsForTranslations(
+								resolvedSearch.weights,
+								Object.keys(result.translations),
+							)
+						: createRandomWeights(Object.keys(result.translations));
+					const nextHiddenLanguages = resolvedSearch.hiddenLanguages.filter(
+						(lang) => result.translations[lang] !== undefined,
+					);
+					onSyncToUrl(
+						getTranslatorSearchForUrl({
+							...resolvedSearch,
+							input: phrase,
+							translated: true,
+							weights: serializeWeights(nextWeights),
+							hiddenLanguages: nextHiddenLanguages,
+						}),
+					);
+				} else {
+					setError(formatTranslateFailure(result));
+					setTranslations(new Map());
+					onSyncToUrl(
+						getTranslatorSearchForUrl({
+							...resolvedSearch,
+							translated: false,
+						}),
+					);
+				}
+			})
+			.finally(() => {
+				if (seq === requestSeqRef.current) {
+					setLoading(false);
+				}
+			});
+	}, [
+		resolvedSearch.input,
+		resolvedSearch.translated,
+		resolvedSearch.sourceLanguage,
+		onSyncToUrl,
+	]);
 
-  const requestTranslate = useCallback(
-    (phraseOverride?: string) => {
-      const trimmed = (phraseOverride ?? formState.input).trim()
-      if (!trimmed) {
-        setError('Enter some text to translate.')
-        setTranslations(new Map())
-        updateSearch({ translated: false })
-        return
-      }
-      setLoading(true)
-      setError(null)
-      loadedPhraseRef.current = null
-      getOrTranslatePhrase({ data: { phrase: trimmed } })
-      .then((result) => {
-        if (isTranslateSuccess(result)) {
-          setTranslations(new Map(Object.entries(result.translations)))
-          setError(null)
-          const nextWeights = formState.weights
-            ? mergeWeightsForTranslations(
-                formState.weights,
-                Object.keys(result.translations),
-              )
-            : createRandomWeights(Object.keys(result.translations))
-          const nextHiddenLanguages = formState.hiddenLanguages.filter((lang) =>
-            result.translations[lang] !== undefined,
-          )
-          onSyncToUrl(
-            getTranslatorSearchForUrl({
-              ...formState,
-              input: trimmed,
-              translated: true,
-              weights: serializeWeights(nextWeights),
-              hiddenLanguages: nextHiddenLanguages,
-            }),
-          )
-        } else {
-          setError(result.error)
-          setTranslations(new Map())
-          onSyncToUrl(
-            getTranslatorSearchForUrl({
-              ...formState,
-              input: trimmed,
-              translated: false,
-            }),
-          )
-        }
-      })
-      .finally(() => {
-        setLoading(false)
-      })
-    },
-    [formState, updateSearch, onSyncToUrl],
-  )
+	const requestTranslate = useCallback(
+		(phraseOverride?: string) => {
+			const trimmed = (phraseOverride ?? formState.input).trim();
+			if (!trimmed) {
+				setError("Enter some text to translate.");
+				setTranslations(new Map());
+				updateSearch({ translated: false });
+				return;
+			}
+			const seq = ++requestSeqRef.current;
+			setLoading(true);
+			setError(null);
+			loadedPhraseRef.current = null;
+			getOrTranslatePhrase({
+				data: {
+					phrase: trimmed,
+					sourceLanguage: formState.sourceLanguage,
+				},
+			})
+				.then((result) => {
+					if (seq !== requestSeqRef.current) return;
+					if (isTranslateSuccess(result)) {
+						setTranslations(new Map(Object.entries(result.translations)));
+						setError(null);
+						const nextWeights = formState.weights
+							? mergeWeightsForTranslations(
+									formState.weights,
+									Object.keys(result.translations),
+								)
+							: createRandomWeights(Object.keys(result.translations));
+						const nextHiddenLanguages = formState.hiddenLanguages.filter(
+							(lang) => result.translations[lang] !== undefined,
+						);
+						onSyncToUrl(
+							getTranslatorSearchForUrl({
+								...formState,
+								input: trimmed,
+								translated: true,
+								weights: serializeWeights(nextWeights),
+								hiddenLanguages: nextHiddenLanguages,
+							}),
+						);
+					} else {
+						setError(formatTranslateFailure(result));
+						setTranslations(new Map());
+						onSyncToUrl(
+							getTranslatorSearchForUrl({
+								...formState,
+								input: trimmed,
+								translated: false,
+							}),
+						);
+					}
+				})
+				.finally(() => {
+					if (seq === requestSeqRef.current) {
+						setLoading(false);
+					}
+				});
+		},
+		[formState, updateSearch, onSyncToUrl],
+	);
 
-  const hideLanguage = useCallback(
-    (lang: string) => {
-      if (formState.hiddenLanguages.includes(lang)) return
-      const nextHidden = [...formState.hiddenLanguages, lang]
-      onSyncToUrl(
-        getTranslatorSearchForUrl({
-          ...formState,
-          hiddenLanguages: nextHidden,
-        }),
-      )
-    },
-    [formState, onSyncToUrl],
-  )
+	const hideLanguage = useCallback(
+		(lang: string) => {
+			if (formState.hiddenLanguages.includes(lang)) return;
+			const nextHidden = [...formState.hiddenLanguages, lang];
+			onSyncToUrl(
+				getTranslatorSearchForUrl({
+					...formState,
+					hiddenLanguages: nextHidden,
+				}),
+			);
+		},
+		[formState, onSyncToUrl],
+	);
 
-  const setWeight = useCallback(
-    (lang: string, value: number) => {
-      const weights = parseWeights(formState.weights)
-      weights.set(lang, value)
-      updateSearch({ weights: serializeWeights(weights) })
-    },
-    [formState.weights, updateSearch],
-  )
+	const setWeight = useCallback(
+		(lang: string, value: number) => {
+			const weights = parseWeights(formState.weights);
+			weights.set(lang, value);
+			updateSearch({ weights: serializeWeights(weights) });
+		},
+		[formState.weights, updateSearch],
+	);
 
-  const hiddenLanguages = useMemo(
-    () => getHiddenLanguagesSet(formState),
-    [formState.hiddenLanguages],
-  )
-  const weights = useMemo(
-    () => parseWeights(formState.weights),
-    [formState.weights],
-  )
-  const debouncedWeightsString = useDebounceValue(formState.weights, 150)
-  const debouncedWeights = useMemo(
-    () => parseWeights(debouncedWeightsString),
-    [debouncedWeightsString],
-  )
-  const visibleTranslations = useMemo(
-    () => getVisibleTranslations(translations, hiddenLanguages),
-    [translations, hiddenLanguages],
-  )
-  const cloudDataRaw = useMemo(
-    () =>
-      getCloudData(
-        formState,
-        translations,
-        debouncedWeights,
-        hiddenLanguages,
-      ),
-    [
-      formState.input,
-      debouncedWeightsString,
-      translations,
-      hiddenLanguages,
-      debouncedWeights,
-    ],
-  )
-  const cloudData = cloudDataRaw
-  const hasWords = cloudData.length > 0
-  const palette = useMemo(
-    () => getTranslatorPalette(formState.colors),
-    [formState.colors],
-  )
-  const cloudOptions = useMemo(
-    () => getCloudOptions(formState),
-    [
-      formState.minFontSize,
-      formState.maxFontSize,
-      formState.padding,
-      formState.scale,
-      formState.spiral,
-      formState.rotationMin,
-      formState.rotationMax,
-      formState.rotations,
-      formState.deterministic,
-      formState.fontFamily,
-    ],
-  )
+	const hiddenLanguages = useMemo(
+		() => getHiddenLanguagesSet(formState),
+		[formState.hiddenLanguages],
+	);
+	const weights = useMemo(
+		() => parseWeights(formState.weights),
+		[formState.weights],
+	);
+	const debouncedWeightsString = useDebounceValue(formState.weights, 150);
+	const debouncedWeights = useMemo(
+		() => parseWeights(debouncedWeightsString),
+		[debouncedWeightsString],
+	);
+	const visibleTranslations = useMemo(
+		() => getVisibleTranslations(translations, hiddenLanguages),
+		[translations, hiddenLanguages],
+	);
+	const cloudDataRaw = useMemo(
+		() =>
+			getCloudData(
+				formState,
+				translations,
+				debouncedWeights,
+				hiddenLanguages,
+			),
+		[
+			formState.input,
+			debouncedWeightsString,
+			translations,
+			hiddenLanguages,
+			debouncedWeights,
+		],
+	);
+	const cloudData = cloudDataRaw;
+	const hasWords = cloudData.length > 0;
+	const palette = useMemo(
+		() => getTranslatorPalette(formState.colors),
+		[formState.colors],
+	);
+	const cloudOptions = useMemo(
+		() => getCloudOptions(formState),
+		[
+			formState.minFontSize,
+			formState.maxFontSize,
+			formState.padding,
+			formState.scale,
+			formState.spiral,
+			formState.rotationMin,
+			formState.rotationMax,
+			formState.rotations,
+			formState.deterministic,
+			formState.fontFamily,
+		],
+	);
 
-  return {
-    formState,
-    updateSearch,
-    requestTranslate,
-    hideLanguage,
-    setWeight,
-    loading,
-    error,
-    translations,
-    visibleTranslations,
-    weights,
-    hiddenLanguages,
-    cloudData,
-    hasWords,
-    palette,
-    cloudOptions,
-  }
+	return {
+		formState,
+		updateSearch,
+		requestTranslate,
+		hideLanguage,
+		setWeight,
+		loading,
+		error,
+		translations,
+		visibleTranslations,
+		weights,
+		hiddenLanguages,
+		cloudData,
+		hasWords,
+		palette,
+		cloudOptions,
+	};
 }

@@ -14,6 +14,7 @@ import {
 	booleanSearchParam,
 	csvSearchParam,
 } from "#/features/word-cloud/searchParams";
+import { translatorSourceLanguageRouteSchema } from "#/lib/translatorSourceLanguages";
 import {
 	DEFAULT_TRANSLATOR_SEARCH,
 	deduplicateCloudDataByValue,
@@ -28,9 +29,21 @@ import {
 } from "#/features/word-cloud/translateState";
 import { useTranslatePage } from "#/features/word-cloud/useTranslatePage";
 
-/** Original phrase (value 12) gets max font size; translations (1–5) get 12–44px. */
-function translationWeightFactor(weight: number): number {
-	return weight >= 12 ? 80 : 12 + ((weight - 1) / 4) * 32;
+/**
+ * wordcloud2.js only passes `weight` into weightFactor (not the word string). A fixed
+ * 80px for the source phrase (weight 12) often cannot be placed for longer multi-word
+ * phrases, so they disappear while shorter translations still draw. We cap the source
+ * by approximate canvas fit and keep translations slightly below that cap.
+ */
+function makeTranslationWeightFactor(phrase: string): (weight: number) => number {
+	const charCount = Math.max(phrase.trim().length, 1);
+	const maxByFit = Math.floor(520 / (charCount * 0.52));
+	const sourcePx = Math.min(72, Math.max(32, maxByFit));
+	return (weight: number) => {
+		if (weight >= 12) return sourcePx;
+		const translationPx = 12 + ((weight - 1) / 4) * 32;
+		return Math.min(translationPx, Math.max(14, sourcePx - 4));
+	};
 }
 
 /** wordcloud2.js expects rotation in radians. */
@@ -40,6 +53,7 @@ function degToRad(deg: number): number {
 
 const translationSearchSchema = z.object({
 	input: z.string().optional(),
+	sourceLanguage: translatorSourceLanguageRouteSchema,
 	translated: booleanSearchParam.optional(),
 	minFontSize: z.coerce.number().int().min(1).max(200).optional(),
 	maxFontSize: z.coerce.number().int().min(1).max(200).optional(),
@@ -77,6 +91,20 @@ export const Route = createFileRoute("/translation")({
 		meta: [
 			{
 				title: "Translation | ManyTongues",
+			},
+			{
+				name: "description",
+				content:
+					"Experimental wordcloud2.js view: translate a phrase into many languages and explore the results as a word cloud.",
+			},
+			{
+				property: "og:title",
+				content: "Translation (experimental) | ManyTongues",
+			},
+			{
+				property: "og:description",
+				content:
+					"Experimental wordcloud2.js translator word cloud. Prefer the main Translate tool for the default experience.",
 			},
 		],
 	}),
@@ -140,18 +168,32 @@ function TranslationWordCloudContent({
 		onSyncToUrl,
 	});
 
+	const translationWeightFactor = useMemo(
+		() => makeTranslationWeightFactor(formState.input),
+		[formState.input],
+	);
+
+	const phraseForDisplay = formState.input.trim();
+
 	return (
 		<WordCloudPageLayout
 			cloud={
-				<WordCloud2Canvas
-					words={deduplicateCloudDataByValue(cloudData)}
-					backgroundColor={formState.backgroundColor}
-					mounted
-					hasWords={hasWords}
-					options={{
-						fontFamily: formState.fontFamily ?? "system-ui, sans-serif",
-						fontWeight: formState.cloud2FontWeight ?? "normal",
-						weightFactor: translationWeightFactor,
+				<div className="flex min-w-0 flex-col gap-2">
+					{phraseForDisplay ? (
+						<p className="rounded-lg border border-line bg-foam/80 px-3 py-2 text-center text-sm font-medium text-sea-ink wrap-break-word">
+							<span className="text-sea-ink-soft">Source phrase: </span>
+							{phraseForDisplay}
+						</p>
+					) : null}
+					<WordCloud2Canvas
+						words={deduplicateCloudDataByValue(cloudData)}
+						backgroundColor={formState.backgroundColor}
+						mounted
+						hasWords={hasWords}
+						options={{
+							fontFamily: formState.fontFamily ?? "system-ui, sans-serif",
+							fontWeight: formState.cloud2FontWeight ?? "normal",
+							weightFactor: translationWeightFactor,
 						gridSize: formState.cloud2GridSize ?? 8,
 						minRotation: degToRad(formState.cloud2MinRotation ?? -90),
 						maxRotation: degToRad(formState.cloud2MaxRotation ?? 90),
@@ -169,7 +211,8 @@ function TranslationWordCloudContent({
 						shuffle: formState.cloud2Shuffle ?? true,
 						rotateRatio: formState.cloud2RotateRatio ?? 0.1,
 					}}
-				/>
+					/>
+				</div>
 			}
 		>
 			<IslandPanel className="rounded-2xl p-5 sm:p-6">
@@ -177,11 +220,15 @@ function TranslationWordCloudContent({
 					Enter phrase
 				</h2>
 				<TranslatorInputForm
-					key={resolvedSearch.input ?? "empty"}
+					key={`${resolvedSearch.sourceLanguage}-${resolvedSearch.input ?? "empty"}`}
 					initialInput={resolvedSearch.input ?? ""}
+					sourceLanguage={resolvedSearch.sourceLanguage}
 					loading={loading}
 					error={error}
 					translationCount={translations.size}
+					onSourceLanguageChange={(sourceLanguage) => {
+						updateSearch({ sourceLanguage, translated: false });
+					}}
 					onTranslate={(input: string) => {
 						updateSearch({ input });
 						requestTranslate(input);
@@ -192,6 +239,7 @@ function TranslationWordCloudContent({
 							inputChanged ? { input, translated: false } : { input },
 						);
 					}}
+					onRetry={() => requestTranslate()}
 				/>
 			</IslandPanel>
 

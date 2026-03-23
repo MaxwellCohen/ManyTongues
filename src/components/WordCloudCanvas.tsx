@@ -40,16 +40,6 @@ function capMaxFontSizeForWords(
   return Math.min(requestedMax, maxByWidth, maxByHeight);
 }
 
-/** Simple hash to pick a deterministic color index from word text. */
-function hashWord(text: string): number {
-  let h = 0;
-  for (let i = 0; i < text.length; i++) {
-    h = (h << 5) - h + text.charCodeAt(i);
-    h |= 0;
-  }
-  return Math.abs(h);
-}
-
 /** Stable key so only phrase/language set changes remount; weight/option updates re-layout in place. */
 function wordsKey(words: { text: string; value: number }[]): string {
   if (!words.length) return "empty";
@@ -125,6 +115,18 @@ export default function WordCloudCanvas({
 
   const safePalette = palette?.length > 0 ? palette : FALLBACK_PALETTE;
 
+  const accessibilitySummary = useMemo(() => {
+    if (!hasWords || words.length === 0) {
+      return "Word cloud preview is empty.";
+    }
+    const sample = words
+      .slice()
+      .sort((a, b) => b.value - a.value)
+      .slice(0, 12)
+      .map((w) => w.text);
+    return `Word cloud with ${words.length} items. Largest terms include: ${sample.join(", ")}.`;
+  }, [hasWords, words]);
+
   const cloudOptions = useMemo(() => {
     const cappedMax = capMaxFontSizeForWords(words, options.maxFontSize);
     const fontSizes: [number, number] = [
@@ -187,8 +189,15 @@ export default function WordCloudCanvas({
         ) : hasWords && Array.isArray(words) && words.length > 0 ? (
           <div
             ref={containerRef}
+            role="img"
+            aria-label={accessibilitySummary}
             className="relative h-full w-full flex items-center justify-center [&_svg]:block [&_svg]:m-auto [&_svg]:max-h-full [&_svg]:max-w-full"
           >
+            <ul className="sr-only">
+              {words.map((w, i) => (
+                <li key={`${i}-${w.text}`}>{w.text}</li>
+              ))}
+            </ul>
             <ReactWordcloud
               key={wordsKey(words)}
               words={words}

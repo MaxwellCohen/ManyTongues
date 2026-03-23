@@ -31,6 +31,8 @@ export const translatorCloud2FontWeightOptions = ['normal', 'bold'] as const
 
 export type TranslatorSearch = {
   input?: string
+  /** BCP47-style source language for the phrase (translation *from*). */
+  sourceLanguage?: string
   translated?: boolean
   minFontSize?: number
   maxFontSize?: number
@@ -64,6 +66,7 @@ export type FullTranslatorSearch = Required<TranslatorSearch>
 
 export const DEFAULT_TRANSLATOR_SEARCH: FullTranslatorSearch = {
   input: 'everything will be great',
+  sourceLanguage: 'en',
   translated: false,
   minFontSize: 14,
   maxFontSize: 72,

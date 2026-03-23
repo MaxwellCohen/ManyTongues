@@ -59,7 +59,21 @@ export const Route = createFileRoute("/words")({
 	head: () => ({
 		meta: [
 			{
-				title: "Words | ManyTongues",
+				title: "Words (experimental) | ManyTongues",
+			},
+			{
+				name: "description",
+				content:
+					"Experimental wordcloud2.js text cloud. The main Text Cloud tool uses react-wordcloud.",
+			},
+			{
+				property: "og:title",
+				content: "Words (experimental) | ManyTongues",
+			},
+			{
+				property: "og:description",
+				content:
+					"Experimental wordcloud2.js text cloud. Prefer Text Cloud for the default experience.",
 			},
 		],
 	}),

@@ -7,6 +7,8 @@ It has two main tools:
 - **Text Cloud**: paste or type any text and the app sizes each word by how often it appears.
 - **Translator**: enter a short phrase, translate it into many languages, and render those translations as a word cloud.
 
+There are also **experimental** pages (**Words** and **Translation**) that use [wordcloud2.js](https://github.com/timdream/wordcloud2.js) instead of [react-wordcloud](https://github.com/isoterik/react-wordcloud). Prefer **Text Cloud** and **Translate** unless you are comparing implementations.
+
 The app is built with `TanStack Start`, `React`, and `react-wordcloud`.
 
 ## What The App Does
@@ -27,19 +29,28 @@ This is useful for quickly visualizing themes, repeated terms, or the dominant v
 
 The translator page lets you:
 
-- enter a short phrase
+- choose a **source language** and enter a short phrase
 - translate that phrase into many target languages
 - show the original phrase and its translations together in a word cloud
 - remove individual translations
 - adjust each translation's weight so some languages appear larger or smaller in the cloud
+- **retry** after a provider or rate-limit error when the server returns a recoverable failure
 
-Translations are looked up in a Turso database first. If the phrase has already been translated before, the cached result is returned. If not, the app requests translations from external translation providers, stores the result, and then displays it.
+Translations are looked up in a Turso database first. If the phrase has already been translated before (for the same source language), the cached result is returned. If not, the app requests translations from external translation providers, stores the result, and then displays it.
+
+Server-side **rate limiting** (per client IP, when `DB_URL` is set) protects translation APIs from abuse.
 
 ## Routes
 
-- `/` home page with links to both tools
-- `/text-cloud` text-to-word-cloud generator
-- `/translate` phrase translator and multilingual word cloud
+- `/` home page with links to all tools
+- `/text-cloud` text-to-word-cloud generator (react-wordcloud)
+- `/translate` phrase translator and multilingual word cloud (react-wordcloud)
+- `/words` experimental text cloud (wordcloud2.js)
+- `/translation` experimental translator word cloud (wordcloud2.js)
+
+## URL search params
+
+Search state for the cloud pages is serialized with **Zipson** (compressed JSON) plus URL-safe base64 in the query string, configured on the router in [`src/router.tsx`](src/router.tsx). This keeps shareable URLs smaller than plain JSON.
 
 ## Local Setup
 
@@ -64,14 +75,14 @@ Create a `.env` file with:
 ```bash
 DB_URL=
 DB_AUTH_TOKEN=
-GOOGLE_TRANSLSTE=
+GOOGLE_TRANSLATE_KEY=
 MICROSOFT_TRANSLATE_KEY=
 ```
 
 Notes:
 
-- `DB_URL` and `DB_AUTH_TOKEN` are used for the Turso translation cache.
-- `GOOGLE_TRANSLSTE` is the Google Translate API key variable currently used by the codebase.
+- `DB_URL` and `DB_AUTH_TOKEN` are used for the Turso translation cache and for translator rate-limit counters.
+- `GOOGLE_TRANSLATE_KEY` is the preferred variable for the Google Translate API key. The legacy name `GOOGLE_TRANSLSTE` is still read as a fallback if `GOOGLE_TRANSLATE_KEY` is unset.
 - `MICROSOFT_TRANSLATE_KEY` is used as a fallback translation provider.
 
 ### Optional (analytics)
@@ -111,11 +122,10 @@ pnpm db:studio
 ## Tech Stack
 
 - `TanStack Start` for the app framework
-- `TanStack Router` for file-based routing
+- `TanStack Router` for file-based routing (custom Zipson + base64 search serialization in `src/router.tsx`)
 - `React` for UI
 - `Tailwind CSS` for styling
-- `react-wordcloud` and `d3-cloud` for cloud layout/rendering
-- `nuqs` for URL search params
+- `react-wordcloud`, `d3-cloud`, and (experimental) `wordcloud2.js` for cloud layout/rendering
 - `Drizzle ORM` with `@libsql/client` for Turso persistence
 - `Vitest` for tests
 - `Biome` for linting and formatting

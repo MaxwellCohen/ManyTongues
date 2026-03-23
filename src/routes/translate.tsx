@@ -15,6 +15,7 @@ import {
 	booleanSearchParam,
 	csvSearchParam,
 } from "#/features/word-cloud/searchParams";
+import { translatorSourceLanguageRouteSchema } from "#/lib/translatorSourceLanguages";
 import {
 	resolveTranslatorSearch,
 	type TranslatorSearch,
@@ -25,6 +26,7 @@ import { useTranslatePage } from "#/features/word-cloud/useTranslatePage";
 
 const translatorSearchSchema = z.object({
 	input: z.string().optional(),
+	sourceLanguage: translatorSourceLanguageRouteSchema,
 	translated: booleanSearchParam.optional(),
 	minFontSize: z.coerce.number().int().min(1).max(200).optional(),
 	maxFontSize: z.coerce.number().int().min(1).max(200).optional(),
@@ -49,6 +51,20 @@ export const Route = createFileRoute("/translate")({
 		meta: [
 			{
 				title: "Translate | ManyTongues",
+			},
+			{
+				name: "description",
+				content:
+					"Translate a short phrase into many languages and compare the results in a customizable word cloud.",
+			},
+			{
+				property: "og:title",
+				content: "Translate | ManyTongues",
+			},
+			{
+				property: "og:description",
+				content:
+					"Translate a short phrase into many languages and compare the results in a customizable word cloud.",
 			},
 		],
 	}),
@@ -130,11 +146,15 @@ function TranslatorWordCloudContent({
 			<IslandPanel className="space-y-5 rounded-2xl p-5 sm:p-6">
 				<Accordion title="Phrase" defaultOpen>
 					<TranslatorInputForm
-						key={resolvedSearch.input ?? "empty"}
+						key={`${resolvedSearch.sourceLanguage}-${resolvedSearch.input ?? "empty"}`}
 						initialInput={resolvedSearch.input ?? ""}
+						sourceLanguage={resolvedSearch.sourceLanguage}
 						loading={loading}
 						error={error}
 						translationCount={translations.size}
+						onSourceLanguageChange={(sourceLanguage) => {
+							updateSearch({ sourceLanguage, translated: false });
+						}}
 						onTranslate={(input: string) => {
 							updateSearch({ input });
 							requestTranslate(input);
@@ -142,6 +162,7 @@ function TranslatorWordCloudContent({
 						onBlur={(input: string) => {
 							updateSearch({ input, translated: false });
 						}}
+						onRetry={() => requestTranslate()}
 					/>
 				</Accordion>
 

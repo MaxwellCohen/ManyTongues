@@ -106,6 +106,15 @@ describe('useTranslatePage', () => {
       { timeout: 500 },
     )
 
+    expect(getOrTranslatePhrase).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          phrase: 'hello',
+          sourceLanguage: 'en',
+        }),
+      }),
+    )
+
     rerender({
       resolved: resolvedSearch,
       onSync: onSyncToUrl,

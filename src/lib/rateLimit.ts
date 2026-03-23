@@ -34,7 +34,7 @@ export function normalizeIpCandidate(value: string | null): string | null {
     : firstValue
 }
 
-async function consumeTranslatorRateLimit({
+export async function consumeTranslatorRateLimit({
   ip = 'unknown',
   maxRequests = DEFAULT_MAX_REQUESTS,
   windowMs = DEFAULT_WINDOW_MS,
@@ -92,4 +92,34 @@ async function consumeTranslatorRateLimit({
     remaining: Math.max(0, maxRequests - windowState.hits),
     retryAfterSeconds,
   }
+}
+
+/**
+ * Enforce per-IP translator limits when Turso is configured. Skips when `DB_URL`
+ * is unset so local dev without a database still works.
+ */
+export async function applyTranslatorRateLimit(ipRaw: string | null): Promise<
+  | { limited: false }
+  | {
+      limited: true
+      message: string
+      retryAfterSeconds: number
+    }
+> {
+  if (!process.env.DB_URL?.trim()) {
+    return { limited: false }
+  }
+
+  const ip = normalizeIpCandidate(ipRaw) ?? 'unknown'
+  const result = await consumeTranslatorRateLimit({ ip })
+
+  if (!result.allowed) {
+    return {
+      limited: true,
+      message: `Too many translation requests. Try again in ${result.retryAfterSeconds} seconds.`,
+      retryAfterSeconds: result.retryAfterSeconds,
+    }
+  }
+
+  return { limited: false }
 }

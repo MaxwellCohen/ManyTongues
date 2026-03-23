@@ -21,7 +21,7 @@ export default defineConfig({
         'src/db/schema.ts',
         'src/router.tsx',
         'src/routes/**',
-        'src/lib/GoogleTraslation.ts',
+        'src/lib/GoogleTranslation.ts',
         'src/lib/MicrosoftTranslation.ts',
         'src/lib/db.ts',
         'src/lib/translationDb.ts',

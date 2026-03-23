@@ -47,6 +47,20 @@ export const Route = createFileRoute("/text-cloud")({
 			{
 				title: "Text Cloud | ManyTongues",
 			},
+			{
+				name: "description",
+				content:
+					"Paste text, count word frequency, and build a customizable word cloud you can download as PNG.",
+			},
+			{
+				property: "og:title",
+				content: "Text Cloud | ManyTongues",
+			},
+			{
+				property: "og:description",
+				content:
+					"Paste text, count word frequency, and build a customizable word cloud you can download as PNG.",
+			},
 		],
 	}),
 	component: WordCloudPage,

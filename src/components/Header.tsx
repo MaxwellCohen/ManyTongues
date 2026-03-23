@@ -17,12 +17,34 @@ export default function Header() {
             </Link>
           </h2>
 
-          <div className="flex items-center gap-x-4 gap-y-1 text-sm font-semibold">
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm font-semibold">
             <NavLink to="/">Home</NavLink>
             <NavLink to="/text-cloud">Text Cloud</NavLink>
             <NavLink to="/translate">Translate</NavLink>
-            <NavLink to="/words">Words</NavLink>
-            <NavLink to="/translation">Translation</NavLink>
+            <NavLink
+              to="/words"
+              title="Experimental: wordcloud2.js text cloud"
+            >
+              Words{' '}
+              <span
+                className="text-[0.65rem] font-normal font-sans text-kicker normal-case"
+                aria-hidden
+              >
+                exp
+              </span>
+            </NavLink>
+            <NavLink
+              to="/translation"
+              title="Experimental: wordcloud2.js translator word cloud"
+            >
+              Translation{' '}
+              <span
+                className="text-[0.65rem] font-normal font-sans text-kicker normal-case"
+                aria-hidden
+              >
+                exp
+              </span>
+            </NavLink>
           </div>
         </div>
 

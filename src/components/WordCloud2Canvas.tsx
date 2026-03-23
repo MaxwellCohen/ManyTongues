@@ -1,5 +1,5 @@
 import { usePostHog } from "@posthog/react";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import IslandPanel from "#/components/IslandPanel";
 import { DownloadIcon } from "#/components/icons";
 import { DEFAULT_BG } from "#/lib/wordCloudUtils";
@@ -171,6 +171,18 @@ export default function WordCloud2Canvas({
 		options.color,
 	]);
 
+	const accessibilitySummary = useMemo(() => {
+		if (!hasWords || words.length === 0) {
+			return "Word cloud preview is empty.";
+		}
+		const sample = words
+			.slice()
+			.sort((a, b) => b.value - a.value)
+			.slice(0, 12)
+			.map((w) => w.text);
+		return `Word cloud with ${words.length} items. Largest terms include: ${sample.join(", ")}.`;
+	}, [hasWords, words]);
+
 	const handleDownload = useCallback(() => {
 		const canvas = canvasRef.current;
 		if (!canvas || !hasWords) return;
@@ -205,6 +217,8 @@ export default function WordCloud2Canvas({
 				</div>
 				<div
 					ref={containerRef}
+					role="img"
+					aria-label={accessibilitySummary}
 					className="relative flex min-h-70 flex-1 items-center justify-center rounded-xl border border-line lg:min-h-64"
 					style={{
 						backgroundColor: /^#[0-9A-Fa-f]{6}$/.test(backgroundColor)
@@ -217,12 +231,20 @@ export default function WordCloud2Canvas({
 							Loading preview...
 						</p>
 					) : hasWords && words.length > 0 ? (
-						<canvas
-							ref={canvasRef}
-							width={size[0]}
-							height={size[1]}
-							className="h-full w-full"
-						/>
+						<>
+							<ul className="sr-only">
+								{words.map((w, i) => (
+									<li key={`${i}-${w.text}`}>{w.text}</li>
+								))}
+							</ul>
+							<canvas
+								ref={canvasRef}
+								width={size[0]}
+								height={size[1]}
+								className="h-full w-full"
+								aria-hidden
+							/>
+						</>
 					) : (
 						<p className="text-sm text-sea-ink-soft">
 							Add text or translations to see your word cloud preview.

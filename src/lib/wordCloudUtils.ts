@@ -3,18 +3,6 @@ export const DEFAULT_TEXT = `Paste any text here to create a word cloud. Words t
 export const DEFAULT_COLORS = ['#173a40', '#328f97', '#4fb8b2', '#2f6a4a']
 export const DEFAULT_BG = '#e8f4f0'
 
-type CloudWord = {
-  text: string
-  value: number
-  x?: number
-  y?: number
-  rotate?: number
-  size?: number
-  font?: string
-  style?: string
-  weight?: string
-}
-
 /** Common English words excluded when "filter common words" is on. */
 export const DEFAULT_STOPWORDS = [
   'a', 'an', 'and', 'are', 'as', 'at', 'be', 'by', 'for', 'from',

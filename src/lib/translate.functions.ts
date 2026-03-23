@@ -1,7 +1,12 @@
 import { createServerFn } from "@tanstack/react-start";
-import { translatePhraseWithGoogle } from "#/lib/GoogleTraslation";
+import { getRequestIP } from "@tanstack/react-start/server";
+import { phraseAnalyticsProps } from "#/lib/analyticsPhrase";
+import { translatePhraseWithGoogle } from "#/lib/GoogleTranslation";
 import { translatePhraseWithMicrosoft } from "#/lib/MicrosoftTranslation";
 import type { GetOrTranslateResult } from "#/lib/translate.types";
+import {
+	getOrTranslatePhraseInputSchema,
+} from "#/lib/translateServerInput";
 import {
 	parseStoredTranslations,
 	validatePhrase,
@@ -10,9 +15,12 @@ import {
 	getExistingPhraseTranslation,
 	storePhraseTranslations,
 } from "#/lib/translationDb";
+import { applyTranslatorRateLimit } from "#/lib/rateLimit";
 import { getPostHogClient } from "#/utils/posthog-server";
 
 const DEFAULT_SOURCE_LANGUAGE = "en";
+
+type StepCtx = { googleMissed: boolean };
 
 /** Keep one language per unique translation text so duplicate results collapse to one. */
 function deduplicateTranslationsByValue(
@@ -37,6 +45,7 @@ type TranslationStepResult = {
 type TranslationStep = (
 	phrase: string,
 	sourceLanguage: string,
+	ctx: StepCtx,
 ) => Promise<TranslationStepResult>;
 
 async function getCachedTranslations(
@@ -60,6 +69,7 @@ async function getCachedTranslations(
 async function validatePhraseStep(
 	phrase: string,
 	_sourceLanguage: string,
+	_ctx: StepCtx,
 ): Promise<TranslationStepResult> {
 	const validated = validatePhrase(phrase);
 	if (!validated.ok) {
@@ -72,6 +82,7 @@ async function validatePhraseStep(
 async function getCachedTranslationsStep(
 	phrase: string,
 	sourceLanguage: string,
+	_ctx: StepCtx,
 ): Promise<TranslationStepResult> {
 	const cached = await getCachedTranslations(phrase, sourceLanguage);
 	if (!cached.ok) {
@@ -94,6 +105,7 @@ async function getCachedTranslationsStep(
 async function getGoogleTranslationsStep(
 	phrase: string,
 	sourceLanguage: string,
+	ctx: StepCtx,
 ): Promise<TranslationStepResult> {
 	const googleResult = await translatePhraseWithGoogle(phrase, sourceLanguage);
 	const deduped = deduplicateTranslationsByValue(googleResult.translations);
@@ -108,6 +120,7 @@ async function getGoogleTranslationsStep(
 		};
 	}
 
+	ctx.googleMissed = true;
 	return {
 		callNextStep: true,
 		stepError:
@@ -119,6 +132,7 @@ async function getGoogleTranslationsStep(
 async function getMicrosoftTranslationsStep(
 	phrase: string,
 	sourceLanguage: string,
+	ctx: StepCtx,
 ): Promise<TranslationStepResult> {
 	try {
 		const microsoftTranslations = await translatePhraseWithMicrosoft(
@@ -140,7 +154,11 @@ async function getMicrosoftTranslationsStep(
 		const microsoftError = err instanceof Error ? err.message : String(err);
 		return {
 			callNextStep: false,
-			result: { ok: false, error: microsoftError },
+			result: {
+				ok: false,
+				error: microsoftError,
+				failedProviders: ["microsoft"],
+			},
 		};
 	}
 
@@ -149,6 +167,9 @@ async function getMicrosoftTranslationsStep(
 		result: {
 			ok: false,
 			error: "We couldn't generate translations for that phrase.",
+			failedProviders: ctx.googleMissed
+				? (["google", "microsoft"] as const)
+				: (["microsoft"] as const),
 		},
 	};
 }
@@ -159,8 +180,10 @@ export async function runGetOrTranslatePhrase(data: {
 	sourceLanguage?: string;
 }): Promise<GetOrTranslateResult> {
 	const phrase = data.phrase?.trim() ?? "";
-	const sourceLanguage = data.sourceLanguage ?? DEFAULT_SOURCE_LANGUAGE;
+	const sourceLanguage =
+		data.sourceLanguage?.trim() || DEFAULT_SOURCE_LANGUAGE;
 
+	const ctx: StepCtx = { googleMissed: false };
 	const steps: TranslationStep[] = [
 		validatePhraseStep,
 		getCachedTranslationsStep,
@@ -170,7 +193,7 @@ export async function runGetOrTranslatePhrase(data: {
 
 	let previousStepError: string | undefined;
 	for (const step of steps) {
-		const stepResult = await step(phrase, sourceLanguage);
+		const stepResult = await step(phrase, sourceLanguage, ctx);
 		if (stepResult.stepError) {
 			previousStepError = stepResult.stepError;
 		}
@@ -196,23 +219,38 @@ export async function runGetOrTranslatePhrase(data: {
 	};
 }
 
+function clientIpForRateLimit(): string | null {
+	return getRequestIP({ xForwardedFor: true }) ?? null;
+}
+
 /**
  * Server function: get all translations for a phrase. If the phrase exists in
  * the database, return cached translations; otherwise translate to all target
  * languages, save one record, and return. Uses DB_URL and DB_AUTH_TOKEN for Turso.
  */
 export const getOrTranslatePhrase = createServerFn({ method: "POST" })
-	.inputValidator((data: { phrase: string; sourceLanguage?: string }) => data)
+	.inputValidator((data: unknown) => getOrTranslatePhraseInputSchema.parse(data))
 	.handler(async (ctx) => {
-		const result = await runGetOrTranslatePhrase(ctx.data);
+		const rate = await applyTranslatorRateLimit(clientIpForRateLimit());
+		if (rate.limited) {
+			return { ok: false as const, error: rate.message };
+		}
+
+		const sourceLanguage =
+			ctx.data.sourceLanguage?.trim() || DEFAULT_SOURCE_LANGUAGE;
+		const result = await runGetOrTranslatePhrase({
+			phrase: ctx.data.phrase,
+			sourceLanguage,
+		});
 		const posthog = getPostHogClient();
+		const analytics = phraseAnalyticsProps(ctx.data.phrase ?? "");
 		if (result.ok) {
 			posthog.capture({
 				distinctId: "server",
 				event: "phrase_translated",
 				properties: {
-					phrase: ctx.data.phrase,
-					source_language: ctx.data.sourceLanguage ?? "en",
+					...analytics,
+					source_language: sourceLanguage,
 					translation_count: Object.keys(result.translations).length,
 					source: "server_fn",
 				},
@@ -222,9 +260,10 @@ export const getOrTranslatePhrase = createServerFn({ method: "POST" })
 				distinctId: "server",
 				event: "phrase_translation_failed",
 				properties: {
-					phrase: ctx.data.phrase,
-					source_language: ctx.data.sourceLanguage ?? "en",
+					...analytics,
+					source_language: sourceLanguage,
 					error: result.error,
+					failed_providers: result.failedProviders ?? [],
 					source: "server_fn",
 				},
 			});

@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-vi.mock('#/lib/GoogleTraslation', () => ({
+vi.mock('#/lib/GoogleTranslation', () => ({
   translatePhraseWithGoogle: vi.fn(),
 }))
 vi.mock('#/lib/MicrosoftTranslation', () => ({
@@ -11,7 +11,7 @@ vi.mock('#/lib/translationDb', () => ({
   storePhraseTranslations: vi.fn(),
 }))
 
-import { translatePhraseWithGoogle } from '#/lib/GoogleTraslation'
+import { translatePhraseWithGoogle } from '#/lib/GoogleTranslation'
 import { translatePhraseWithMicrosoft } from '#/lib/MicrosoftTranslation'
 import {
   getExistingPhraseTranslation,
@@ -76,7 +76,7 @@ describe('runGetOrTranslatePhrase', () => {
     })
     vi.mocked(translatePhraseWithGoogle).mockResolvedValue({
       translations: { fr: 'bonjour' },
-      error: undefined,
+      error: null,
     })
     vi.mocked(storePhraseTranslations).mockResolvedValue({
       ok: true,
@@ -133,6 +133,7 @@ describe('runGetOrTranslatePhrase', () => {
     expect(result).toEqual({
       ok: false,
       error: "We couldn't generate translations for that phrase.",
+      failedProviders: ['google', 'microsoft'],
     })
   })
 
@@ -153,6 +154,7 @@ describe('runGetOrTranslatePhrase', () => {
     expect(result).toEqual({
       ok: false,
       error: 'Microsoft API error',
+      failedProviders: ['microsoft'],
     })
   })
 
@@ -171,6 +173,7 @@ describe('runGetOrTranslatePhrase', () => {
     expect(result).toEqual({
       ok: false,
       error: "We couldn't generate translations for that phrase.",
+      failedProviders: ['google', 'microsoft'],
     })
   })
 
@@ -180,7 +183,7 @@ describe('runGetOrTranslatePhrase', () => {
     })
     vi.mocked(translatePhraseWithGoogle).mockResolvedValue({
       translations: { fr: 'bonjour' },
-      error: undefined,
+      error: null,
     })
     vi.mocked(storePhraseTranslations).mockResolvedValue({
       ok: true,

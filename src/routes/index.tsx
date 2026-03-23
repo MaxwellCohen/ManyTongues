@@ -22,18 +22,18 @@ const featureCards = [
   {
     to: '/words' as const,
     Icon: TextCloudIcon,
-    title: 'Words',
+    title: 'Words (experimental)',
     description:
-      'Paste text and see word frequency as a word cloud. Built with wordcloud2.js.',
-    ctaLabel: 'Open Words →',
+      'Alternate text cloud using wordcloud2.js. Prefer Text Cloud for the default experience.',
+    ctaLabel: 'Open Words (exp) →',
   },
   {
     to: '/translation' as const,
     Icon: TranslateIcon,
-    title: 'Translation',
+    title: 'Translation (experimental)',
     description:
-      'Translate a phrase into multiple languages and view the results as a word cloud. Built with wordcloud2.js.',
-    ctaLabel: 'Open Translation →',
+      'Alternate translator word cloud using wordcloud2.js. Prefer Translate for the default experience.',
+    ctaLabel: 'Open Translation (exp) →',
   },
 ]
 
@@ -42,6 +42,20 @@ export const Route = createFileRoute('/')({
     meta: [
       {
         title: 'ManyTongues',
+      },
+      {
+        name: 'description',
+        content:
+          'Create word clouds from text or translate a short phrase into many languages and compare results visually.',
+      },
+      {
+        property: 'og:title',
+        content: 'ManyTongues',
+      },
+      {
+        property: 'og:description',
+        content:
+          'Create word clouds from text or translate a short phrase into many languages and compare results visually.',
       },
     ],
   }),
