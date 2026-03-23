@@ -8,6 +8,7 @@ import IslandPanel from "#/components/IslandPanel";
 import PageHero from "#/components/PageHero";
 import SourceTextPanel from "#/components/SourceTextPanel";
 import WordCloud2Canvas from "#/components/WordCloud2Canvas";
+import WordCloudPageLayout from "#/components/WordCloudPageLayout";
 import WordCloudOptionCheckboxField from "#/components/word-cloud-options/WordCloudOptionCheckboxField";
 import WordCloud2OptionsForm from "#/components/WordCloud2OptionsForm";
 import type { CloudStyleFormState } from "#/components/WordCloud2OptionsForm";
@@ -22,7 +23,6 @@ import {
 	resolveWordsSearch,
 	type FullWordsSearch,
 	getWordsSearchForUrl,
-	translatorCloud2ColorOptions,
 	translatorCloud2FontWeightOptions,
 	translatorCloud2ShapeOptions,
 } from "#/features/word-cloud/wordsState";
@@ -160,9 +160,8 @@ function WordsPage() {
 				description="Paste text and see word frequency as a word cloud. Built with wordcloud2.js."
 			/>
 
-			<div className="animate-rise-in mt-10 flex flex-col gap-8 lg:grid lg:grid-cols-[1fr_617px] lg:items-start lg:gap-x-8 lg:gap-y-8">
-				{/* Left column (lg+): word cloud only — sticky so it stays on screen while scrolling */}
-				<div className="flex min-w-0 flex-col lg:col-start-1 lg:row-start-1 lg:self-start lg:sticky lg:top-6 lg:max-h-[calc(100vh-2rem)] lg:overflow-y-auto">
+			<WordCloudPageLayout
+				cloud={
 					<WordCloud2Canvas
 						words={words}
 						backgroundColor={resolvedSearch.backgroundColor}
@@ -170,83 +169,80 @@ function WordsPage() {
 						hasWords={hasWords}
 						options={cloudOptions}
 					/>
-				</div>
+				}
+			>
+				<div className="space-y-4">
+					<SourceTextPanel
+						key={resolvedSearch.input ?? "empty"}
+						defaultValue={resolvedSearch.input ?? ""}
+						onBlur={(value) => {
+							updateSearch({ input: value });
+							if (value.trim()) {
+								const wordCount = value.trim().split(/\s+/).length;
+								posthog?.capture("words_cloud_text_entered", {
+									character_count: value.length,
+									word_count: wordCount,
+								});
+							}
+						}}
+					/>
 
-				{/* Right column (lg+): source text, filters, cloud style options */}
-				<div className="flex min-w-0 flex-col gap-8 lg:col-start-2 lg:row-start-1">
-					<div className="space-y-4">
-						<SourceTextPanel
-							key={resolvedSearch.input ?? "empty"}
-							defaultValue={resolvedSearch.input ?? ""}
-							onBlur={(value) => {
-								updateSearch({ input: value });
-								if (value.trim()) {
-									const wordCount = value.trim().split(/\s+/).length;
-									posthog?.capture("words_cloud_text_entered", {
-										character_count: value.length,
-										word_count: wordCount,
-									});
-								}
-							}}
-						/>
-
-						<IslandPanel className="rounded-2xl p-5 sm:p-6">
-							<Accordion title="Word filters" defaultOpen={false}>
-								<div className="space-y-4 pt-1">
-									<WordCloudOptionCheckboxField
-										label="Exclude common words (the, of, and, a, …)"
-										checked={resolvedSearch.filterStopwords}
-										defaultChecked={resolvedSearch.filterStopwords}
-										onChange={(checked) =>
-											updateSearch({ filterStopwords: checked })
-										}
-										onBlur={(checked) =>
-											updateSearch({ filterStopwords: checked })
-										}
+					<IslandPanel className="rounded-2xl p-5 sm:p-6">
+						<Accordion title="Word filters" defaultOpen={false}>
+							<div className="space-y-4 pt-1">
+								<WordCloudOptionCheckboxField
+									label="Exclude common words (the, of, and, a, …)"
+									checked={resolvedSearch.filterStopwords}
+									defaultChecked={resolvedSearch.filterStopwords}
+									onChange={(checked) =>
+										updateSearch({ filterStopwords: checked })
+									}
+									onBlur={(checked) =>
+										updateSearch({ filterStopwords: checked })
+									}
+								/>
+								<label className="block">
+									<span className="mb-1 block text-xs font-medium text-sea-ink-soft">
+										Also exclude (comma-separated)
+									</span>
+									<input
+										key={`customExclude-${(resolvedSearch.customExclude ?? []).join(",")}`}
+										type="text"
+										className="w-full rounded-lg border border-line bg-foam px-3 py-2 text-sm text-sea-ink placeholder:text-sea-ink-soft focus:border-lagoon focus:outline-none focus:ring-1 focus:ring-lagoon"
+										placeholder="e.g. said, like, just"
+										defaultValue={(resolvedSearch.customExclude ?? []).join(", ")}
+										onBlur={(e) => {
+											const raw = e.target.value
+												.split(",")
+												.map((s) => s.trim().toLowerCase())
+												.filter(Boolean);
+											const prev =
+												(resolvedSearch.customExclude ?? []).join(", ");
+											const next = raw.join(", ");
+											if (next !== prev)
+												updateSearch({ customExclude: raw });
+										}}
 									/>
-									<label className="block">
-										<span className="mb-1 block text-xs font-medium text-sea-ink-soft">
-											Also exclude (comma-separated)
-										</span>
-										<input
-											key={`customExclude-${(resolvedSearch.customExclude ?? []).join(",")}`}
-											type="text"
-											className="w-full rounded-lg border border-line bg-foam px-3 py-2 text-sm text-sea-ink placeholder:text-sea-ink-soft focus:border-lagoon focus:outline-none focus:ring-1 focus:ring-lagoon"
-											placeholder="e.g. said, like, just"
-											defaultValue={(resolvedSearch.customExclude ?? []).join(", ")}
-											onBlur={(e) => {
-												const raw = e.target.value
-													.split(",")
-													.map((s) => s.trim().toLowerCase())
-													.filter(Boolean);
-												const prev =
-													(resolvedSearch.customExclude ?? []).join(", ");
-												const next = raw.join(", ");
-												if (next !== prev)
-													updateSearch({ customExclude: raw });
-											}}
-										/>
-									</label>
-								</div>
-							</Accordion>
-						</IslandPanel>
-					</div>
-
-					<aside
-						className="w-full shrink-0 rounded-2xl border border-line bg-foam/50 px-5 py-6 lg:sticky lg:top-6 lg:max-h-[calc(100vh-2rem)] lg:overflow-y-auto"
-						aria-label="Word cloud options"
-					>
-						<h2 className="mb-4 text-sm font-semibold uppercase tracking-wide text-sea-ink-soft">
-							Cloud style
-						</h2>
-						<WordCloud2OptionsForm
-							formState={formState}
-							defaults={WORDS_CLOUD_DEFAULTS}
-							onUpdateSearch={updateSearch}
-						/>
-					</aside>
+								</label>
+							</div>
+						</Accordion>
+					</IslandPanel>
 				</div>
-			</div>
+
+				<aside
+					className="w-full shrink-0 rounded-2xl border border-line bg-foam/50 px-5 py-6 lg:sticky lg:top-6 lg:max-h-[calc(100vh-2rem)] lg:overflow-y-auto"
+					aria-label="Word cloud options"
+				>
+					<h2 className="mb-4 text-sm font-semibold uppercase tracking-wide text-sea-ink-soft">
+						Cloud style
+					</h2>
+					<WordCloud2OptionsForm
+						formState={formState}
+						defaults={WORDS_CLOUD_DEFAULTS}
+						onUpdateSearch={updateSearch}
+					/>
+				</aside>
+			</WordCloudPageLayout>
 		</>
 	);
 }

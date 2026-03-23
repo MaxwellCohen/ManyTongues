@@ -5,6 +5,7 @@ import {
   FieldLabel,
   FieldMessage,
 } from "#/components/ui/field";
+import { Button } from "#/components/ui/button";
 import { Input } from "#/components/ui/input";
 
 type TranslatorInputFormProps = {
@@ -51,8 +52,8 @@ export function TranslatorInputForm({
           <Input
             ref={inputRef}
             type="text"
-            uiSize="lg"
             defaultValue={initialInput}
+            className="h-9 px-3 py-2 text-sm"
             onKeyDown={(e) => {
               if (e.key !== "Enter") return;
               e.preventDefault();
@@ -66,14 +67,14 @@ export function TranslatorInputForm({
         <FieldMessage role="alert">{error}</FieldMessage>
       </Field>
 
-      <button
+      <Button
         type="button"
         onClick={handleTranslate}
         disabled={loading || !hasContent}
-        className="mt-3 w-full rounded-xl bg-lagoon px-4 py-3 text-sm font-semibold text-white hover:bg-lagoon/90 disabled:opacity-50 disabled:pointer-events-none"
+        className="mt-3 w-full"
       >
         {loading ? "Translating..." : "Translate phrase"}
-      </button>
+      </Button>
 
       {translationCount > 0 && !loading && (
         <p className="mt-2 text-sm text-sea-ink-soft">

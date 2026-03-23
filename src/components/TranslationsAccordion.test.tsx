@@ -26,18 +26,22 @@ vi.mock('#/components/ui/field', () => ({
   ),
 }))
 
-vi.mock('#/components/ui/range-input', () => ({
-  RangeInput: (props: {
-    value: number
-    onChange: (e: { target: { value: string } }) => void
-    onBlur: () => void
+vi.mock('#/components/ui/slider', () => ({
+  Slider: (props: {
+    value: number[]
+    onValueChange: (value: number[]) => void
+    onValueCommitted?: () => void
+    min?: number
+    max?: number
   }) => (
     <input
       type="range"
       data-testid="range-input"
-      value={props.value}
-      onChange={(e) => props.onChange(e as unknown as { target: { value: string } })}
-      onBlur={props.onBlur}
+      value={props.value[0]}
+      onChange={(e) =>
+        props.onValueChange([Number((e.target as HTMLInputElement).value)])
+      }
+      onBlur={props.onValueCommitted}
     />
   ),
 }))

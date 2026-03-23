@@ -4,10 +4,12 @@ import { zodValidator } from "@tanstack/zod-adapter";
 import { useMemo } from "react";
 import { z } from "zod";
 import Accordion from "#/components/Accordion";
+import IslandPanel from "#/components/IslandPanel";
 import PageHero from "#/components/PageHero";
 import SourceTextPanel from "#/components/SourceTextPanel";
 import WordCloudCanvas from "#/components/WordCloudCanvas";
 import WordCloudOptions from "#/components/WordCloudOptions";
+import WordCloudPageLayout from "#/components/WordCloudPageLayout";
 import {
 	booleanSearchParam,
 	csvSearchParam,
@@ -129,7 +131,18 @@ function WordCloudPage() {
 				description="Paste text, adjust the layout and colors, then export a clean word cloud image."
 			/>
 
-			<div className="animate-rise-in mt-10 grid gap-8 lg:grid-cols-[1fr_617px] lg:items-start">
+			<WordCloudPageLayout
+				cloud={
+					<WordCloudCanvas
+						words={cloudData}
+						palette={palette}
+						backgroundColor={backgroundColor}
+						mounted
+						hasWords={hasWords}
+						options={cloudOptions}
+					/>
+				}
+			>
 				<SourceTextPanel
 					key={JSON.stringify(resolvedSearch)}
 					defaultValue={input}
@@ -145,22 +158,15 @@ function WordCloudPage() {
 					}}
 				/>
 
-				<WordCloudCanvas
-					words={cloudData}
-					palette={palette}
-					backgroundColor={backgroundColor}
-					mounted
-					hasWords={hasWords}
-					options={cloudOptions}
-				>
-					<Accordion title="Cloud styling" className="mt-5">
+				<IslandPanel className="rounded-2xl p-5 sm:p-6">
+					<Accordion title="Cloud styling" defaultOpen={false}>
 						<WordCloudOptions
 							formState={resolvedSearch}
 							onUpdateSearch={updateSearch}
 						/>
 					</Accordion>
-				</WordCloudCanvas>
-			</div>
+				</IslandPanel>
+			</WordCloudPageLayout>
 		</>
 	);
 }

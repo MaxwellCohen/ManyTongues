@@ -10,6 +10,7 @@ import TranslationsAccordion from "#/components/TranslationsAccordion";
 import { TranslatorInputForm } from "#/components/TranslatorInputForm";
 import WordCloudCanvas from "#/components/WordCloudCanvas";
 import WordCloudOptions from "#/components/WordCloudOptions";
+import WordCloudPageLayout from "#/components/WordCloudPageLayout";
 import {
 	booleanSearchParam,
 	csvSearchParam,
@@ -114,7 +115,18 @@ function TranslatorWordCloudContent({
 	});
 
 	return (
-		<div className="animate-rise-in mt-10 grid gap-8 lg:grid-cols-[1fr_617px] lg:items-start">
+		<WordCloudPageLayout
+			cloud={
+				<WordCloudCanvas
+					words={cloudData}
+					palette={palette}
+					backgroundColor={formState.backgroundColor}
+					mounted
+					hasWords={hasWords}
+					options={cloudOptions}
+				/>
+			}
+		>
 			<IslandPanel className="space-y-5 rounded-2xl p-5 sm:p-6">
 				<Accordion title="Phrase" defaultOpen>
 					<TranslatorInputForm
@@ -150,21 +162,14 @@ function TranslatorWordCloudContent({
 				)}
 			</IslandPanel>
 
-			<WordCloudCanvas
-				words={cloudData}
-				palette={palette}
-				backgroundColor={formState.backgroundColor}
-				mounted
-				hasWords={hasWords}
-				options={cloudOptions}
-			>
-				<Accordion title="Cloud styling" className="mt-5">
+			<IslandPanel className="rounded-2xl p-5 sm:p-6">
+				<Accordion title="Cloud styling" defaultOpen={false}>
 					<WordCloudOptions
 						formState={formState}
 						onUpdateSearch={updateSearch}
 					/>
 				</Accordion>
-			</WordCloudCanvas>
-		</div>
+			</IslandPanel>
+		</WordCloudPageLayout>
 	);
 }

@@ -1,6 +1,15 @@
-import { useRef } from 'react'
-import { Field, FieldControl, FieldLabel } from '#/components/ui/field'
-import { Select } from '#/components/ui/select'
+import {
+  Field,
+  FieldControl,
+  FieldLabel,
+} from '#/components/ui/field'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '#/components/ui/select'
 
 type SelectOption = {
   value: string
@@ -17,7 +26,6 @@ export default function WordCloudOptionSelectField({
   className,
 }: {
   label: string
-  /** When provided, the select is controlled and stays in sync with parent state. */
   value?: string
   defaultValue: string
   options: ReadonlyArray<SelectOption>
@@ -25,16 +33,9 @@ export default function WordCloudOptionSelectField({
   onBlur: (value: string) => void
   className?: string
 }) {
-  const selectRef = useRef<HTMLSelectElement>(null)
-  const isControlled = value !== undefined
+  const currentValue = value ?? defaultValue
 
-  const handleChange = () => {
-    const next = selectRef.current?.value
-    if (next != null) onChange(next)
-  }
-
-  const handleBlur = () => {
-    const next = selectRef.current?.value
+  const handleValueChange = (next: string | null) => {
     if (next != null) {
       onChange(next)
       onBlur(next)
@@ -46,16 +47,19 @@ export default function WordCloudOptionSelectField({
       <FieldLabel>{label}</FieldLabel>
       <FieldControl>
         <Select
-          ref={selectRef}
-          {...(isControlled ? { value } : { defaultValue })}
-          onChange={handleChange}
-          onBlur={handleBlur}
+          value={currentValue}
+          onValueChange={handleValueChange}
         >
-          {options.map((option) => (
-            <option key={option.value} value={option.value}>
-              {option.label}
-            </option>
-          ))}
+          <SelectTrigger className="w-full">
+            <SelectValue placeholder="Select…" />
+          </SelectTrigger>
+          <SelectContent>
+            {options.map((option) => (
+              <SelectItem key={option.value} value={option.value}>
+                {option.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
         </Select>
       </FieldControl>
     </Field>

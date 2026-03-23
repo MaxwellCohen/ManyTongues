@@ -4,7 +4,7 @@ import {
   FieldControl,
   FieldLabel,
 } from "#/components/ui/field";
-import { RangeInput } from "#/components/ui/range-input";
+import { Slider } from "#/components/ui/slider";
 import {
   DEFAULT_WEIGHT,
   WEIGHT_MAX,
@@ -59,13 +59,15 @@ function TranslationRow({
       <Field className="flex items-center gap-1.5">
         <FieldLabel className="sr-only">Weight for {lang}</FieldLabel>
         <FieldControl>
-          <RangeInput
+          <Slider
             min={WEIGHT_MIN}
             max={WEIGHT_MAX}
-            value={localWeight}
-            onChange={(e) => setLocalWeight(Number(e.target.value))}
-
-            onBlur={() => startTransition(onBlur)}
+            value={[localWeight]}
+            onValueChange={(value) => {
+              const next = Array.isArray(value) ? value[0] : value
+              setLocalWeight(next ?? localWeight)
+            }}
+            onValueCommitted={() => startTransition(onBlur)}
             className="w-24"
           />
         </FieldControl>

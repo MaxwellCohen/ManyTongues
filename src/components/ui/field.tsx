@@ -9,7 +9,8 @@ import {
   type ReactElement,
   type ReactNode,
 } from 'react'
-import { cn } from '#/lib/cn'
+import { cn } from '#/lib/utils'
+import { Label } from '#/components/ui/label'
 
 type FieldContextValue = {
   fieldId: string
@@ -60,7 +61,7 @@ export function FieldLabel({
   const { fieldId } = useFieldContext('FieldLabel')
 
   return (
-    <label
+    <Label
       className={cn(fieldLabelClassName, className)}
       htmlFor={props.htmlFor ?? fieldId}
       {...props}
@@ -87,15 +88,16 @@ export function FieldControl({
   }
 
   const ariaDescribedBy = describedBy ?? `${descriptionId} ${messageId}`
+  const prev = child.props as { id?: string; 'aria-describedby'?: string; 'aria-invalid'?: boolean }
 
   return cloneElement(child, {
-    id: child.props.id ?? fieldId,
-    'aria-describedby': child.props['aria-describedby'] ?? ariaDescribedBy,
-    'aria-invalid': child.props['aria-invalid'] ?? (invalid || undefined),
-  })
+    id: prev.id ?? fieldId,
+    'aria-describedby': prev['aria-describedby'] ?? ariaDescribedBy,
+    'aria-invalid': prev['aria-invalid'] ?? (invalid || undefined),
+  } as Record<string, unknown>)
 }
 
-function FieldDescription({
+export function FieldDescription({
   className,
   children,
   ...props

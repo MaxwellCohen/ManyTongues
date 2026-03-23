@@ -1,31 +1,23 @@
-import { forwardRef, type ComponentPropsWithoutRef } from 'react'
-import { cn } from '#/lib/cn'
+import * as React from "react"
 
-const textareaBaseClassName =
-  'w-full border border-line bg-foam text-sea-ink placeholder:text-sea-ink-soft transition focus:border-lagoon focus:outline-none focus:ring-2 focus:ring-lagoon/30 disabled:cursor-not-allowed disabled:opacity-60'
+import { cn } from "#/lib/utils"
 
-const textareaSizeClassNames = {
-  sm: 'rounded-lg px-3 py-2 text-sm',
-  lg: 'resize-y rounded-xl px-4 py-3',
-} as const
-
-type TextareaProps = ComponentPropsWithoutRef<'textarea'> & {
-  size?: keyof typeof textareaSizeClassNames
+function Textarea({
+  ref,
+  className,
+  ...props
+}: React.ComponentProps<"textarea">) {
+  return (
+    <textarea
+      ref={ref}
+      data-slot="textarea"
+      className={cn(
+        "flex field-sizing-content min-h-16 w-full resize-none rounded-md border border-input bg-input/20 px-2 py-2 text-sm transition-colors outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/30 disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-2 aria-invalid:ring-destructive/20 md:text-xs/relaxed dark:bg-input/30 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40",
+        className
+      )}
+      {...props}
+    />
+  )
 }
 
-const textareaClassName = cn(
-  textareaBaseClassName,
-  textareaSizeClassNames.lg,
-)
-
-export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
-  function Textarea({ className, size = 'lg', ...props }, ref) {
-    return (
-      <textarea
-        ref={ref}
-        className={cn(textareaBaseClassName, textareaSizeClassNames[size], className)}
-        {...props}
-      />
-    )
-  },
-)
+export { Textarea }

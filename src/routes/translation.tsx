@@ -9,6 +9,7 @@ import TranslationsAccordion from "#/components/TranslationsAccordion";
 import { TranslatorInputForm } from "#/components/TranslatorInputForm";
 import WordCloud2Canvas from "#/components/WordCloud2Canvas";
 import WordCloud2OptionsForm from "#/components/WordCloud2OptionsForm";
+import WordCloudPageLayout from "#/components/WordCloudPageLayout";
 import {
 	booleanSearchParam,
 	csvSearchParam,
@@ -18,10 +19,8 @@ import {
 	deduplicateCloudDataByValue,
 	getTranslatorPalette,
 	hashWordForColor,
-	type FullTranslatorSearch,
 	resolveTranslatorSearch,
 	type TranslatorSearch,
-	translatorCloud2ColorOptions,
 	translatorCloud2FontWeightOptions,
 	translatorCloud2ShapeOptions,
 	translatorScaleOptions,
@@ -142,9 +141,8 @@ function TranslationWordCloudContent({
 	});
 
 	return (
-		<div className="animate-rise-in mt-10 flex min-w-0 flex-col gap-8 overflow-x-hidden lg:grid lg:grid-cols-[1fr_617px] lg:items-start lg:gap-x-8 lg:gap-y-8">
-			{/* Left column (lg+): word cloud only — sticky so it stays on screen while scrolling */}
-			<div className="flex min-w-0 flex-col lg:col-start-1 lg:row-start-1 lg:self-start lg:sticky lg:top-6 lg:max-h-[calc(100vh-2rem)] lg:overflow-y-auto">
+		<WordCloudPageLayout
+			cloud={
 				<WordCloud2Canvas
 					words={deduplicateCloudDataByValue(cloudData)}
 					backgroundColor={formState.backgroundColor}
@@ -172,75 +170,72 @@ function TranslationWordCloudContent({
 						rotateRatio: formState.cloud2RotateRatio ?? 0.1,
 					}}
 				/>
-			</div>
+			}
+		>
+			<IslandPanel className="rounded-2xl p-5 sm:p-6">
+				<h2 className="mb-4 text-sm font-semibold uppercase tracking-wide text-sea-ink-soft">
+					Enter phrase
+				</h2>
+				<TranslatorInputForm
+					key={resolvedSearch.input ?? "empty"}
+					initialInput={resolvedSearch.input ?? ""}
+					loading={loading}
+					error={error}
+					translationCount={translations.size}
+					onTranslate={(input: string) => {
+						updateSearch({ input });
+						requestTranslate(input);
+					}}
+					onBlur={(input: string) => {
+						const inputChanged = input !== formState.input;
+						updateSearch(
+							inputChanged ? { input, translated: false } : { input },
+						);
+					}}
+				/>
+			</IslandPanel>
 
-			{/* Right column (lg+): phrase, translations, cloud style options — overflow hidden so accordion open/close doesn't change column width */}
-			<div className="flex min-w-0 flex-col gap-8 overflow-x-hidden lg:col-start-2 lg:row-start-1">
-				<IslandPanel className="rounded-2xl p-5 sm:p-6">
-					<h2 className="mb-4 text-sm font-semibold uppercase tracking-wide text-sea-ink-soft">
-						Enter phrase
-					</h2>
-					<TranslatorInputForm
-						key={resolvedSearch.input ?? "empty"}
-						initialInput={resolvedSearch.input ?? ""}
-						loading={loading}
-						error={error}
-						translationCount={translations.size}
-						onTranslate={(input: string) => {
-							updateSearch({ input });
-							requestTranslate(input);
+			<IslandPanel className="rounded-2xl p-5 sm:p-6">
+				{translations.size > 0 ? (
+					<TranslationsAccordion
+						visibleTranslations={visibleTranslations}
+						weights={weights}
+						onWeightChange={setWeight}
+						onRemoveLanguage={(lang) => {
+							posthog.capture("translation_language_removed", {
+								language: lang,
+								remaining_languages: visibleTranslations.length - 1,
+								page: "translation",
+							});
+							startTransition(() => hideLanguage(lang));
 						}}
-						onBlur={(input: string) => {
-							const inputChanged = input !== formState.input;
-							updateSearch(
-								inputChanged ? { input, translated: false } : { input },
-							);
-						}}
+						onBlur={() => {}}
+						defaultOpen
 					/>
-				</IslandPanel>
+				) : (
+					<div className="rounded-xl border border-line bg-foam/50 px-4 py-6 text-center">
+						<p className="text-sm text-sea-ink-soft">
+							Translate a phrase above to see languages and adjust weights
+							for the cloud.
+						</p>
+					</div>
+				)}
+			</IslandPanel>
 
-				<IslandPanel className="rounded-2xl p-5 sm:p-6">
-					{translations.size > 0 ? (
-						<TranslationsAccordion
-							visibleTranslations={visibleTranslations}
-							weights={weights}
-							onWeightChange={setWeight}
-							onRemoveLanguage={(lang) => {
-								posthog.capture("translation_language_removed", {
-									language: lang,
-									remaining_languages: visibleTranslations.length - 1,
-									page: "translation",
-								});
-								startTransition(() => hideLanguage(lang));
-							}}
-							onBlur={() => {}}
-							defaultOpen
-						/>
-					) : (
-						<div className="rounded-xl border border-line bg-foam/50 px-4 py-6 text-center">
-							<p className="text-sm text-sea-ink-soft">
-								Translate a phrase above to see languages and adjust weights
-								for the cloud.
-							</p>
-						</div>
-					)}
-				</IslandPanel>
-
-				<aside
-					className="w-full shrink-0 rounded-2xl border border-line bg-foam/50 px-5 py-6 lg:sticky lg:top-6 lg:max-h-[calc(100vh-2rem)] lg:overflow-y-auto"
-					aria-label="Word cloud options"
-				>
-					<h2 className="mb-4 text-sm font-semibold uppercase tracking-wide text-sea-ink-soft">
-						Cloud style
-					</h2>
-					<WordCloud2OptionsForm
-						formState={formState}
-						defaults={CLOUD_STYLE_DEFAULTS}
-						onUpdateSearch={updateSearch}
-					/>
-				</aside>
-			</div>
-		</div>
+			<aside
+				className="w-full shrink-0 rounded-2xl border border-line bg-foam/50 px-5 py-6 lg:sticky lg:top-6 lg:max-h-[calc(100vh-2rem)] lg:overflow-y-auto"
+				aria-label="Word cloud options"
+			>
+				<h2 className="mb-4 text-sm font-semibold uppercase tracking-wide text-sea-ink-soft">
+					Cloud style
+				</h2>
+				<WordCloud2OptionsForm
+					formState={formState}
+					defaults={CLOUD_STYLE_DEFAULTS}
+					onUpdateSearch={updateSearch}
+				/>
+			</aside>
+		</WordCloudPageLayout>
 	);
 }
 

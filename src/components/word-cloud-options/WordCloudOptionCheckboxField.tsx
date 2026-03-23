@@ -11,36 +11,33 @@ export default function WordCloudOptionCheckboxField({
   className,
 }: {
   label: string
-  /** When provided, the checkbox is controlled and stays in sync with parent state. */
   checked?: boolean
   defaultChecked: boolean
   onChange: (checked: boolean) => void
   onBlur: (checked: boolean) => void
   className?: string
 }) {
-  const inputRef = useRef<HTMLInputElement>(null)
-  const isControlled = checked !== undefined
+  const lastCheckedRef = useRef(checked ?? defaultChecked)
 
-  const handleChange = () => {
-    const next = inputRef.current?.checked ?? false
+  const handleCheckedChange = (next: boolean) => {
+    lastCheckedRef.current = next
     onChange(next)
   }
 
   const handleBlur = () => {
-    const next = inputRef.current?.checked ?? false
-    onChange(next)
-    onBlur(next)
+    onBlur(lastCheckedRef.current)
   }
 
   return (
-    <label className={cn('flex cursor-pointer items-center gap-2 pt-2', className)}>
+    <label
+      className={cn('flex cursor-pointer items-center gap-2 pt-2', className)}
+      onBlur={handleBlur}
+    >
       <Checkbox
-        ref={inputRef}
-        {...(isControlled ? { checked } : { defaultChecked })}
-        onChange={handleChange}
-        onBlur={handleBlur}
+        {...(checked !== undefined ? { checked } : { defaultChecked })}
+        onCheckedChange={handleCheckedChange}
       />
-      <span className="text-xs font-medium text-sea-ink-soft">{label}</span>
+      <span className="text-xs font-medium text-muted-foreground">{label}</span>
     </label>
   )
 }

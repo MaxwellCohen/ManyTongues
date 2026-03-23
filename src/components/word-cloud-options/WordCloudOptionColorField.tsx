@@ -1,5 +1,5 @@
 import { useRef } from 'react'
-import { fieldLabelClassName } from '#/components/ui/field'
+import { Label } from '#/components/ui/label'
 import { cn } from '#/lib/cn'
 import ColorRow from './ColorRow'
 import ColorTextField from './ColorTextField'
@@ -34,7 +34,7 @@ export default function WordCloudOptionColorField({
 
   return (
     <div className={cn('block', className)}>
-      <p className={cn(fieldLabelClassName, 'mb-2')}>{label}</p>
+      <Label className="mb-2 block">{label}</Label>
       <ColorRow>
         <input
           ref={colorPickerRef}

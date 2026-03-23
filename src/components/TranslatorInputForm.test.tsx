@@ -27,9 +27,7 @@ vi.mock('#/components/ui/field', () => ({
 }))
 
 vi.mock('#/components/ui/input', () => ({
-  Input: ({ uiSize: _uiSize, ...props }: Record<string, unknown>) => (
-    <input {...props} />
-  ),
+  Input: (props: Record<string, unknown>) => <input {...props} />,
 }))
 
 import { TranslatorInputForm } from './TranslatorInputForm'

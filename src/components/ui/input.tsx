@@ -1,30 +1,26 @@
-import { forwardRef, type ComponentPropsWithoutRef } from 'react'
-import { cn } from '#/lib/cn'
+import * as React from "react"
+import { Input as InputPrimitive } from "@base-ui/react/input"
 
-const inputBaseClassName =
-  'w-full border border-line bg-foam text-sea-ink placeholder:text-sea-ink-soft transition focus:border-lagoon focus:outline-none focus:ring-2 focus:ring-lagoon/30 disabled:cursor-not-allowed disabled:opacity-60'
+import { cn } from "#/lib/utils"
 
-const inputSizeClassNames = {
-  sm: 'rounded-lg px-3 py-2 text-sm',
-  lg: 'rounded-xl px-4 py-3',
-} as const
-
-type InputProps = Omit<ComponentPropsWithoutRef<'input'>, 'size'> & {
-  uiSize?: keyof typeof inputSizeClassNames
-}
-
-export const inputClassName = cn(inputBaseClassName, inputSizeClassNames.sm)
-const inputLargeClassName = cn(inputBaseClassName, inputSizeClassNames.lg)
-
-export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
-  { className, uiSize = 'sm', ...props },
+function Input({
   ref,
-) {
+  className,
+  type,
+  ...props
+}: React.ComponentProps<"input">) {
   return (
-    <input
+    <InputPrimitive
       ref={ref}
-      className={cn(inputBaseClassName, inputSizeClassNames[uiSize], className)}
+      type={type}
+      data-slot="input"
+      className={cn(
+        "h-7 w-full min-w-0 rounded-md border border-input bg-input/20 px-2 py-0.5 text-sm transition-colors outline-none file:inline-flex file:h-6 file:border-0 file:bg-transparent file:text-xs/relaxed file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/30 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-2 aria-invalid:ring-destructive/20 md:text-xs/relaxed dark:bg-input/30 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40",
+        className
+      )}
       {...props}
     />
   )
-})
+}
+
+export { Input }
