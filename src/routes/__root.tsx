@@ -2,9 +2,9 @@ import { PostHogProvider } from "@posthog/react";
 import { TanStackDevtools } from "@tanstack/react-devtools";
 import { createRootRoute, HeadContent, Scripts } from "@tanstack/react-router";
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
-import Footer from "../components/Footer";
-import Header from "../components/Header";
-import RootRouteError from "../components/RootRouteError";
+import Footer from "../components/layout/Footer";
+import Header from "../components/layout/Header";
+import RootRouteError from "../components/shell/RootRouteError";
 
 import appCss from "../styles.css?url";
 
@@ -28,6 +28,10 @@ export const Route = createRootRoute({
 				name: "description",
 				content:
 					"Create word clouds from source text or translate a short phrase into multiple languages and compare the results visually.",
+			},
+			{
+				property: "og:type",
+				content: "website",
 			},
 		],
 		links: [
@@ -55,7 +59,6 @@ function RootDocument({ children }: { children: React.ReactNode }) {
 						ui_host:
 							import.meta.env.VITE_PUBLIC_POSTHOG_HOST ||
 							"https://us.posthog.com",
-						defaults: "2025-05-24",
 						capture_exceptions: true,
 						debug: import.meta.env.DEV,
 					}}

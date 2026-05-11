@@ -1,6 +1,6 @@
 import { usePostHog } from "@posthog/react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import IslandPanel from "#/components/IslandPanel";
+import IslandPanel from "#/components/shell/IslandPanel";
 import { DownloadIcon } from "#/components/icons";
 import { DEFAULT_BG } from "#/lib/wordCloudUtils";
 
@@ -43,9 +43,7 @@ export type WordCloud2Options = {
 	/** wordcloud2.js rotateRatio: probability word rotates (default: 0.1). */
 	rotateRatio?: number;
 	/** wordcloud2.js color: string or function(word, weight, fontSize). */
-	color?:
-		| string
-		| ((word: string, weight: number, fontSize: number) => string);
+	color?: string | ((word: string, weight: number, fontSize: number) => string);
 };
 
 function wordsToList(
@@ -64,12 +62,60 @@ function defaultWeightFactor(
 	return maxFontSize / maxVal;
 }
 
+/** Slugify a string for use in a download filename. */
+function toFileSlug(input: string): string {
+	return input.trim().toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 40) || "word-cloud";
+}
+
+const HEX6_BG = /^#[0-9A-Fa-f]{6}$/;
+
+function sanitizeWordCloudBackground(color: string): string {
+	return HEX6_BG.test(color) ? color : DEFAULT_BG;
+}
+
+function clampWordCloudEllipticity(value: number | undefined): number {
+	if (typeof value === "number" && Number.isFinite(value)) {
+		return Math.min(1, Math.max(0, value));
+	}
+	return 0.65;
+}
+
+function buildWordCloudLibOptions(args: {
+	words: { text: string; value: number }[];
+	backgroundColor: string;
+	options: WordCloud2Options;
+}): Record<string, unknown> {
+	const { words, backgroundColor, options } = args;
+	const list = wordsToList(words);
+	const weightFactor = options.weightFactor ?? defaultWeightFactor(words, 72);
+
+	return {
+		list,
+		weightFactor,
+		gridSize: options.gridSize ?? 8,
+		backgroundColor: sanitizeWordCloudBackground(backgroundColor),
+		fontFamily: options.fontFamily ?? "system-ui, sans-serif",
+		fontWeight: options.fontWeight ?? "normal",
+		minRotation: options.minRotation ?? -Math.PI / 2,
+		maxRotation: options.maxRotation ?? Math.PI / 2,
+		rotationSteps: options.rotationSteps ?? 0,
+		minSize: options.minSize ?? 0,
+		clearCanvas: true,
+		color: options.color ?? "random-dark",
+		shape: options.shape ?? "circle",
+		ellipticity: clampWordCloudEllipticity(options.ellipticity),
+		shuffle: options.shuffle ?? true,
+		rotateRatio: options.rotateRatio ?? 0.1,
+	};
+}
+
 export default function WordCloud2Canvas({
 	words,
 	backgroundColor = DEFAULT_BG,
 	mounted,
 	hasWords,
 	options = {},
+	downloadName,
 	children,
 }: {
 	words: { text: string; value: number }[];
@@ -77,6 +123,8 @@ export default function WordCloud2Canvas({
 	mounted: boolean;
 	hasWords: boolean;
 	options?: WordCloud2Options;
+	/** Stem used for the downloaded PNG filename. Falls back to "word-cloud". */
+	downloadName?: string;
 	children?: React.ReactNode;
 }) {
 	const containerRef = useRef<HTMLDivElement>(null);
@@ -84,7 +132,10 @@ export default function WordCloud2Canvas({
 	const [WordCloudLib, setWordCloudLib] = useState<
 		((el: HTMLElement, opts: Record<string, unknown>) => void) | null
 	>(null);
-	const [size, setSize] = useState<[number, number]>([FALLBACK_WIDTH, FALLBACK_HEIGHT]);
+	const [size, setSize] = useState<[number, number]>([
+		FALLBACK_WIDTH,
+		FALLBACK_HEIGHT,
+	]);
 	const posthog = usePostHog();
 
 	useEffect(() => {
@@ -103,7 +154,10 @@ export default function WordCloud2Canvas({
 
 		const updateSize = () => {
 			const w = container.clientWidth || FALLBACK_WIDTH;
-			const h = container.clientHeight || Math.round(w * HEIGHT_RATIO) || FALLBACK_HEIGHT;
+			const h =
+				container.clientHeight ||
+				Math.round(w * HEIGHT_RATIO) ||
+				FALLBACK_HEIGHT;
 			setSize([w, h]);
 		};
 
@@ -111,7 +165,7 @@ export default function WordCloud2Canvas({
 		const ro = new ResizeObserver(updateSize);
 		ro.observe(container);
 		return () => ro.disconnect();
-	}, [hasWords]);
+	}, []);
 
 	useEffect(() => {
 		const canvas = canvasRef.current;
@@ -122,54 +176,11 @@ export default function WordCloud2Canvas({
 
 		canvas.width = w;
 		canvas.height = h;
-
-		const list = wordsToList(words);
-		const weightFactor =
-			options.weightFactor ?? defaultWeightFactor(words, 72);
-
-		WordCloudLib(canvas, {
-			list,
-			weightFactor,
-			gridSize: options.gridSize ?? 8,
-			backgroundColor: /^#[0-9A-Fa-f]{6}$/.test(backgroundColor)
-				? backgroundColor
-				: DEFAULT_BG,
-			fontFamily: options.fontFamily ?? "system-ui, sans-serif",
-			fontWeight: options.fontWeight ?? "normal",
-			minRotation: options.minRotation ?? -Math.PI / 2,
-			maxRotation: options.maxRotation ?? Math.PI / 2,
-			rotationSteps: options.rotationSteps ?? 0,
-			minSize: options.minSize ?? 0,
-			clearCanvas: true,
-			color: options.color ?? "random-dark",
-			shape: options.shape ?? "circle",
-			ellipticity:
-				typeof options.ellipticity === "number" && Number.isFinite(options.ellipticity)
-					? Math.min(1, Math.max(0, options.ellipticity))
-					: 0.65,
-			shuffle: options.shuffle ?? true,
-			rotateRatio: options.rotateRatio ?? 0.1,
-		});
-	}, [
-		WordCloudLib,
-		words,
-		hasWords,
-		size,
-		backgroundColor,
-		options.weightFactor,
-		options.gridSize,
-		options.fontFamily,
-		options.fontWeight,
-		options.minRotation,
-		options.maxRotation,
-		options.rotationSteps,
-		options.minSize,
-		options.shape,
-		options.ellipticity,
-		options.shuffle,
-		options.rotateRatio,
-		options.color,
-	]);
+		WordCloudLib(
+			canvas,
+			buildWordCloudLibOptions({ words, backgroundColor, options }),
+		);
+	}, [WordCloudLib, words, hasWords, size, backgroundColor, options]);
 
 	const accessibilitySummary = useMemo(() => {
 		if (!hasWords || words.length === 0) {
@@ -189,7 +200,7 @@ export default function WordCloud2Canvas({
 		const dataUrl = canvas.toDataURL("image/png");
 		const a = document.createElement("a");
 		a.href = dataUrl;
-		a.download = "word-cloud.png";
+		a.download = `${downloadName ? toFileSlug(downloadName) : "word-cloud"}.png`;
 		a.click();
 		posthog?.capture("word_cloud_downloaded", {
 			word_count: words.length,
@@ -203,7 +214,14 @@ export default function WordCloud2Canvas({
 			{/* Sticky on desktop so the cloud stays visible while editing options below */}
 			<div className="flex flex-col lg:sticky lg:top-6 lg:z-10 lg:max-h-[min(70vh,520px)] lg:shrink-0">
 				<div className="mb-3 flex items-center justify-between">
-					<h2 className="text-sm font-semibold text-sea-ink">Preview</h2>
+					<h2 className="text-sm font-semibold text-sea-ink">
+						Preview
+						{mounted && hasWords && (
+							<span className="ml-2 text-xs font-normal text-sea-ink-soft">
+								{words.length} {words.length === 1 ? "word" : "words"}
+							</span>
+						)}
+					</h2>
 					{mounted && hasWords && (
 						<button
 							type="button"
@@ -221,15 +239,11 @@ export default function WordCloud2Canvas({
 					aria-label={accessibilitySummary}
 					className="relative flex min-h-70 flex-1 items-center justify-center rounded-xl border border-line lg:min-h-64"
 					style={{
-						backgroundColor: /^#[0-9A-Fa-f]{6}$/.test(backgroundColor)
-							? backgroundColor
-							: DEFAULT_BG,
+						backgroundColor: sanitizeWordCloudBackground(backgroundColor),
 					}}
 				>
 					{!mounted ? (
-						<p className="text-sm text-sea-ink-soft">
-							Loading preview...
-						</p>
+						<p className="text-sm text-sea-ink-soft">Loading preview...</p>
 					) : hasWords && words.length > 0 ? (
 						<>
 							<ul className="sr-only">

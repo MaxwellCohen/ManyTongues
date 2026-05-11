@@ -1,5 +1,5 @@
 import { useRef } from 'react'
-import IslandPanel from '#/components/IslandPanel'
+import IslandPanel from '#/components/shell/IslandPanel'
 import { Field, FieldControl, FieldLabel } from '#/components/ui/field'
 import { Textarea } from '#/components/ui/textarea'
 

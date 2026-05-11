@@ -1,4 +1,4 @@
-import Accordion from "#/components/Accordion";
+import Accordion from "#/components/shell/Accordion";
 import {
   Field,
   FieldControl,

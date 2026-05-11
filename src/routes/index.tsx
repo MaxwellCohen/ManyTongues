@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { TextCloudIcon, TranslateIcon } from '#/components/icons'
-import LinkButton from '#/components/LinkButton'
+import LinkButton from '#/components/layout/LinkButton'
 
 const featureCards = [
   {

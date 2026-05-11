@@ -3,13 +3,13 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { zodValidator } from "@tanstack/zod-adapter";
 import { useMemo } from "react";
 import { z } from "zod";
-import Accordion from "#/components/Accordion";
-import IslandPanel from "#/components/IslandPanel";
-import PageHero from "#/components/PageHero";
-import SourceTextPanel from "#/components/SourceTextPanel";
-import WordCloudCanvas from "#/components/WordCloudCanvas";
-import WordCloudOptions from "#/components/WordCloudOptions";
-import WordCloudPageLayout from "#/components/WordCloudPageLayout";
+import Accordion from "#/components/shell/Accordion";
+import IslandPanel from "#/components/shell/IslandPanel";
+import PageHero from "#/components/layout/PageHero";
+import SourceTextPanel from "#/features/word-cloud/components/SourceTextPanel";
+import WordCloudCanvas from "#/features/word-cloud/components/WordCloudCanvas";
+import WordCloudOptions from "#/features/word-cloud/components/WordCloudOptions";
+import WordCloudPageLayout from "#/features/word-cloud/components/WordCloudPageLayout";
 import {
 	booleanSearchParam,
 	csvSearchParam,
@@ -154,6 +154,7 @@ function WordCloudPage() {
 						mounted
 						hasWords={hasWords}
 						options={cloudOptions}
+						downloadName={input}
 					/>
 				}
 			>

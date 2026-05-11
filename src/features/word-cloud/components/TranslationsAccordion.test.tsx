@@ -1,7 +1,7 @@
 import { act, fireEvent, render } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-vi.mock('#/components/Accordion', () => ({
+vi.mock('#/components/shell/Accordion', () => ({
   default: ({
     title,
     children,

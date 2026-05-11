@@ -3,15 +3,15 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { zodValidator } from "@tanstack/zod-adapter";
 import { useMemo } from "react";
 import { z } from "zod";
-import Accordion from "#/components/Accordion";
-import IslandPanel from "#/components/IslandPanel";
-import PageHero from "#/components/PageHero";
-import SourceTextPanel from "#/components/SourceTextPanel";
-import WordCloud2Canvas from "#/components/WordCloud2Canvas";
-import WordCloudPageLayout from "#/components/WordCloudPageLayout";
-import WordCloudOptionCheckboxField from "#/components/word-cloud-options/WordCloudOptionCheckboxField";
-import WordCloud2OptionsForm from "#/components/WordCloud2OptionsForm";
-import type { CloudStyleFormState } from "#/components/WordCloud2OptionsForm";
+import Accordion from "#/components/shell/Accordion";
+import IslandPanel from "#/components/shell/IslandPanel";
+import PageHero from "#/components/layout/PageHero";
+import SourceTextPanel from "#/features/word-cloud/components/SourceTextPanel";
+import WordCloud2Canvas from "#/features/word-cloud/components/WordCloud2Canvas";
+import WordCloudPageLayout from "#/features/word-cloud/components/WordCloudPageLayout";
+import WordCloudOptionCheckboxField from "#/features/word-cloud/components/option-fields/WordCloudOptionCheckboxField";
+import WordCloud2OptionsForm from "#/features/word-cloud/components/WordCloud2OptionsForm";
+import type { CloudStyleFormState } from "#/features/word-cloud/components/WordCloud2OptionsForm";
 import {
 	booleanSearchParam,
 	csvSearchParam,
@@ -182,6 +182,7 @@ function WordsPage() {
 						mounted
 						hasWords={hasWords}
 						options={cloudOptions}
+						downloadName={resolvedSearch.input}
 					/>
 				}
 			>

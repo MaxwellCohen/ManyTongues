@@ -164,7 +164,7 @@ export async function translatePhraseWithMicrosoft(
     method: 'POST',
     headers: {
       'Ocp-Apim-Subscription-Key': key,
-      'Ocp-Apim-Subscription-Region': 'eastus',
+      'Ocp-Apim-Subscription-Region': process.env.MICROSOFT_TRANSLATE_REGION || 'eastus',
       'Content-Type': 'application/json',
     },
     body: JSON.stringify([{ text: phrase }]),

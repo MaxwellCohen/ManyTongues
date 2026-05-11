@@ -3,14 +3,14 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { zodValidator } from "@tanstack/zod-adapter";
 import { startTransition, useMemo } from "react";
 import { z } from "zod";
-import Accordion from "#/components/Accordion";
-import IslandPanel from "#/components/IslandPanel";
-import PageHero from "#/components/PageHero";
-import TranslationsAccordion from "#/components/TranslationsAccordion";
-import { TranslatorInputForm } from "#/components/TranslatorInputForm";
-import WordCloudCanvas from "#/components/WordCloudCanvas";
-import WordCloudOptions from "#/components/WordCloudOptions";
-import WordCloudPageLayout from "#/components/WordCloudPageLayout";
+import Accordion from "#/components/shell/Accordion";
+import IslandPanel from "#/components/shell/IslandPanel";
+import PageHero from "#/components/layout/PageHero";
+import TranslationsAccordion from "#/features/word-cloud/components/TranslationsAccordion";
+import { TranslatorInputForm } from "#/features/word-cloud/components/TranslatorInputForm";
+import WordCloudCanvas from "#/features/word-cloud/components/WordCloudCanvas";
+import WordCloudOptions from "#/features/word-cloud/components/WordCloudOptions";
+import WordCloudPageLayout from "#/features/word-cloud/components/WordCloudPageLayout";
 import {
 	booleanSearchParam,
 	csvSearchParam,
@@ -140,6 +140,7 @@ function TranslatorWordCloudContent({
 					mounted
 					hasWords={hasWords}
 					options={cloudOptions}
+					downloadName={formState.input}
 				/>
 			}
 		>

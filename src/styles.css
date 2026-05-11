@@ -93,29 +93,9 @@
   --color-btn-primary-text: #e8f5f3;
   --color-btn-primary-hover-bg: #164047;
   --color-btn-primary-focus-ring: #60d7cf;
-
-  /* shadcn/Base UI dark */
-  --color-background: var(--color-foam);
-  --color-foreground: var(--color-sea-ink);
-  --color-card: var(--color-foam);
-  --color-card-foreground: var(--color-sea-ink);
-  --color-popover: var(--color-foam);
-  --color-popover-foreground: var(--color-sea-ink);
-  --color-primary: var(--color-lagoon);
-  --color-primary-foreground: var(--color-btn-on-lagoon);
-  --color-secondary: var(--color-sand);
-  --color-secondary-foreground: var(--color-sea-ink);
-  --color-muted: var(--color-line);
-  --color-muted-foreground: var(--color-sea-ink-soft);
-  --color-accent: var(--color-line);
-  --color-accent-foreground: var(--color-sea-ink);
-  --color-destructive: #dc2626;
-  --color-destructive-foreground: #fafafa;
-  --color-border: var(--color-line);
-  --color-input: var(--color-line);
-  --color-ring: var(--color-lagoon);
 }
 
+/* CSS-only fallback for system dark preference when JS theme script hasn't set data-theme */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
     --color-sea-ink: #e8f5f3;
@@ -142,27 +122,6 @@
     --color-btn-primary-text: #e8f5f3;
     --color-btn-primary-hover-bg: #164047;
     --color-btn-primary-focus-ring: #60d7cf;
-
-    /* shadcn/Base UI dark (same as data-theme="dark") */
-    --color-background: var(--color-foam);
-    --color-foreground: var(--color-sea-ink);
-    --color-card: var(--color-foam);
-    --color-card-foreground: var(--color-sea-ink);
-    --color-popover: var(--color-foam);
-    --color-popover-foreground: var(--color-sea-ink);
-    --color-primary: var(--color-lagoon);
-    --color-primary-foreground: var(--color-btn-on-lagoon);
-    --color-secondary: var(--color-sand);
-    --color-secondary-foreground: var(--color-sea-ink);
-    --color-muted: var(--color-line);
-    --color-muted-foreground: var(--color-sea-ink-soft);
-    --color-accent: var(--color-line);
-    --color-accent-foreground: var(--color-sea-ink);
-    --color-destructive: #dc2626;
-    --color-destructive-foreground: #fafafa;
-    --color-border: var(--color-line);
-    --color-input: var(--color-line);
-    --color-ring: var(--color-lagoon);
   }
 }
 

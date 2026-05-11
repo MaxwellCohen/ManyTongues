@@ -1,7 +1,7 @@
 import { fireEvent, render } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 
-vi.mock('#/components/word-cloud', () => ({
+vi.mock('#/features/word-cloud/components/cloud-render', () => ({
   default: ({
     words,
   }: {
@@ -22,7 +22,7 @@ vi.mock('#/components/icons', () => ({
   DownloadIcon: () => <span data-testid="download-icon" />,
 }))
 
-vi.mock('#/components/IslandPanel', () => ({
+vi.mock('#/components/shell/IslandPanel', () => ({
   default: ({
     children,
   }: {

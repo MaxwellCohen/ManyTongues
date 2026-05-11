@@ -1,7 +1,7 @@
 import { fireEvent, render } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 
-vi.mock('#/components/word-cloud-options/WordCloudOptionNumberField', () => ({
+vi.mock('#/features/word-cloud/components/option-fields/WordCloudOptionNumberField', () => ({
   default: ({
     label,
     defaultValue,
@@ -26,7 +26,7 @@ vi.mock('#/components/word-cloud-options/WordCloudOptionNumberField', () => ({
   ),
 }))
 
-vi.mock('#/components/word-cloud-options/WordCloudOptionSelectField', () => ({
+vi.mock('#/features/word-cloud/components/option-fields/WordCloudOptionSelectField', () => ({
   default: ({
     label,
     defaultValue,
@@ -53,7 +53,7 @@ vi.mock('#/components/word-cloud-options/WordCloudOptionSelectField', () => ({
   ),
 }))
 
-vi.mock('#/components/word-cloud-options/WordCloudOptionCheckboxField', () => ({
+vi.mock('#/features/word-cloud/components/option-fields/WordCloudOptionCheckboxField', () => ({
   default: ({
     label,
     defaultChecked,
@@ -73,13 +73,13 @@ vi.mock('#/components/word-cloud-options/WordCloudOptionCheckboxField', () => ({
   ),
 }))
 
-vi.mock('#/components/word-cloud-options/WordCloudOptionColorField', () => ({
+vi.mock('#/features/word-cloud/components/option-fields/WordCloudOptionColorField', () => ({
   default: ({ label }: { label: string }) => (
     <div data-testid={`color-${label}`}>{label}</div>
   ),
 }))
 
-vi.mock('#/components/word-cloud-options/WordCloudOptionPaletteField', () => ({
+vi.mock('#/features/word-cloud/components/option-fields/WordCloudOptionPaletteField', () => ({
   default: ({
     defaultColors,
     onBlur,

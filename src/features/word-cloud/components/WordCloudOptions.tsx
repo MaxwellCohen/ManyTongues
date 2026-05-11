@@ -1,8 +1,8 @@
-import WordCloudOptionCheckboxField from "#/components/word-cloud-options/WordCloudOptionCheckboxField";
-import WordCloudOptionColorField from "#/components/word-cloud-options/WordCloudOptionColorField";
-import WordCloudOptionNumberField from "#/components/word-cloud-options/WordCloudOptionNumberField";
-import WordCloudOptionPaletteField from "#/components/word-cloud-options/WordCloudOptionPaletteField";
-import WordCloudOptionSelectField from "#/components/word-cloud-options/WordCloudOptionSelectField";
+import WordCloudOptionCheckboxField from "#/features/word-cloud/components/option-fields/WordCloudOptionCheckboxField";
+import WordCloudOptionColorField from "#/features/word-cloud/components/option-fields/WordCloudOptionColorField";
+import WordCloudOptionNumberField from "#/features/word-cloud/components/option-fields/WordCloudOptionNumberField";
+import WordCloudOptionPaletteField from "#/features/word-cloud/components/option-fields/WordCloudOptionPaletteField";
+import WordCloudOptionSelectField from "#/features/word-cloud/components/option-fields/WordCloudOptionSelectField";
 import {
   FONT_FAMILY_OPTIONS,
   SCALE_OPTIONS,

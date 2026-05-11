@@ -1,7 +1,7 @@
 import { usePostHog } from "@posthog/react";
 import { useCallback, useMemo, useRef } from "react";
-import ReactWordcloud from "#/components/word-cloud";
-import IslandPanel from "#/components/IslandPanel";
+import ReactWordcloud from "#/features/word-cloud/components/cloud-render";
+import IslandPanel from "#/components/shell/IslandPanel";
 import { DownloadIcon } from "#/components/icons";
 import { DEFAULT_BG, DEFAULT_COLORS } from "#/lib/wordCloudUtils";
 
@@ -40,6 +40,11 @@ function capMaxFontSizeForWords(
   return Math.min(requestedMax, maxByWidth, maxByHeight);
 }
 
+/** Slugify a string for use in a download filename. */
+function toFileSlug(input: string): string {
+  return input.trim().toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 40) || "word-cloud";
+}
+
 /** Stable key so only phrase/language set changes remount; weight/option updates re-layout in place. */
 function wordsKey(words: { text: string; value: number }[]): string {
   if (!words.length) return "empty";
@@ -57,6 +62,7 @@ export default function WordCloudCanvas({
   mounted,
   hasWords,
   options,
+  downloadName,
   children,
 }: {
   words: { text: string; value: number }[];
@@ -65,6 +71,8 @@ export default function WordCloudCanvas({
   mounted: boolean;
   hasWords: boolean;
   options: WordCloudOptions;
+  /** Stem used for the downloaded PNG filename (e.g. "hello-world"). Falls back to "word-cloud". */
+  downloadName?: string;
   children?: React.ReactNode;
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -102,7 +110,7 @@ export default function WordCloudCanvas({
       const dataUrl = canvas.toDataURL("image/png");
       const a = document.createElement("a");
       a.href = dataUrl;
-      a.download = "word-cloud.png";
+      a.download = `${downloadName ? toFileSlug(downloadName) : "word-cloud"}.png`;
       a.click();
       posthog.capture("word_cloud_downloaded", {
         word_count: words.length,
@@ -164,7 +172,14 @@ export default function WordCloudCanvas({
   return (
     <IslandPanel className="flex min-h-80 flex-col rounded-2xl p-5 sm:p-6">
       <div className="mb-3 flex items-center justify-between">
-        <h2 className="text-sm font-semibold text-sea-ink">Preview</h2>
+        <h2 className="text-sm font-semibold text-sea-ink">
+          Preview
+          {mounted && hasWords && (
+            <span className="ml-2 text-xs font-normal text-sea-ink-soft">
+              {words.length} {words.length === 1 ? "word" : "words"}
+            </span>
+          )}
+        </h2>
         {mounted && hasWords && (
           <button
             type="button"
