@@ -1,2 +1,5 @@
-export { getOrTranslatePhrase } from '#/lib/translate.functions'
-export type { GetOrTranslateResult } from '#/lib/translate.types'
+export {
+	getOrTranslatePhrase,
+	runGetOrTranslatePhrase,
+	type GetOrTranslateResult,
+} from "#/lib/phraseTranslation";

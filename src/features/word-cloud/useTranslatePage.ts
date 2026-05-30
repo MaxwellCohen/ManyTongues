@@ -1,70 +1,33 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useDebounceValue } from "#/hooks/useDebouncedValue";
+import { applyPhraseTranslationResult } from "#/features/word-cloud/applyPhraseTranslationResult";
 import {
-	type FullTranslatorSearch,
-	type TranslatorSearch,
 	getCloudData,
 	getCloudOptions,
 	getHiddenLanguagesSet,
-	getTranslatorSearchForUrl,
-	getTranslatorPalette,
 	getVisibleTranslations,
 	parseWeights,
-	serializeWeights,
-	createRandomWeights,
-	WEIGHT_MAX,
-	WEIGHT_MIN,
+	type FullExperimentalTranslatorSearch,
+	type ExperimentalTranslatorSearch,
 } from "#/features/word-cloud/translateState";
-import { getOrTranslatePhrase } from "#/lib/translate";
-import type { GetOrTranslateResult } from "#/lib/translate";
+import {
+	getTranslatorSearchForUrl,
+	getTranslatorPalette,
+	serializeWeights,
+} from "#/features/word-cloud/translatorSearchState";
+import { getOrTranslatePhrase } from "#/lib/phraseTranslation";
 
-function isTranslateSuccess(
-	result: GetOrTranslateResult,
-): result is Extract<GetOrTranslateResult, { ok: true }> {
-	return result.ok;
-}
-
-function formatTranslateFailure(
-	result: Extract<GetOrTranslateResult, { ok: false }>,
-): string {
-	let msg = result.error;
-	if (result.failedProviders?.length) {
-		const labels = result.failedProviders.map((p) =>
-			p === "google" ? "Google" : "Microsoft",
-		);
-		msg = `${msg} (${labels.join(" and ")} could not complete translation.)`;
-	}
-	return msg;
-}
-
-function shouldLoadTranslatedPhrase(search: FullTranslatorSearch): boolean {
+function shouldLoadTranslatedPhrase(search: FullExperimentalTranslatorSearch): boolean {
 	return Boolean(search.input.trim());
 }
 
-function mergeWeightsForTranslations(
-	existingWeights: string,
-	translationLangs: Iterable<string>,
-): Map<string, number> {
-	const existing = parseWeights(existingWeights);
-	const merged = new Map(existing);
-	for (const lang of translationLangs) {
-		if (!merged.has(lang)) {
-			merged.set(
-				lang,
-				Math.floor(Math.random() * WEIGHT_MAX) + WEIGHT_MIN,
-			);
-		}
-	}
-	return merged;
-}
-
-function phraseLoadKey(search: FullTranslatorSearch, phrase: string): string {
+function phraseLoadKey(search: FullExperimentalTranslatorSearch, phrase: string): string {
 	return `${search.sourceLanguage}:${phrase}`;
 }
 
 type UseTranslatePageOptions = {
-	resolvedSearch: FullTranslatorSearch;
-	onSyncToUrl: (search: Partial<TranslatorSearch>) => void;
+	resolvedSearch: FullExperimentalTranslatorSearch;
+	onSyncToUrl: (search: Partial<ExperimentalTranslatorSearch>) => void;
 };
 
 export function useTranslatePage({
@@ -82,9 +45,28 @@ export function useTranslatePage({
 	const requestSeqRef = useRef(0);
 
 	const updateSearch = useCallback(
-		(updates: Partial<FullTranslatorSearch>) => {
+		(updates: Partial<FullExperimentalTranslatorSearch>) => {
 			const next = { ...resolvedSearch, ...updates };
 			onSyncToUrl(getTranslatorSearchForUrl(next));
+		},
+		[resolvedSearch, onSyncToUrl],
+	);
+
+	const handleTranslateResult = useCallback(
+		(
+			result: Awaited<ReturnType<typeof getOrTranslatePhrase>>,
+			phrase: string,
+			syncInputOnFailure: boolean,
+		) => {
+			const applied = applyPhraseTranslationResult(
+				result,
+				resolvedSearch,
+				phrase,
+				{ syncInputOnFailure },
+			);
+			setTranslations(applied.translations);
+			setError(applied.error);
+			onSyncToUrl(applied.urlPatch);
 		},
 		[resolvedSearch, onSyncToUrl],
 	);
@@ -113,37 +95,7 @@ export function useTranslatePage({
 		})
 			.then((result) => {
 				if (seq !== requestSeqRef.current) return;
-				if (isTranslateSuccess(result)) {
-					setTranslations(new Map(Object.entries(result.translations)));
-					setError(null);
-					const nextWeights = resolvedSearch.weights
-						? mergeWeightsForTranslations(
-								resolvedSearch.weights,
-								Object.keys(result.translations),
-							)
-						: createRandomWeights(Object.keys(result.translations));
-					const nextHiddenLanguages = resolvedSearch.hiddenLanguages.filter(
-						(lang) => result.translations[lang] !== undefined,
-					);
-					onSyncToUrl(
-						getTranslatorSearchForUrl({
-							...resolvedSearch,
-							input: phrase,
-							translated: true,
-							weights: serializeWeights(nextWeights),
-							hiddenLanguages: nextHiddenLanguages,
-						}),
-					);
-				} else {
-					setError(formatTranslateFailure(result));
-					setTranslations(new Map());
-					onSyncToUrl(
-						getTranslatorSearchForUrl({
-							...resolvedSearch,
-							translated: false,
-						}),
-					);
-				}
+				handleTranslateResult(result, phrase, false);
 			})
 			.finally(() => {
 				if (seq === requestSeqRef.current) {
@@ -155,6 +107,7 @@ export function useTranslatePage({
 		resolvedSearch.translated,
 		resolvedSearch.sourceLanguage,
 		onSyncToUrl,
+		handleTranslateResult,
 	]);
 
 	const requestTranslate = useCallback(
@@ -178,38 +131,7 @@ export function useTranslatePage({
 			})
 				.then((result) => {
 					if (seq !== requestSeqRef.current) return;
-					if (isTranslateSuccess(result)) {
-						setTranslations(new Map(Object.entries(result.translations)));
-						setError(null);
-						const nextWeights = formState.weights
-							? mergeWeightsForTranslations(
-									formState.weights,
-									Object.keys(result.translations),
-								)
-							: createRandomWeights(Object.keys(result.translations));
-						const nextHiddenLanguages = formState.hiddenLanguages.filter(
-							(lang) => result.translations[lang] !== undefined,
-						);
-						onSyncToUrl(
-							getTranslatorSearchForUrl({
-								...formState,
-								input: trimmed,
-								translated: true,
-								weights: serializeWeights(nextWeights),
-								hiddenLanguages: nextHiddenLanguages,
-							}),
-						);
-					} else {
-						setError(formatTranslateFailure(result));
-						setTranslations(new Map());
-						onSyncToUrl(
-							getTranslatorSearchForUrl({
-								...formState,
-								input: trimmed,
-								translated: false,
-							}),
-						);
-					}
+					handleTranslateResult(result, trimmed, true);
 				})
 				.finally(() => {
 					if (seq === requestSeqRef.current) {
@@ -217,7 +139,7 @@ export function useTranslatePage({
 					}
 				});
 		},
-		[formState, updateSearch, onSyncToUrl],
+		[formState, updateSearch, handleTranslateResult],
 	);
 
 	const hideLanguage = useCallback(

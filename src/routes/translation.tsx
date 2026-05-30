@@ -2,7 +2,6 @@ import { usePostHog } from "@posthog/react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { zodValidator } from "@tanstack/zod-adapter";
 import { startTransition, useMemo } from "react";
-import { z } from "zod";
 import IslandPanel from "#/components/shell/IslandPanel";
 import PageHero from "#/components/layout/PageHero";
 import TranslationsAccordion from "#/features/word-cloud/components/TranslationsAccordion";
@@ -13,119 +12,22 @@ import WordCloud2Canvas, {
 import WordCloud2OptionsForm from "#/features/word-cloud/components/WordCloud2OptionsForm";
 import WordCloudPageLayout from "#/features/word-cloud/components/WordCloudPageLayout";
 import {
-	booleanSearchParam,
-	csvSearchParam,
-} from "#/features/word-cloud/searchParams";
+	buildTranslationPageWordCloudOptions,
+	makeTranslationWeightFactor,
+} from "#/features/word-cloud/translationCloud2";
+import { experimentalTranslatorSearchSchema } from "#/features/word-cloud/translatorSearchSchema";
 import {
 	DEFAULT_TRANSLATOR_SEARCH,
 	deduplicateCloudDataByValue,
-	type FullTranslatorSearch,
-	getTranslatorPalette,
-	hashWordForColor,
 	resolveTranslatorSearch,
-	type TranslatorSearch,
-	translatorCloud2FontWeightOptions,
-	translatorCloud2ShapeOptions,
-	translatorScaleOptions,
-	translatorSpiralOptions,
+	type ExperimentalTranslatorSearch,
+	type FullExperimentalTranslatorSearch,
 } from "#/features/word-cloud/translateState";
 import { useTranslatePage } from "#/features/word-cloud/useTranslatePage";
-import { translatorSourceLanguageRouteSchema } from "#/lib/translatorSourceLanguages";
-
-/**
- * wordcloud2.js only passes `weight` into weightFactor (not the word string). A fixed
- * 80px for the source phrase (weight 12) often cannot be placed for longer multi-word
- * phrases, so they disappear while shorter translations still draw. We cap the source
- * by approximate canvas fit and keep translations slightly below that cap.
- */
-function makeTranslationWeightFactor(
-	phrase: string,
-): (weight: number) => number {
-	const charCount = Math.max(phrase.trim().length, 1);
-	const maxByFit = Math.floor(520 / (charCount * 0.52));
-	const sourcePx = Math.min(72, Math.max(32, maxByFit));
-	return (weight: number) => {
-		if (weight >= 12) return sourcePx;
-		const translationPx = 12 + ((weight - 1) / 4) * 32;
-		return Math.min(translationPx, Math.max(14, sourcePx - 4));
-	};
-}
-
-/** wordcloud2.js expects rotation in radians. */
-function degToRad(deg: number): number {
-	return (deg * Math.PI) / 180;
-}
-
-function resolveTranslationPageCloud2Color(
-	formState: FullTranslatorSearch,
-): WordCloud2Options["color"] {
-	if (formState.cloud2Color === "custom") {
-		return (word: string) => {
-			const palette = getTranslatorPalette(formState.colors);
-			return palette[hashWordForColor(word) % palette.length];
-		};
-	}
-	return formState.cloud2Color ?? "random-dark";
-}
-
-function buildTranslationPageWordCloudOptions(
-	formState: FullTranslatorSearch,
-	translationWeightFactor: (weight: number) => number,
-): WordCloud2Options {
-	return {
-		fontFamily: formState.fontFamily ?? "system-ui, sans-serif",
-		fontWeight: formState.cloud2FontWeight ?? "normal",
-		weightFactor: translationWeightFactor,
-		gridSize: formState.cloud2GridSize ?? 8,
-		minRotation: degToRad(formState.cloud2MinRotation ?? -90),
-		maxRotation: degToRad(formState.cloud2MaxRotation ?? 90),
-		rotationSteps: formState.cloud2RotationSteps ?? 0,
-		minSize: formState.cloud2MinSize ?? 0,
-		shape: formState.cloud2Shape ?? "circle",
-		ellipticity: Math.min(
-			1,
-			Math.max(0, Number(formState.cloud2Ellipticity) || 0.65),
-		),
-		color: resolveTranslationPageCloud2Color(formState),
-		shuffle: formState.cloud2Shuffle ?? true,
-		rotateRatio: formState.cloud2RotateRatio ?? 0.1,
-	};
-}
-
-const translationSearchSchema = z.object({
-	input: z.string().optional(),
-	sourceLanguage: translatorSourceLanguageRouteSchema,
-	translated: booleanSearchParam.optional(),
-	minFontSize: z.coerce.number().int().min(1).max(200).optional(),
-	maxFontSize: z.coerce.number().int().min(1).max(200).optional(),
-	padding: z.coerce.number().int().min(0).max(20).optional(),
-	scale: z.enum(translatorScaleOptions).optional(),
-	spiral: z.enum(translatorSpiralOptions).optional(),
-	rotationMin: z.coerce.number().int().min(-360).max(360).optional(),
-	rotationMax: z.coerce.number().int().min(-360).max(360).optional(),
-	rotations: z.coerce.number().int().min(0).optional(),
-	deterministic: booleanSearchParam.optional(),
-	fontFamily: z.string().optional(),
-	backgroundColor: z.string().optional(),
-	colors: csvSearchParam.optional(),
-	hiddenLanguages: csvSearchParam.optional(),
-	weights: z.string().optional(),
-	cloud2Shape: z.enum(translatorCloud2ShapeOptions).optional(),
-	cloud2Ellipticity: z.coerce.number().min(0).max(1).optional(),
-	cloud2Shuffle: booleanSearchParam.optional(),
-	cloud2RotateRatio: z.coerce.number().min(0).max(1).optional(),
-	cloud2Color: z.enum(["random-dark", "random-light", "custom"]).optional(),
-	cloud2GridSize: z.coerce.number().int().min(4).max(32).optional(),
-	cloud2MinRotation: z.coerce.number().int().min(-180).max(180).optional(),
-	cloud2MaxRotation: z.coerce.number().int().min(-180).max(180).optional(),
-	cloud2RotationSteps: z.coerce.number().int().min(0).max(16).optional(),
-	cloud2MinSize: z.coerce.number().int().min(0).max(72).optional(),
-	cloud2FontWeight: z.enum(translatorCloud2FontWeightOptions).optional(),
-});
 
 export const Route = createFileRoute("/translation")({
 	ssr: false,
-	validateSearch: zodValidator(translationSearchSchema),
+	validateSearch: zodValidator(experimentalTranslatorSearchSchema),
 	head: () => ({
 		meta: [
 			{
@@ -229,7 +131,7 @@ function TranslationPhraseInputPanel({
 	requestTranslate,
 	onRetry,
 }: {
-	resolvedSearch: FullTranslatorSearch;
+	resolvedSearch: FullExperimentalTranslatorSearch;
 	loading: boolean;
 	error: string | null;
 	translationCount: number;
@@ -307,7 +209,7 @@ function TranslationCloudStyleAside({
 	formState,
 	onUpdateSearch,
 }: {
-	formState: FullTranslatorSearch;
+	formState: FullExperimentalTranslatorSearch;
 	onUpdateSearch: ReturnType<typeof useTranslatePage>["updateSearch"];
 }) {
 	return (
@@ -332,7 +234,7 @@ function TranslationWordCloudContent({
 	onSyncToUrl,
 }: {
 	resolvedSearch: ReturnType<typeof resolveTranslatorSearch>;
-	onSyncToUrl: (search: Partial<TranslatorSearch>) => void;
+	onSyncToUrl: (search: Partial<ExperimentalTranslatorSearch>) => void;
 }) {
 	const posthog = usePostHog();
 	const {
@@ -412,7 +314,7 @@ function TranslationWordCloudContent({
 	);
 }
 
-const CLOUD_STYLE_DEFAULTS: Partial<TranslatorSearch> = {
+const CLOUD_STYLE_DEFAULTS: Partial<ExperimentalTranslatorSearch> = {
 	backgroundColor: DEFAULT_TRANSLATOR_SEARCH.backgroundColor,
 	cloud2Shape: DEFAULT_TRANSLATOR_SEARCH.cloud2Shape,
 	cloud2Ellipticity: DEFAULT_TRANSLATOR_SEARCH.cloud2Ellipticity,

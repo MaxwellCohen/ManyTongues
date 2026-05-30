@@ -1,11 +1,11 @@
 import { act, renderHook, waitFor } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-vi.mock('#/lib/translate', () => ({
+vi.mock('#/lib/phraseTranslation', () => ({
   getOrTranslatePhrase: vi.fn(),
 }))
 
-import { getOrTranslatePhrase } from '#/lib/translate'
+import { getOrTranslatePhrase } from '#/lib/phraseTranslation'
 import { resolveTranslatorSearch } from './translateState'
 import { useTranslatePage } from './useTranslatePage'
 

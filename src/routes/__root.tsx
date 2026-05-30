@@ -60,7 +60,6 @@ function RootDocument({ children }: { children: React.ReactNode }) {
 							import.meta.env.VITE_PUBLIC_POSTHOG_HOST ||
 							"https://us.posthog.com",
 						capture_exceptions: true,
-						debug: import.meta.env.DEV,
 					}}
 				>
 					<Header />

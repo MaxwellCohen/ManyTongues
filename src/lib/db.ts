@@ -1,25 +1,28 @@
-import { drizzle } from 'drizzle-orm/libsql'
-import { createClient } from '@libsql/client'
-import * as schema from '#/db/schema'
-
-const url = process.env.DB_URL
-const authToken = process.env.DB_AUTH_TOKEN
+import { drizzle } from "drizzle-orm/libsql";
+import { createClient } from "@libsql/client";
+import * as schema from "#/db/schema";
+import { isTursoConfigured } from "#/lib/turso";
 
 function getDb() {
-  if (!url?.trim()) {
-    throw new Error('DB_URL is not configured.')
-  }
-  const client = createClient({
-    url,
-    authToken: authToken ?? undefined,
-  })
-  return drizzle(client, { schema })
+	const url = process.env.DB_URL;
+	const authToken = process.env.DB_AUTH_TOKEN;
+	if (!url?.trim()) {
+		throw new Error("DB_URL is not configured.");
+	}
+	const client = createClient({
+		url,
+		authToken: authToken ?? undefined,
+	});
+	return drizzle(client, { schema });
 }
 
 /** Lazy singleton for server-side use. */
-let _db: ReturnType<typeof getDb> | null = null
+let _db: ReturnType<typeof getDb> | null = null;
 
 export function getTursoDb() {
-  if (!_db) _db = getDb()
-  return _db
+	if (!isTursoConfigured()) {
+		throw new Error("DB_URL is not configured.");
+	}
+	if (!_db) _db = getDb();
+	return _db;
 }

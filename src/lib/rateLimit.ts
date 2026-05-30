@@ -1,6 +1,7 @@
-import { sql } from 'drizzle-orm'
-import { translatorRateLimitsTable } from '#/db/schema'
-import { getTursoDb } from '#/lib/db'
+import { sql } from "drizzle-orm";
+import { translatorRateLimitsTable } from "#/db/schema";
+import { getTursoDb } from "#/lib/db";
+import { isTursoConfigured } from "#/lib/turso";
 
 const DEFAULT_WINDOW_MS = 5 * 60 * 1000
 const DEFAULT_MAX_REQUESTS = 10
@@ -106,8 +107,8 @@ export async function applyTranslatorRateLimit(ipRaw: string | null): Promise<
       retryAfterSeconds: number
     }
 > {
-  if (!process.env.DB_URL?.trim()) {
-    return { limited: false }
+  if (!isTursoConfigured()) {
+    return { limited: false };
   }
 
   const ip = normalizeIpCandidate(ipRaw) ?? 'unknown'

@@ -2,7 +2,6 @@ import { usePostHog } from "@posthog/react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { zodValidator } from "@tanstack/zod-adapter";
 import { startTransition, useMemo } from "react";
-import { z } from "zod";
 import Accordion from "#/components/shell/Accordion";
 import IslandPanel from "#/components/shell/IslandPanel";
 import PageHero from "#/components/layout/PageHero";
@@ -11,38 +10,12 @@ import { TranslatorInputForm } from "#/features/word-cloud/components/Translator
 import WordCloudCanvas from "#/features/word-cloud/components/WordCloudCanvas";
 import WordCloudOptions from "#/features/word-cloud/components/WordCloudOptions";
 import WordCloudPageLayout from "#/features/word-cloud/components/WordCloudPageLayout";
-import {
-	booleanSearchParam,
-	csvSearchParam,
-} from "#/features/word-cloud/searchParams";
-import { translatorSourceLanguageRouteSchema } from "#/lib/translatorSourceLanguages";
+import { translatorSearchSchema } from "#/features/word-cloud/translatorSearchSchema";
 import {
 	resolveTranslatorSearch,
-	type TranslatorSearch,
-	translatorScaleOptions,
-	translatorSpiralOptions,
+	type ExperimentalTranslatorSearch,
 } from "#/features/word-cloud/translateState";
 import { useTranslatePage } from "#/features/word-cloud/useTranslatePage";
-
-const translatorSearchSchema = z.object({
-	input: z.string().optional(),
-	sourceLanguage: translatorSourceLanguageRouteSchema,
-	translated: booleanSearchParam.optional(),
-	minFontSize: z.coerce.number().int().min(1).max(200).optional(),
-	maxFontSize: z.coerce.number().int().min(1).max(200).optional(),
-	padding: z.coerce.number().int().min(0).max(20).optional(),
-	scale: z.enum(translatorScaleOptions).optional(),
-	spiral: z.enum(translatorSpiralOptions).optional(),
-	rotationMin: z.coerce.number().int().min(-360).max(360).optional(),
-	rotationMax: z.coerce.number().int().min(-360).max(360).optional(),
-	rotations: z.coerce.number().int().min(0).optional(),
-	deterministic: booleanSearchParam.optional(),
-	fontFamily: z.string().optional(),
-	backgroundColor: z.string().optional(),
-	colors: csvSearchParam.optional(),
-	hiddenLanguages: csvSearchParam.optional(),
-	weights: z.string().optional(),
-});
 
 export const Route = createFileRoute("/translate")({
 	ssr: false,
@@ -107,7 +80,7 @@ function TranslatorWordCloudContent({
 	onSyncToUrl,
 }: {
 	resolvedSearch: ReturnType<typeof resolveTranslatorSearch>;
-	onSyncToUrl: (search: Partial<TranslatorSearch>) => void;
+	onSyncToUrl: (search: Partial<ExperimentalTranslatorSearch>) => void;
 }) {
 	const posthog = usePostHog();
 	const {
