@@ -19,8 +19,8 @@ The wizard has completed a deep integration of PostHog analytics into ManyTongue
 | `phrase_translated` | Fires on the server when a phrase is successfully translated via the API | `src/lib/translate.functions.ts` |
 | `phrase_translation_failed` | Fires on the server when a phrase translation request fails | `src/lib/translate.functions.ts` |
 | `word_cloud_downloaded` | Fires client-side after the user successfully downloads a PNG word cloud | `src/components/WordCloudCanvas.tsx` |
-| `translation_language_removed` | Fires when the user removes a language from the translate page word cloud | `src/routes/translate.tsx` |
-| `text_cloud_text_entered` | Fires when the user enters or edits source text on the text cloud page | `src/routes/text-cloud.tsx` |
+| `translation_language_removed` | Fires when the user removes a language from the translate page word cloud (`engine` property included) | `src/routes/translate.tsx` |
+| `text_cloud_text_entered` | Fires when the user enters or edits source text on the text cloud page (`engine` property included) | `src/routes/text-cloud.tsx` |
 
 ## Next steps
 

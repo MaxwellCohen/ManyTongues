@@ -19,22 +19,6 @@ const featureCards = [
       'Translate one short phrase into multiple languages, then explore the translated versions together in a single word cloud.',
     ctaLabel: 'Open Translator →',
   },
-  {
-    to: '/words' as const,
-    Icon: TextCloudIcon,
-    title: 'Words (experimental)',
-    description:
-      'Alternate text cloud using wordcloud2.js. Prefer Text Cloud for the default experience.',
-    ctaLabel: 'Open Words (exp) →',
-  },
-  {
-    to: '/translation' as const,
-    Icon: TranslateIcon,
-    title: 'Translation (experimental)',
-    description:
-      'Alternate translator word cloud using wordcloud2.js. Prefer Translate for the default experience.',
-    ctaLabel: 'Open Translation (exp) →',
-  },
 ]
 
 export const Route = createFileRoute('/')({

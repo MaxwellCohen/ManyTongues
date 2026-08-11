@@ -9,12 +9,14 @@ import {
 	booleanSearchParam,
 	csvSearchParam,
 } from "#/features/word-cloud/searchParams";
+import { wordCloudEngineOptions } from "#/features/word-cloud/wordCloudEngine";
 import { translatorSourceLanguageRouteSchema } from "#/lib/translatorSourceLanguages";
 
 const translatorSearchFields = {
 	input: z.string().optional(),
 	sourceLanguage: translatorSourceLanguageRouteSchema,
 	translated: booleanSearchParam.optional(),
+	engine: z.enum(wordCloudEngineOptions).optional(),
 	minFontSize: z.coerce.number().int().min(1).max(200).optional(),
 	maxFontSize: z.coerce.number().int().min(1).max(200).optional(),
 	padding: z.coerce.number().int().min(0).max(20).optional(),
@@ -30,8 +32,6 @@ const translatorSearchFields = {
 	hiddenLanguages: csvSearchParam.optional(),
 	weights: z.string().optional(),
 } as const;
-
-export const translatorSearchSchema = z.object(translatorSearchFields);
 
 const cloud2SearchFields = {
 	cloud2Shape: z.enum(translatorCloud2ShapeOptions).optional(),
@@ -49,7 +49,8 @@ const cloud2SearchFields = {
 	cloud2FontWeight: z.enum(translatorCloud2FontWeightOptions).optional(),
 } as const;
 
-export const experimentalTranslatorSearchSchema = z.object({
+/** Full translator search (classic + experimental cloud options + engine). */
+export const translatorSearchSchema = z.object({
 	...translatorSearchFields,
 	...cloud2SearchFields,
 });

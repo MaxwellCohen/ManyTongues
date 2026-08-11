@@ -10,6 +10,8 @@ describe('resolveGeneratorSearch', () => {
   it('returns defaults when search is empty', () => {
     const result = resolveGeneratorSearch({})
     expect(result.input).toBe(DEFAULT_GENERATOR_SEARCH.input)
+    expect(result.engine).toBe('experimental')
+    expect(result.filterStopwords).toBe(false)
   })
 
   it('merges partial search', () => {
@@ -21,6 +23,11 @@ describe('resolveGeneratorSearch', () => {
     const result = resolveGeneratorSearch({ colors: ['#111', '#222'] })
     expect(result.colors).toEqual(['#111', '#222'])
   })
+
+  it('resolves classic engine from search', () => {
+    const result = resolveGeneratorSearch({ engine: 'classic' })
+    expect(result.engine).toBe('classic')
+  })
 })
 
 describe('getGeneratorSearchForUrl', () => {
@@ -29,8 +36,13 @@ describe('getGeneratorSearchForUrl', () => {
     expect(getGeneratorSearchForUrl(state)).toEqual({ input: 'custom' })
   })
 
-  it('returns empty when no diff', () => {
+  it('omits default experimental engine', () => {
     expect(getGeneratorSearchForUrl(DEFAULT_GENERATOR_SEARCH)).toEqual({})
+  })
+
+  it('includes classic engine in URL diff', () => {
+    const state = { ...DEFAULT_GENERATOR_SEARCH, engine: 'classic' as const }
+    expect(getGeneratorSearchForUrl(state)).toEqual({ engine: 'classic' })
   })
 })
 

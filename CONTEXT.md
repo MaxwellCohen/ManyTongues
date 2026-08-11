@@ -2,7 +2,7 @@
 
 ## Text Cloud
 
-Paste or type text; the app tokenizes it and renders a **word cloud** sized by word frequency. No external services required.
+Paste or type text; the app tokenizes it and renders a **word cloud** sized by word frequency. Supports **Experimental** (wordcloud2.js) and **Classic** (react-wordcloud) engines via URL `engine` param. No external services required.
 
 ## Translator
 
@@ -14,7 +14,7 @@ Server pipeline: validate phrase → Turso **phrase cache** lookup → **Google*
 
 ## Translator search state
 
-URL-backed settings for the Translator: phrase input, source language, cloud styling, hidden languages, serialized weights. Production `/translate` uses react-wordcloud fields; experimental `/translation` adds wordcloud2 fields.
+URL-backed settings for the Translator: phrase input, source language, cloud engine (`experimental` | `classic`), cloud styling for both engines, hidden languages, serialized weights.
 
 ## Translator cloud data
 

@@ -9,25 +9,13 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as WordsRouteImport } from './routes/words'
-import { Route as TranslationRouteImport } from './routes/translation'
-import { Route as TranslateRouteImport } from './routes/translate'
-import { Route as TextCloudRouteImport } from './routes/text-cloud'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as TextCloudRouteImport } from './routes/text-cloud'
+import { Route as TranslateRouteImport } from './routes/translate'
 
-const WordsRoute = WordsRouteImport.update({
-  id: '/words',
-  path: '/words',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const TranslationRoute = TranslationRouteImport.update({
-  id: '/translation',
-  path: '/translation',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const TranslateRoute = TranslateRouteImport.update({
-  id: '/translate',
-  path: '/translate',
+const IndexRoute = IndexRouteImport.update({
+  id: '/',
+  path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const TextCloudRoute = TextCloudRouteImport.update({
@@ -35,9 +23,9 @@ const TextCloudRoute = TextCloudRouteImport.update({
   path: '/text-cloud',
   getParentRoute: () => rootRouteImport,
 } as any)
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
+const TranslateRoute = TranslateRouteImport.update({
+  id: '/translate',
+  path: '/translate',
   getParentRoute: () => rootRouteImport,
 } as any)
 
@@ -45,67 +33,39 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/text-cloud': typeof TextCloudRoute
   '/translate': typeof TranslateRoute
-  '/translation': typeof TranslationRoute
-  '/words': typeof WordsRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/text-cloud': typeof TextCloudRoute
   '/translate': typeof TranslateRoute
-  '/translation': typeof TranslationRoute
-  '/words': typeof WordsRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/text-cloud': typeof TextCloudRoute
   '/translate': typeof TranslateRoute
-  '/translation': typeof TranslationRoute
-  '/words': typeof WordsRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/text-cloud' | '/translate' | '/translation' | '/words'
+  fullPaths: '/' | '/text-cloud' | '/translate'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/text-cloud' | '/translate' | '/translation' | '/words'
-  id:
-    | '__root__'
-    | '/'
-    | '/text-cloud'
-    | '/translate'
-    | '/translation'
-    | '/words'
+  to: '/' | '/text-cloud' | '/translate'
+  id: '__root__' | '/' | '/text-cloud' | '/translate'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   TextCloudRoute: typeof TextCloudRoute
   TranslateRoute: typeof TranslateRoute
-  TranslationRoute: typeof TranslationRoute
-  WordsRoute: typeof WordsRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/words': {
-      id: '/words'
-      path: '/words'
-      fullPath: '/words'
-      preLoaderRoute: typeof WordsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/translation': {
-      id: '/translation'
-      path: '/translation'
-      fullPath: '/translation'
-      preLoaderRoute: typeof TranslationRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/translate': {
-      id: '/translate'
-      path: '/translate'
-      fullPath: '/translate'
-      preLoaderRoute: typeof TranslateRouteImport
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/text-cloud': {
@@ -115,11 +75,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TextCloudRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
+    '/translate': {
+      id: '/translate'
+      path: '/translate'
+      fullPath: '/translate'
+      preLoaderRoute: typeof TranslateRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
@@ -129,8 +89,6 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   TextCloudRoute: TextCloudRoute,
   TranslateRoute: TranslateRoute,
-  TranslationRoute: TranslationRoute,
-  WordsRoute: WordsRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

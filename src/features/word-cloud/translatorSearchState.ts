@@ -5,6 +5,10 @@ import {
 	type SpiralType,
 } from "#/lib/wordCloudUtils";
 import { getSearchDiffFromDefaults, getValidPalette, mergeSearchWithDefaults } from "./search";
+import {
+	DEFAULT_WORD_CLOUD_ENGINE,
+	type WordCloudEngine,
+} from "./wordCloudEngine";
 
 const TRANSLATOR_BG = "#c9a227";
 const TRANSLATOR_TEXT_COLOR = "#000000";
@@ -34,6 +38,7 @@ export type TranslatorSearch = {
 	/** BCP47-style source language for the phrase (translation *from*). */
 	sourceLanguage?: string;
 	translated?: boolean;
+	engine?: WordCloudEngine;
 	minFontSize?: number;
 	maxFontSize?: number;
 	padding?: number;
@@ -51,7 +56,7 @@ export type TranslatorSearch = {
 };
 
 export type ExperimentalTranslatorSearch = TranslatorSearch & {
-	/** wordcloud2.js options (experimental Translation page). */
+	/** wordcloud2.js options. */
 	cloud2Shape?: (typeof translatorCloud2ShapeOptions)[number];
 	cloud2Ellipticity?: number;
 	cloud2Shuffle?: boolean;
@@ -73,6 +78,7 @@ export const DEFAULT_TRANSLATOR_SEARCH: FullExperimentalTranslatorSearch = {
 	input: "everything will be great",
 	sourceLanguage: "en",
 	translated: false,
+	engine: DEFAULT_WORD_CLOUD_ENGINE,
 	minFontSize: 14,
 	maxFontSize: 72,
 	padding: 1,

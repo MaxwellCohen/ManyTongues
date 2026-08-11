@@ -7,9 +7,9 @@ It has two main tools:
 - **Text Cloud**: paste or type any text and the app sizes each word by how often it appears.
 - **Translator**: enter a short phrase, translate it into many languages, and render those translations as a word cloud.
 
-There are also **experimental** pages (**Words** and **Translation**) that use [wordcloud2.js](https://github.com/timdream/wordcloud2.js) instead of [react-wordcloud](https://github.com/isoterik/react-wordcloud). Prefer **Text Cloud** and **Translate** unless you are comparing implementations.
+Both tools let you switch between the **Experimental** engine ([wordcloud2.js](https://github.com/timdream/wordcloud2.js), default) and **Classic** ([react-wordcloud](https://github.com/isoterik/react-wordcloud)).
 
-The app is built with `TanStack Start`, `React`, and `react-wordcloud`.
+The app is built with `TanStack Start`, `React`, `wordcloud2.js`, and `react-wordcloud`.
 
 ## What The App Does
 
@@ -18,9 +18,10 @@ The app is built with `TanStack Start`, `React`, and `react-wordcloud`.
 The text cloud page lets you:
 
 - paste raw text into a text area
+- optionally filter stopwords and custom exclude lists
 - automatically count repeated words
-- render the most common words as a word cloud
-- customize the cloud with controls for colors, font sizes, scale, padding, rotations, font family, and background color
+- render the most common words as a word cloud (Experimental or Classic engine)
+- customize the cloud with engine-specific style controls
 - download the finished cloud as a PNG image
 
 This is useful for quickly visualizing themes, repeated terms, or the dominant vocabulary in a block of text.
@@ -43,10 +44,8 @@ Server-side **rate limiting** (per client IP, when `DB_URL` is set) protects tra
 ## Routes
 
 - `/` home page with links to all tools
-- `/text-cloud` text-to-word-cloud generator (react-wordcloud)
-- `/translate` phrase translator and multilingual word cloud (react-wordcloud)
-- `/words` experimental text cloud (wordcloud2.js)
-- `/translation` experimental translator word cloud (wordcloud2.js)
+- `/text-cloud` text-to-word-cloud generator (engine switcher: Experimental / Classic)
+- `/translate` phrase translator and multilingual word cloud (engine switcher: Experimental / Classic)
 
 ## URL search params
 
@@ -125,7 +124,7 @@ pnpm db:studio
 - `TanStack Router` for file-based routing (custom Zipson + base64 search serialization in `src/router.tsx`)
 - `React` for UI
 - `Tailwind CSS` for styling
-- `react-wordcloud`, `d3-cloud`, and (experimental) `wordcloud2.js` for cloud layout/rendering
+- `react-wordcloud`, `d3-cloud`, and `wordcloud2.js` for cloud layout/rendering
 - `Drizzle ORM` with `@libsql/client` for Turso persistence
 - `Vitest` for tests
 - `Biome` for linting and formatting
