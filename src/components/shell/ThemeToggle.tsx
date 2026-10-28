@@ -91,7 +91,7 @@ export default function ThemeToggle() {
           title={label}
           className={`rounded-full p-2 transition-all duration-200 ${
             mode === value
-              ? 'bg-lagoon text-white shadow-sm'
+              ? 'bg-lagoon text-btn-on-lagoon shadow-sm'
               : 'text-sea-ink-soft hover:bg-link-bg-hover hover:text-sea-ink'
           }`}
         >

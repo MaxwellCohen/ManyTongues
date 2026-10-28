@@ -16,7 +16,7 @@ function clientIpForRateLimit(): string | null {
  * configured, then Google and Microsoft providers.
  */
 export const getOrTranslatePhrase = createServerFn({ method: "POST" })
-	.inputValidator((data: unknown) => getOrTranslatePhraseInputSchema.parse(data))
+	.validator((data: unknown) => getOrTranslatePhraseInputSchema.parse(data))
 	.handler(async (ctx) => {
 		const rate = await applyTranslatorRateLimit(clientIpForRateLimit());
 		if (rate.limited) {

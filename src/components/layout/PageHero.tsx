@@ -21,7 +21,7 @@ export default function PageHero({
       <p className="text-eyebrow font-bold uppercase tracking-kicker text-kicker">
         {kicker}
       </p>
-      <h1 className="font-display text-3xl font-bold tracking-tight text-sea-ink sm:text-4xl">
+      <h1 className="font-display text-3xl font-extrabold tracking-tight text-sea-ink sm:text-4xl">
         {title}
       </h1>
       <p className="text-sea-ink-soft">{description}</p>

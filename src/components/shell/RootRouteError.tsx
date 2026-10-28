@@ -8,7 +8,7 @@ export default function RootRouteError({ error, reset }: ErrorComponentProps) {
 				Something went wrong
 			</h1>
 			<p className="mt-2 text-sm text-sea-ink-soft wrap-break-word">
-				{error.message}
+				{error instanceof Error ? error.message : String(error)}
 			</p>
 			<div className="mt-6 flex flex-wrap items-center justify-center gap-3">
 				<button

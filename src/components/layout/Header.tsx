@@ -12,7 +12,7 @@ export default function Header() {
               to="/"
               className="inline-flex items-center gap-2 rounded-full border border-chip-line bg-chip-bg px-3 py-1.5 text-sm text-sea-ink no-underline shadow-chip sm:px-4 sm:py-2"
             >
-              <span className="h-2 w-2 rounded-full bg-[linear-gradient(90deg,#56c6be,#7ed3bf)]" />
+              <span className="h-2 w-2 rounded-full bg-[linear-gradient(135deg,var(--color-lagoon),var(--color-palm))]" />
               ManyTongues
             </Link>
           </span>

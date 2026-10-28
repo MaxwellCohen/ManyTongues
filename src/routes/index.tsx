@@ -55,9 +55,12 @@ function HomePage() {
         <p className="text-eyebrow font-bold uppercase tracking-kicker text-kicker">
           Text Visualization
         </p>
-        <h1 className="font-display text-3xl font-bold tracking-tight text-sea-ink sm:text-4xl">
-          Turn text into clear, customizable word clouds
+        <h1 className="font-display text-4xl font-extrabold tracking-tight text-sea-ink sm:text-5xl">
+          ManyTongues
         </h1>
+        <p className="font-display text-xl font-semibold tracking-tight text-sea-ink-soft sm:text-2xl">
+          Turn text into clear, customizable word clouds
+        </p>
         <p className="text-sea-ink-soft text-lg">
           Create a word cloud from any block of text, or translate a short phrase
           into multiple languages and compare the results in one visual.
