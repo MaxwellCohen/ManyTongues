@@ -2,8 +2,8 @@ import { usePostHog } from "@posthog/react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { zodValidator } from "@tanstack/zod-adapter";
 import { startTransition, useMemo } from "react";
-import IslandPanel from "#/components/shell/IslandPanel";
 import PageHero from "#/components/layout/PageHero";
+import { NeonCard } from "#/features/word-cloud/components/neon";
 import TranslationsAccordion from "#/features/word-cloud/components/TranslationsAccordion";
 import { TranslatorInputForm } from "#/features/word-cloud/components/TranslatorInputForm";
 import WordCloud2Canvas from "#/features/word-cloud/components/WordCloud2Canvas";
@@ -13,17 +13,17 @@ import WordCloudEngineSwitch from "#/features/word-cloud/components/WordCloudEng
 import WordCloudOptions from "#/features/word-cloud/components/WordCloudOptions";
 import WordCloudPageLayout from "#/features/word-cloud/components/WordCloudPageLayout";
 import {
+	DEFAULT_TRANSLATOR_SEARCH,
+	deduplicateCloudDataByValue,
+	type ExperimentalTranslatorSearch,
+	type FullExperimentalTranslatorSearch,
+	resolveTranslatorSearch,
+} from "#/features/word-cloud/translateState";
+import {
 	buildTranslationPageWordCloudOptions,
 	makeTranslationWeightFactor,
 } from "#/features/word-cloud/translationCloud2";
 import { translatorSearchSchema } from "#/features/word-cloud/translatorSearchSchema";
-import {
-	DEFAULT_TRANSLATOR_SEARCH,
-	deduplicateCloudDataByValue,
-	resolveTranslatorSearch,
-	type ExperimentalTranslatorSearch,
-	type FullExperimentalTranslatorSearch,
-} from "#/features/word-cloud/translateState";
 import { useTranslatePage } from "#/features/word-cloud/useTranslatePage";
 import { isExperimentalEngine } from "#/features/word-cloud/wordCloudEngine";
 
@@ -104,9 +104,11 @@ function TranslatorWordCloudPage() {
 function TranslationSourcePhraseBanner({ phrase }: { phrase: string }) {
 	if (!phrase) return null;
 	return (
-		<p className="rounded-lg border border-line bg-foam/80 px-3 py-2 text-center text-sm font-medium text-sea-ink wrap-break-word">
-			<span className="text-sea-ink-soft">Source phrase: </span>
-			{phrase}
+		<p className="min-w-0 truncate font-mono text-xs text-muted-ink">
+			<span className="text-neon-pink">src:</span>{" "}
+			<span className="text-sea-ink" title={phrase}>
+				{phrase}
+			</span>
 		</p>
 	);
 }
@@ -131,10 +133,8 @@ function TranslatorPhraseInputPanel({
 	onRetry: () => void;
 }) {
 	return (
-		<IslandPanel className="rounded-2xl p-5 sm:p-6">
-			<h2 className="mb-4 text-sm font-semibold uppercase tracking-wide text-sea-ink-soft">
-				Enter phrase
-			</h2>
+		<div>
+			<h2 className="sr-only">Enter phrase</h2>
 			<TranslatorInputForm
 				key={`${resolvedSearch.sourceLanguage}-${resolvedSearch.input ?? "empty"}`}
 				initialInput={resolvedSearch.input ?? ""}
@@ -155,7 +155,7 @@ function TranslatorPhraseInputPanel({
 				}}
 				onRetry={onRetry}
 			/>
-		</IslandPanel>
+		</div>
 	);
 }
 
@@ -173,7 +173,7 @@ function TranslatorLanguagesPanel({
 	onRemoveLanguage: (lang: string) => void;
 }) {
 	return (
-		<IslandPanel className="rounded-2xl p-5 sm:p-6">
+		<NeonCard title="Weights">
 			{translationCount > 0 ? (
 				<TranslationsAccordion
 					visibleTranslations={visibleTranslations}
@@ -184,14 +184,12 @@ function TranslatorLanguagesPanel({
 					defaultOpen
 				/>
 			) : (
-				<div className="rounded-xl border border-line bg-foam/50 px-4 py-6 text-center">
-					<p className="text-sm text-sea-ink-soft">
-						Translate a phrase above to see languages and adjust weights for the
-						cloud.
-					</p>
-				</div>
+				<p className="rounded-xl border border-dashed border-white/12 px-4 py-5 text-center font-mono text-xs leading-relaxed text-muted-ink">
+					Translate a phrase above to see languages and adjust weights for the
+					cloud.
+				</p>
 			)}
-		</IslandPanel>
+		</NeonCard>
 	);
 }
 
@@ -205,13 +203,7 @@ function TranslatorCloudStyleAside({
 	onUpdateSearch: ReturnType<typeof useTranslatePage>["updateSearch"];
 }) {
 	return (
-		<aside
-			className="w-full shrink-0 rounded-2xl border border-line bg-foam/50 px-5 py-6 lg:sticky lg:top-6 lg:max-h-[calc(100vh-2rem)] lg:overflow-y-auto"
-			aria-label="Word cloud options"
-		>
-			<h2 className="mb-4 text-sm font-semibold uppercase tracking-wide text-sea-ink-soft">
-				Cloud style
-			</h2>
+		<NeonCard as="aside" title="Cloud style" aria-label="Word cloud options">
 			{experimental ? (
 				<WordCloud2OptionsForm
 					formState={formState}
@@ -224,7 +216,7 @@ function TranslatorCloudStyleAside({
 					onUpdateSearch={onUpdateSearch}
 				/>
 			)}
-		</aside>
+		</NeonCard>
 	);
 }
 
@@ -280,15 +272,30 @@ function TranslatorWordCloudContent({
 		startTransition(() => hideLanguage(lang));
 	};
 
+	const phrasePrompt = (
+		<TranslatorPhraseInputPanel
+			resolvedSearch={resolvedSearch}
+			loading={loading}
+			error={error}
+			translationCount={translations.size}
+			formInput={formState.input}
+			updateSearch={updateSearch}
+			requestTranslate={requestTranslate}
+			onRetry={() => requestTranslate()}
+		/>
+	);
+
 	return (
 		<WordCloudPageLayout
 			cloud={
 				<div className="flex min-w-0 flex-col gap-3">
-					<WordCloudEngineSwitch
-						value={formState.engine}
-						onChange={(engine) => updateSearch({ engine })}
-					/>
-					<TranslationSourcePhraseBanner phrase={phraseForDisplay} />
+					<div className="flex min-w-0 flex-wrap items-center justify-between gap-3">
+						<WordCloudEngineSwitch
+							value={formState.engine}
+							onChange={(engine) => updateSearch({ engine })}
+						/>
+						<TranslationSourcePhraseBanner phrase={phraseForDisplay} />
+					</div>
 					{experimental ? (
 						<WordCloud2Canvas
 							words={deduplicateCloudDataByValue(cloudData)}
@@ -297,6 +304,7 @@ function TranslatorWordCloudContent({
 							hasWords={hasWords}
 							options={wordCloud2Options}
 							downloadName={phraseForDisplay}
+							prompt={phrasePrompt}
 						/>
 					) : (
 						<WordCloudCanvas
@@ -307,21 +315,12 @@ function TranslatorWordCloudContent({
 							hasWords={hasWords}
 							options={cloudOptions}
 							downloadName={phraseForDisplay}
+							prompt={phrasePrompt}
 						/>
 					)}
 				</div>
 			}
 		>
-			<TranslatorPhraseInputPanel
-				resolvedSearch={resolvedSearch}
-				loading={loading}
-				error={error}
-				translationCount={translations.size}
-				formInput={formState.input}
-				updateSearch={updateSearch}
-				requestTranslate={requestTranslate}
-				onRetry={() => requestTranslate()}
-			/>
 			<TranslatorLanguagesPanel
 				translationCount={translations.size}
 				visibleTranslations={visibleTranslations}

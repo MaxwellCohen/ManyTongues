@@ -1,8 +1,12 @@
 import { usePostHog } from "@posthog/react";
 import { useCallback, useMemo, useRef } from "react";
-import ReactWordcloud from "#/features/word-cloud/components/cloud-render";
-import IslandPanel from "#/components/shell/IslandPanel";
 import { DownloadIcon } from "#/components/icons";
+import ReactWordcloud from "#/features/word-cloud/components/cloud-render";
+import {
+	NEON_EXPORT_BUTTON_CLASS,
+	NEON_SCREEN_CLASS,
+	NeonHud,
+} from "#/features/word-cloud/components/neon";
 import { downloadWordCloudPng } from "#/features/word-cloud/wordCloudExport";
 import {
 	capMaxFontSizeForWords,
@@ -46,6 +50,7 @@ export default function WordCloudCanvas({
 	hasWords,
 	options,
 	downloadName,
+	prompt,
 	children,
 }: {
 	words: { text: string; value: number }[];
@@ -56,6 +61,8 @@ export default function WordCloudCanvas({
 	options: WordCloudOptions;
 	/** Stem used for the downloaded PNG filename (e.g. "hello-world"). Falls back to "word-cloud". */
 	downloadName?: string;
+	/** Optional prompt bar rendered at the top of the cloud screen. */
+	prompt?: React.ReactNode;
 	children?: React.ReactNode;
 }) {
 	const containerRef = useRef<HTMLDivElement>(null);
@@ -130,29 +137,12 @@ export default function WordCloudCanvas({
 	]);
 
 	return (
-		<IslandPanel className="flex min-h-80 flex-col rounded-2xl p-5 sm:p-6">
-			<div className="mb-3 flex items-center justify-between">
-				<h2 className="text-sm font-semibold text-sea-ink">
-					Preview
-					{mounted && hasWords && (
-						<span className="ml-2 text-xs font-normal text-sea-ink-soft">
-							{words.length} {words.length === 1 ? "word" : "words"}
-						</span>
-					)}
-				</h2>
-				{mounted && hasWords && (
-					<button
-						type="button"
-						onClick={handleDownload}
-						className="flex items-center gap-2 rounded-lg border border-line bg-foam px-3 py-2 text-sm font-medium text-sea-ink hover:border-lagoon hover:bg-lagoon/10 hover:text-lagoon"
-					>
-						<DownloadIcon className="size-4" />
-						Download PNG
-					</button>
-				)}
-			</div>
+		<section className={NEON_SCREEN_CLASS} aria-label="Word cloud preview">
+			{prompt ? (
+				<div className="relative z-10 px-4 pt-4 sm:px-6 sm:pt-6">{prompt}</div>
+			) : null}
 			<div
-				className="relative flex-1 min-h-70 rounded-xl border border-line flex items-center justify-center"
+				className="relative m-4 flex h-[340px] items-center justify-center overflow-hidden rounded-[20px] sm:m-6 sm:h-[440px] lg:h-[520px]"
 				style={{
 					backgroundColor: /^#[0-9A-Fa-f]{6}$/.test(backgroundColor)
 						? backgroundColor
@@ -160,13 +150,15 @@ export default function WordCloudCanvas({
 				}}
 			>
 				{!mounted ? (
-					<p className="text-sm text-sea-ink-soft">Loading preview...</p>
+					<p className="font-mono text-sm text-muted-ink">
+						&gt; Loading preview...
+					</p>
 				) : hasWords && Array.isArray(words) && words.length > 0 ? (
 					<div
 						ref={containerRef}
 						role="img"
 						aria-label={accessibilitySummary}
-						className="relative h-full w-full flex items-center justify-center [&_svg]:block [&_svg]:m-auto [&_svg]:max-h-full [&_svg]:max-w-full"
+						className="relative flex h-full w-full items-center justify-center [&_svg]:m-auto [&_svg]:block [&_svg]:max-h-full [&_svg]:max-w-full"
 					>
 						<ul className="sr-only">
 							{words.map((w, i) => (
@@ -181,12 +173,27 @@ export default function WordCloudCanvas({
 						/>
 					</div>
 				) : (
-					<p className="text-sm text-sea-ink-soft">
-						Add text or translations to see your word cloud preview.
+					<p className="max-w-sm px-6 text-center font-mono text-sm text-muted-ink">
+						&gt; Add text or translations to see your word cloud preview.
 					</p>
 				)}
 			</div>
+			<NeonHud
+				wordCount={mounted && hasWords ? words.length : null}
+				engine="classic"
+			>
+				{mounted && hasWords && (
+					<button
+						type="button"
+						onClick={handleDownload}
+						className={NEON_EXPORT_BUTTON_CLASS}
+					>
+						<DownloadIcon className="size-4" />
+						Download PNG
+					</button>
+				)}
+			</NeonHud>
 			{children}
-		</IslandPanel>
+		</section>
 	);
 }

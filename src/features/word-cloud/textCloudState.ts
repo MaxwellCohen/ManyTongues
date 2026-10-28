@@ -5,17 +5,21 @@ import {
 	DEFAULT_TEXT,
 	type SpiralType,
 } from "#/lib/wordCloudUtils";
-import { getSearchDiffFromDefaults, getValidPalette, mergeSearchWithDefaults } from "./search";
 import {
-	DEFAULT_WORD_CLOUD_ENGINE,
-	type WordCloudEngine,
-	wordCloudEngineOptions,
-} from "./wordCloudEngine";
+	getSearchDiffFromDefaults,
+	getValidPalette,
+	mergeSearchWithDefaults,
+} from "./search";
 import {
 	translatorCloud2ColorOptions,
 	translatorCloud2FontWeightOptions,
 	translatorCloud2ShapeOptions,
 } from "./translatorSearchState";
+import {
+	DEFAULT_WORD_CLOUD_ENGINE,
+	type WordCloudEngine,
+	wordCloudEngineOptions,
+} from "./wordCloudEngine";
 
 export const generatorScaleOptions = ["linear", "sqrt", "log"] as const;
 export const generatorSpiralOptions = ["archimedean", "rectangular"] as const;
@@ -82,7 +86,7 @@ export const DEFAULT_GENERATOR_SEARCH: FullGeneratorSearch = {
 	cloud2Ellipticity: 0.65,
 	cloud2Shuffle: true,
 	cloud2RotateRatio: 0.1,
-	cloud2Color: "random-dark",
+	cloud2Color: "custom",
 	cloud2GridSize: 8,
 	cloud2MinRotation: -90,
 	cloud2MaxRotation: 90,

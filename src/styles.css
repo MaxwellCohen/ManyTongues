@@ -1,128 +1,135 @@
-@import url("https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Syne:wght@600;700;800&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Unbounded:wght@400;600;800;900&family=JetBrains+Mono:wght@400;500;700&family=Noto+Sans+JP:wght@700;900&family=Noto+Sans+KR:wght@700;900&family=Noto+Kufi+Arabic:wght@700;900&display=swap");
 @import "tailwindcss";
 @plugin "@tailwindcss/typography";
 
-@theme {
-  --font-sans: "Outfit", ui-sans-serif, system-ui, sans-serif;
-  --font-display: "Syne", ui-sans-serif, system-ui, sans-serif;
-  --text-eyebrow: 0.69rem;
-  --tracking-kicker: 0.18em;
-  --tracking-action: 0.01em;
-  --animate-rise-in: rise-in 700ms cubic-bezier(0.16, 1, 0.3, 1) both;
-  --shadow-card: 0 8px 28px rgba(15, 23, 42, 0.06);
-  --shadow-card-hover: 0 14px 36px rgba(15, 23, 42, 0.1);
-  --shadow-chip: 0 6px 20px rgba(15, 23, 42, 0.06);
-  --shadow-theme-toggle: 0 4px 12px rgba(15, 23, 42, 0.06);
-  --shadow-button-primary: 0 4px 16px rgba(15, 23, 42, 0.22);
-  --shadow-button-primary-focus:
-    0 0 0 3px var(--color-bg-base), 0 0 0 5px var(--color-btn-primary-focus-ring);
-  --shadow-island:
-    inset 0 1px 0 var(--color-inset-glint), 0 20px 48px rgba(15, 23, 42, 0.08),
-    0 6px 16px rgba(15, 23, 42, 0.04);
+/* Dark-only theme: make `dark:` variants always apply. */
+@custom-variant dark (&:where(:root, :root *));
 
-  /* Design tokens – light (default) values; dark overrides in :root[data-theme="dark"] below */
-  --color-sea-ink: #0b1220;
-  --color-sea-ink-soft: #4a5568;
-  --color-lagoon: #3d7eff;
-  --color-lagoon-deep: #2156d9;
-  --color-palm: #e85d4c;
-  --color-sand: #eef1f6;
-  --color-foam: #f7f8fb;
-  --color-surface: rgba(255, 255, 255, 0.78);
-  --color-surface-strong: rgba(255, 255, 255, 0.92);
-  --color-line: rgba(15, 23, 42, 0.1);
-  --color-inset-glint: rgba(255, 255, 255, 0.9);
-  --color-kicker: rgba(33, 86, 217, 0.88);
-  --color-bg-base: #e8ecf3;
-  --color-header-bg: rgba(247, 248, 251, 0.82);
-  --color-chip-bg: rgba(255, 255, 255, 0.86);
-  --color-chip-line: rgba(61, 126, 255, 0.18);
-  --color-link-bg-hover: rgba(255, 255, 255, 0.95);
-  --color-hero-a: rgba(61, 126, 255, 0.22);
-  --color-hero-b: rgba(232, 93, 76, 0.12);
-  --color-btn-on-lagoon: #f8fafc;
-  --color-btn-primary-bg: #0b1220;
-  --color-btn-primary-text: #f8fafc;
-  --color-btn-primary-hover-bg: #1e293b;
-  --color-btn-primary-focus-ring: #3d7eff;
+@theme {
+  --font-sans:
+    "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas,
+    "Noto Sans JP", "Noto Sans KR", "Noto Kufi Arabic", monospace;
+  --font-mono:
+    "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas,
+    "Noto Sans JP", "Noto Sans KR", "Noto Kufi Arabic", monospace;
+  --font-display:
+    "Unbounded", "Noto Sans JP", "Noto Sans KR", "Noto Kufi Arabic",
+    ui-sans-serif, system-ui, sans-serif;
+  --text-eyebrow: 0.72rem;
+  --tracking-kicker: 0.08em;
+  --tracking-action: 0.02em;
+  --animate-rise-in: rise-in 700ms cubic-bezier(0.16, 1, 0.3, 1) both;
+
+  /* Neon palette */
+  --color-neon-pink: #E879A8;
+  --color-neon-cyan: #6CCFDD;
+  --color-neon-lime: #B5D884;
+  --color-neon-amber: #E8B464;
+  --color-neon-violet: #9A88E6;
+  --color-night: #0B0A12;
+  --color-panel: #13111C;
+  --color-muted-ink: #8f84bf;
+
+  /* Glows */
+  --shadow-glow-pink: 0 0 14px #E879A833;
+  --shadow-glow-cyan: 0 0 14px #6CCFDD33;
+  --shadow-glow-lime: 0 0 14px #B5D88433;
+  --shadow-glow-violet: 0 0 14px #9A88E633;
+
+  --shadow-card: inset 0 0 60px rgba(154, 136, 230, 0.08), 0 0 0 1px rgba(255, 255, 255, 0.02);
+  --shadow-card-hover: inset 0 0 80px rgba(154, 136, 230, 0.14), 0 0 28px rgba(108, 207, 221, 0.18);
+  --shadow-chip: 0 0 14px rgba(154, 136, 230, 0.18);
+  --shadow-theme-toggle: 0 0 14px rgba(154, 136, 230, 0.18);
+  --shadow-button-primary: 0 0 14px #B5D88433;
+  --shadow-button-primary-focus:
+    0 0 0 3px var(--color-bg-base), 0 0 0 5px var(--color-btn-primary-focus-ring),
+    0 0 14px #6CCFDD33;
+  --shadow-island:
+    inset 0 1px 0 var(--color-inset-glint), inset 0 0 120px rgba(154, 136, 230, 0.13),
+    0 20px 48px rgba(0, 0, 0, 0.4);
+
+  /* Legacy design tokens remapped to neon values (dark only) */
+  --color-sea-ink: #ede8ff;
+  --color-sea-ink-soft: #a99ed6;
+  --color-lagoon: #6CCFDD;
+  --color-lagoon-deep: #9FDFE8;
+  --color-palm: #E879A8;
+  --color-sand: #17151F;
+  --color-foam: #13111C;
+  --color-surface: rgba(255, 255, 255, 0.04);
+  --color-surface-strong: rgba(19, 17, 28, 0.92);
+  --color-line: rgba(255, 255, 255, 0.12);
+  --color-inset-glint: rgba(255, 255, 255, 0.06);
+  --color-kicker: #B5D884;
+  --color-bg-base: #0B0A12;
+  --color-header-bg: rgba(11, 10, 18, 0.78);
+  --color-chip-bg: rgba(255, 255, 255, 0.04);
+  --color-chip-line: rgba(255, 255, 255, 0.12);
+  --color-link-bg-hover: rgba(255, 255, 255, 0.08);
+  --color-hero-a: rgba(154, 136, 230, 0.2);
+  --color-hero-b: rgba(232, 121, 168, 0.16);
+  --color-btn-on-lagoon: #0B0A12;
+  --color-btn-primary-bg: #B5D884;
+  --color-btn-primary-text: #0B0A12;
+  --color-btn-primary-hover-bg: #C4E09C;
+  --color-btn-primary-focus-ring: #6CCFDD;
 
   /* shadcn/Base UI (mapped to design tokens for bg-*, text-*, border-*, etc.) */
-  --color-background: var(--color-foam);
+  --color-background: var(--color-night);
   --color-foreground: var(--color-sea-ink);
-  --color-card: var(--color-foam);
+  --color-card: var(--color-panel);
   --color-card-foreground: var(--color-sea-ink);
-  --color-popover: var(--color-foam);
+  --color-popover: var(--color-panel);
   --color-popover-foreground: var(--color-sea-ink);
-  --color-primary: var(--color-lagoon);
-  --color-primary-foreground: var(--color-btn-on-lagoon);
-  --color-secondary: var(--color-sand);
+  --color-primary: var(--color-neon-cyan);
+  --color-primary-foreground: var(--color-night);
+  --color-secondary: rgba(255, 255, 255, 0.06);
   --color-secondary-foreground: var(--color-sea-ink);
-  --color-muted: var(--color-line);
+  --color-muted: rgba(255, 255, 255, 0.08);
   --color-muted-foreground: var(--color-sea-ink-soft);
-  --color-accent: var(--color-line);
+  --color-accent: rgba(255, 255, 255, 0.08);
   --color-accent-foreground: var(--color-sea-ink);
-  --color-destructive: #dc2626;
-  --color-destructive-foreground: #fafafa;
+  --color-destructive: #ff4d6d;
+  --color-destructive-foreground: #0B0A12;
   --color-border: var(--color-line);
   --color-input: var(--color-line);
-  --color-ring: var(--color-lagoon);
+  --color-ring: var(--color-neon-cyan);
 }
 
-:root[data-theme="dark"] {
-  --color-sea-ink: #eef2f7;
-  --color-sea-ink-soft: #94a3b8;
-  --color-lagoon: #6b9bff;
-  --color-lagoon-deep: #93b4ff;
-  --color-palm: #f07160;
-  --color-sand: #0f141d;
-  --color-foam: #111722;
-  --color-surface: rgba(17, 23, 34, 0.82);
-  --color-surface-strong: rgba(15, 20, 30, 0.94);
-  --color-line: rgba(148, 163, 184, 0.16);
-  --color-inset-glint: rgba(148, 163, 184, 0.1);
-  --color-kicker: #93b4ff;
-  --color-bg-base: #080b12;
-  --color-header-bg: rgba(8, 11, 18, 0.82);
-  --color-chip-bg: rgba(17, 23, 34, 0.92);
-  --color-chip-line: rgba(107, 155, 255, 0.24);
-  --color-link-bg-hover: rgba(30, 41, 59, 0.85);
-  --color-hero-a: rgba(61, 126, 255, 0.16);
-  --color-hero-b: rgba(232, 93, 76, 0.1);
-  --color-btn-on-lagoon: #0b1220;
-  --color-btn-primary-bg: #eef2f7;
-  --color-btn-primary-text: #0b1220;
-  --color-btn-primary-hover-bg: #cbd5e1;
-  --color-btn-primary-focus-ring: #6b9bff;
+/* Neon text utilities */
+@utility text-glow-pink {
+  color: var(--color-neon-pink);
+  text-shadow: 0 0 6px #E879A855, 0 0 18px #E879A822;
 }
 
-/* CSS-only fallback for system dark preference when JS theme script hasn't set data-theme */
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    --color-sea-ink: #eef2f7;
-    --color-sea-ink-soft: #94a3b8;
-    --color-lagoon: #6b9bff;
-    --color-lagoon-deep: #93b4ff;
-    --color-palm: #f07160;
-    --color-sand: #0f141d;
-    --color-foam: #111722;
-    --color-surface: rgba(17, 23, 34, 0.82);
-    --color-surface-strong: rgba(15, 20, 30, 0.94);
-    --color-line: rgba(148, 163, 184, 0.16);
-    --color-inset-glint: rgba(148, 163, 184, 0.1);
-    --color-kicker: #93b4ff;
-    --color-bg-base: #080b12;
-    --color-header-bg: rgba(8, 11, 18, 0.82);
-    --color-chip-bg: rgba(17, 23, 34, 0.92);
-    --color-chip-line: rgba(107, 155, 255, 0.24);
-    --color-link-bg-hover: rgba(30, 41, 59, 0.85);
-    --color-hero-a: rgba(61, 126, 255, 0.16);
-    --color-hero-b: rgba(232, 93, 76, 0.1);
-    --color-btn-on-lagoon: #0b1220;
-    --color-btn-primary-bg: #eef2f7;
-    --color-btn-primary-text: #0b1220;
-    --color-btn-primary-hover-bg: #cbd5e1;
-    --color-btn-primary-focus-ring: #6b9bff;
-  }
+@utility text-glow-cyan {
+  color: var(--color-neon-cyan);
+  text-shadow: 0 0 6px #6CCFDD55, 0 0 18px #6CCFDD22;
+}
+
+@utility text-glow-lime {
+  color: var(--color-neon-lime);
+  text-shadow: 0 0 6px #B5D88455, 0 0 18px #B5D88422;
+}
+
+@utility text-glow-amber {
+  color: var(--color-neon-amber);
+  text-shadow: 0 0 6px #E8B46455, 0 0 18px #E8B46422;
+}
+
+@utility text-glow-violet {
+  color: var(--color-neon-violet);
+  text-shadow: 0 0 6px #9A88E655, 0 0 18px #9A88E622;
+}
+
+@utility text-outline-cyan {
+  color: transparent;
+  -webkit-text-stroke: 2px var(--color-neon-cyan);
+  text-shadow: 0 0 30px #6CCFDD55;
+}
+
+:root {
+  color-scheme: dark;
 }
 
 * {
@@ -139,59 +146,55 @@ body {
   margin: 0;
   color: var(--color-sea-ink);
   font-family: var(--font-sans);
-  background-color: var(--color-bg-base);
-  background:
-    radial-gradient(900px 520px at -5% -8%, var(--color-hero-a), transparent 55%),
-    radial-gradient(820px 480px at 105% -5%, var(--color-hero-b), transparent 58%),
-    radial-gradient(640px 360px at 50% 110%, rgba(61, 126, 255, 0.08), transparent 70%),
-    linear-gradient(180deg, var(--color-foam) 0%, var(--color-sand) 42%, var(--color-bg-base) 100%);
+  background-color: var(--color-night);
+  background-image:
+    radial-gradient(60% 50% at 80% 0%, #9A88E61f, transparent),
+    radial-gradient(50% 40% at 0% 100%, #E879A814, transparent),
+    linear-gradient(#ffffff06 1px, transparent 1px),
+    linear-gradient(90deg, #ffffff06 1px, transparent 1px);
+  background-size: auto, auto, 40px 40px, 40px 40px;
+  background-attachment: fixed;
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-body::before {
-  content: "";
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  z-index: -1;
-  opacity: 0.45;
-  background:
-    radial-gradient(circle at 18% 12%, rgba(255, 255, 255, 0.7), transparent 32%),
-    radial-gradient(circle at 82% 22%, rgba(61, 126, 255, 0.14), transparent 40%),
-    radial-gradient(circle at 48% 88%, rgba(232, 93, 76, 0.08), transparent 34%);
-}
-
+/* CRT scanlines */
 body::after {
   content: "";
   position: fixed;
   inset: 0;
+  z-index: 100;
   pointer-events: none;
-  z-index: -1;
-  opacity: 0.09;
-  background-image:
-    linear-gradient(rgba(15, 23, 42, 0.35) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(15, 23, 42, 0.28) 1px, transparent 1px);
-  background-size: 48px 48px;
-  mask-image: radial-gradient(ellipse at 50% 20%, black 20%, transparent 72%);
+  background: repeating-linear-gradient(0deg, #0000 0 2px, #00000010 2px 3px);
+}
+
+::selection {
+  background: #E879A855;
+  color: #fff;
 }
 
 a {
-  color: var(--color-lagoon-deep);
-  text-decoration-color: color-mix(in oklab, var(--color-lagoon-deep) 40%, transparent);
+  color: var(--color-neon-cyan);
+  text-decoration-color: color-mix(in oklab, var(--color-neon-cyan) 40%, transparent);
   text-decoration-thickness: 1px;
   text-underline-offset: 2px;
 }
 
 a:hover {
-  color: var(--color-lagoon);
+  color: var(--color-lagoon-deep);
+}
+
+:focus-visible {
+  outline-color: var(--color-neon-cyan);
 }
 
 code {
+  font-family: var(--font-mono);
   font-size: 0.9em;
+  color: var(--color-neon-lime);
   border: 1px solid var(--color-line);
-  background: color-mix(in oklab, var(--color-surface-strong) 82%, white 18%);
+  background: rgba(255, 255, 255, 0.05);
   border-radius: 7px;
   padding: 2px 7px;
 }
@@ -207,8 +210,9 @@ pre code {
 
 button,
 a {
-  transition: background-color 180ms ease, color 180ms ease, border-color 180ms ease,
-    transform 180ms ease;
+  transition:
+    background-color 180ms ease, color 180ms ease, border-color 180ms ease,
+    box-shadow 180ms ease, transform 180ms ease;
 }
 
 @keyframes rise-in {
@@ -219,5 +223,36 @@ a {
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+@keyframes neon-flicker {
+  0%,
+  92%,
+  100% {
+    opacity: 1;
+  }
+  93% {
+    opacity: 0.2;
+  }
+  95% {
+    opacity: 1;
+  }
+  96% {
+    opacity: 0.4;
+  }
+}
+
+@utility animate-flicker {
+  animation: neon-flicker 4s infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
   }
 }

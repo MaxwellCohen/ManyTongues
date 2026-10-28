@@ -1,3 +1,4 @@
+import { NEON_GHOST_BUTTON_CLASS } from "#/features/word-cloud/components/neon";
 import WordCloudOptionCheckboxField from "#/features/word-cloud/components/option-fields/WordCloudOptionCheckboxField";
 import WordCloudOptionColorField from "#/features/word-cloud/components/option-fields/WordCloudOptionColorField";
 import WordCloudOptionNumberField from "#/features/word-cloud/components/option-fields/WordCloudOptionNumberField";
@@ -26,7 +27,10 @@ export type CloudStyleFormState = {
 	colors: string[];
 };
 
-const SHAPE_LABELS: Record<(typeof translatorCloud2ShapeOptions)[number], string> = {
+const SHAPE_LABELS: Record<
+	(typeof translatorCloud2ShapeOptions)[number],
+	string
+> = {
 	circle: "Circle",
 	cardioid: "Cardioid",
 	diamond: "Diamond",
@@ -37,7 +41,10 @@ const SHAPE_LABELS: Record<(typeof translatorCloud2ShapeOptions)[number], string
 	star: "Star",
 };
 
-const COLOR_LABELS: Record<(typeof translatorCloud2ColorOptions)[number], string> = {
+const COLOR_LABELS: Record<
+	(typeof translatorCloud2ColorOptions)[number],
+	string
+> = {
 	"random-dark": "Random dark",
 	"random-light": "Random light",
 	custom: "Custom palette",
@@ -61,17 +68,17 @@ export default function WordCloud2OptionsForm({
 	onUpdateSearch: (updates: Partial<CloudStyleFormState>) => void;
 }) {
 	return (
-		<div className="space-y-3 pt-1">
+		<div className="space-y-3">
 			<div className="flex justify-end">
 				<button
 					type="button"
 					onClick={() => onUpdateSearch(defaults)}
-					className="rounded-lg border border-line bg-foam px-3 py-1.5 text-sm font-medium text-sea-ink hover:border-lagoon hover:bg-lagoon/10 hover:text-lagoon"
+					className={NEON_GHOST_BUTTON_CLASS}
 				>
 					Reset to defaults
 				</button>
 			</div>
-			<div className="grid gap-3 sm:grid-cols-2">
+			<div className="grid grid-cols-2 gap-3">
 				<WordCloudOptionColorField
 					key={`background-color-${formState.backgroundColor}`}
 					label="Background"
@@ -81,7 +88,7 @@ export default function WordCloud2OptionsForm({
 						if (value !== formState.backgroundColor)
 							onUpdateSearch({ backgroundColor: value });
 					}}
-					className="sm:col-span-2"
+					className="col-span-2"
 				/>
 				<WordCloudOptionSelectField
 					label="Shape"
@@ -277,12 +284,14 @@ export default function WordCloud2OptionsForm({
 					}))}
 					onChange={(value) =>
 						onUpdateSearch({
-							cloud2FontWeight: value as CloudStyleFormState["cloud2FontWeight"],
+							cloud2FontWeight:
+								value as CloudStyleFormState["cloud2FontWeight"],
 						})
 					}
 					onBlur={(value) =>
 						onUpdateSearch({
-							cloud2FontWeight: value as CloudStyleFormState["cloud2FontWeight"],
+							cloud2FontWeight:
+								value as CloudStyleFormState["cloud2FontWeight"],
 						})
 					}
 				/>

@@ -1,20 +1,21 @@
-import { Link } from '@tanstack/react-router'
-import type { ComponentProps } from 'react'
+import { Link } from "@tanstack/react-router";
+import type { ComponentProps } from "react";
 
-type NavLinkProps = ComponentProps<typeof Link>
+type NavLinkProps = ComponentProps<typeof Link>;
 
-const navLinkClassName =
-  'relative inline-flex items-center text-sea-ink-soft no-underline transition-[background-color,color,border-color,transform] duration-150 hover:text-sea-ink after:absolute after:bottom-[-6px] after:left-0 after:h-0.5 after:w-full after:origin-left after:scale-x-0 after:bg-[linear-gradient(90deg,var(--color-lagoon),var(--color-palm))] after:transition-transform after:duration-150 hover:after:scale-x-100 max-sm:after:bottom-[-4px]'
+const navLinkBaseClassName =
+	"inline-flex items-center rounded-full border px-3.5 py-2 font-mono no-underline transition-[background-color,color,border-color,box-shadow] duration-150 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-neon-cyan";
 
-const activeNavLinkClassName =
-  'relative inline-flex items-center text-sea-ink no-underline transition-[background-color,color,border-color,transform] duration-150 after:absolute after:bottom-[-6px] after:left-0 after:h-0.5 after:w-full after:origin-left after:scale-x-100 after:bg-[linear-gradient(90deg,var(--color-lagoon),var(--color-palm))] after:transition-transform after:duration-150 max-sm:after:bottom-[-4px]'
+const navLinkClassName = `${navLinkBaseClassName} border-white/10 text-[#bdb3e6] hover:border-neon-cyan/60 hover:text-neon-cyan`;
+
+const activeNavLinkClassName = `${navLinkBaseClassName} border-neon-cyan bg-neon-cyan text-night shadow-[0_0_18px_var(--color-neon-cyan)] hover:text-night`;
 
 export default function NavLink(props: NavLinkProps) {
-  return (
-    <Link
-      {...props}
-      className={navLinkClassName}
-      activeProps={{ className: activeNavLinkClassName }}
-    />
-  )
+	return (
+		<Link
+			{...props}
+			className={navLinkClassName}
+			activeProps={{ className: activeNavLinkClassName }}
+		/>
+	);
 }

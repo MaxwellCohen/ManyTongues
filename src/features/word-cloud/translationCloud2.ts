@@ -1,8 +1,8 @@
 import type { WordCloud2Options } from "#/features/word-cloud/components/WordCloud2Canvas";
 import { hashWordForColor } from "#/features/word-cloud/translatorCloudData";
 import {
-	getTranslatorPalette,
 	type FullExperimentalTranslatorSearch,
+	getTranslatorPalette,
 } from "#/features/word-cloud/translatorSearchState";
 
 /**
@@ -21,6 +21,12 @@ export function makeTranslationWeightFactor(
 		const translationPx = 12 + ((weight - 1) / 4) * 32;
 		return Math.min(translationPx, Math.max(14, sourcePx - 4));
 	};
+}
+
+/** Append generic fallbacks so the canvas never renders with the UA default serif. */
+export function withFontFallback(fontFamily: string | undefined): string {
+	const family = fontFamily?.trim();
+	return family ? `${family}, system-ui, sans-serif` : "system-ui, sans-serif";
 }
 
 /** wordcloud2.js expects rotation in radians. */
@@ -45,7 +51,7 @@ export function buildTranslationPageWordCloudOptions(
 	translationWeightFactor: (weight: number) => number,
 ): WordCloud2Options {
 	return {
-		fontFamily: formState.fontFamily ?? "system-ui, sans-serif",
+		fontFamily: withFontFallback(formState.fontFamily),
 		fontWeight: formState.cloud2FontWeight ?? "normal",
 		weightFactor: translationWeightFactor,
 		gridSize: formState.cloud2GridSize ?? 8,

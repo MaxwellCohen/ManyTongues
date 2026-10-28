@@ -1,17 +1,19 @@
 import {
+	DEFAULT_BG,
 	DEFAULT_COLORS,
 	DEFAULT_FONT_FAMILY,
 	type ScaleType,
 	type SpiralType,
 } from "#/lib/wordCloudUtils";
-import { getSearchDiffFromDefaults, getValidPalette, mergeSearchWithDefaults } from "./search";
+import {
+	getSearchDiffFromDefaults,
+	getValidPalette,
+	mergeSearchWithDefaults,
+} from "./search";
 import {
 	DEFAULT_WORD_CLOUD_ENGINE,
 	type WordCloudEngine,
 } from "./wordCloudEngine";
-
-const TRANSLATOR_BG = "#c9a227";
-const TRANSLATOR_TEXT_COLOR = "#000000";
 
 export const translatorScaleOptions = ["linear", "sqrt", "log"] as const;
 export const translatorSpiralOptions = ["archimedean", "rectangular"] as const;
@@ -89,15 +91,15 @@ export const DEFAULT_TRANSLATOR_SEARCH: FullExperimentalTranslatorSearch = {
 	rotations: 3,
 	deterministic: true,
 	fontFamily: DEFAULT_FONT_FAMILY,
-	backgroundColor: TRANSLATOR_BG,
-	colors: [TRANSLATOR_TEXT_COLOR],
+	backgroundColor: DEFAULT_BG,
+	colors: [...DEFAULT_COLORS],
 	hiddenLanguages: [],
 	weights: "",
 	cloud2Shape: "circle",
 	cloud2Ellipticity: 0.65,
 	cloud2Shuffle: true,
 	cloud2RotateRatio: 0.1,
-	cloud2Color: "random-dark",
+	cloud2Color: "custom",
 	cloud2GridSize: 8,
 	cloud2MinRotation: -90,
 	cloud2MaxRotation: 90,
@@ -110,7 +112,10 @@ export const DEFAULT_WEIGHT = 3;
 export const WEIGHT_MIN = 1;
 export const WEIGHT_MAX = 5;
 
-const translatorArrayKeys = ["colors", "hiddenLanguages"] as const satisfies readonly (keyof FullExperimentalTranslatorSearch)[];
+const translatorArrayKeys = [
+	"colors",
+	"hiddenLanguages",
+] as const satisfies readonly (keyof FullExperimentalTranslatorSearch)[];
 
 export function clampWeight(value: number): number {
 	return Math.min(

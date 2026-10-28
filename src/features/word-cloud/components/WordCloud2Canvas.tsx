@@ -1,7 +1,11 @@
 import { usePostHog } from "@posthog/react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import IslandPanel from "#/components/shell/IslandPanel";
 import { DownloadIcon } from "#/components/icons";
+import {
+	NEON_EXPORT_BUTTON_CLASS,
+	NEON_SCREEN_CLASS,
+	NeonHud,
+} from "#/features/word-cloud/components/neon";
 import { DEFAULT_BG } from "#/lib/wordCloudUtils";
 
 const FALLBACK_WIDTH = 640;
@@ -64,7 +68,14 @@ function defaultWeightFactor(
 
 /** Slugify a string for use in a download filename. */
 function toFileSlug(input: string): string {
-	return input.trim().toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 40) || "word-cloud";
+	return (
+		input
+			.trim()
+			.toLowerCase()
+			.replace(/[^a-z0-9]+/g, "-")
+			.replace(/^-|-$/g, "")
+			.slice(0, 40) || "word-cloud"
+	);
 }
 
 const HEX6_BG = /^#[0-9A-Fa-f]{6}$/;
@@ -80,12 +91,38 @@ function clampWordCloudEllipticity(value: number | undefined): number {
 	return 0.65;
 }
 
+const GLOW_BLUR = 6;
+const GLOW_FALLBACK_COLOR = "rgba(255, 255, 255, 0.35)";
+
+/**
+ * Neon glow: wordcloud2.js resolves each word's color right before it `save()`s the
+ * context and calls `fillText`, so setting `shadowColor` from the color callback gives
+ * every word a halo in its own color.
+ */
+function withGlow(
+	ctx: CanvasRenderingContext2D | null,
+	color: WordCloud2Options["color"],
+): WordCloud2Options["color"] {
+	if (!ctx) return color;
+	ctx.shadowBlur = GLOW_BLUR;
+	ctx.shadowOffsetX = 0;
+	ctx.shadowOffsetY = 0;
+	ctx.shadowColor = GLOW_FALLBACK_COLOR;
+	if (typeof color !== "function") return color;
+	return (word, weight, fontSize) => {
+		const resolved = color(word, weight, fontSize);
+		ctx.shadowColor = resolved;
+		return resolved;
+	};
+}
+
 function buildWordCloudLibOptions(args: {
 	words: { text: string; value: number }[];
 	backgroundColor: string;
 	options: WordCloud2Options;
+	ctx?: CanvasRenderingContext2D | null;
 }): Record<string, unknown> {
-	const { words, backgroundColor, options } = args;
+	const { words, backgroundColor, options, ctx = null } = args;
 	const list = wordsToList(words);
 	const weightFactor = options.weightFactor ?? defaultWeightFactor(words, 72);
 
@@ -101,7 +138,7 @@ function buildWordCloudLibOptions(args: {
 		rotationSteps: options.rotationSteps ?? 0,
 		minSize: options.minSize ?? 0,
 		clearCanvas: true,
-		color: options.color ?? "random-dark",
+		color: withGlow(ctx, options.color ?? "random-dark"),
 		shape: options.shape ?? "circle",
 		ellipticity: clampWordCloudEllipticity(options.ellipticity),
 		shuffle: options.shuffle ?? true,
@@ -116,6 +153,7 @@ export default function WordCloud2Canvas({
 	hasWords,
 	options = {},
 	downloadName,
+	prompt,
 	children,
 }: {
 	words: { text: string; value: number }[];
@@ -125,6 +163,8 @@ export default function WordCloud2Canvas({
 	options?: WordCloud2Options;
 	/** Stem used for the downloaded PNG filename. Falls back to "word-cloud". */
 	downloadName?: string;
+	/** Optional prompt bar rendered at the top of the cloud screen. */
+	prompt?: React.ReactNode;
 	children?: React.ReactNode;
 }) {
 	const containerRef = useRef<HTMLDivElement>(null);
@@ -174,12 +214,34 @@ export default function WordCloud2Canvas({
 		const [w, h] = size;
 		if (w <= 0 || h <= 0) return;
 
-		canvas.width = w;
-		canvas.height = h;
-		WordCloudLib(
-			canvas,
-			buildWordCloudLibOptions({ words, backgroundColor, options }),
-		);
+		let cancelled = false;
+		const draw = () => {
+			if (cancelled) return;
+			canvas.width = w;
+			canvas.height = h;
+			WordCloudLib(
+				canvas,
+				buildWordCloudLibOptions({
+					words,
+					backgroundColor,
+					options,
+					ctx: canvas.getContext("2d"),
+				}),
+			);
+		};
+
+		// Make sure web fonts (e.g. Unbounded) are ready so words are measured correctly.
+		const fontFamily = options.fontFamily ?? "system-ui, sans-serif";
+		const fontWeight = options.fontWeight ?? "normal";
+		const fonts = typeof document !== "undefined" ? document.fonts : undefined;
+		if (fonts?.load) {
+			fonts.load(`${fontWeight} 32px ${fontFamily}`).then(draw, draw);
+		} else {
+			draw();
+		}
+		return () => {
+			cancelled = true;
+		};
 	}, [WordCloudLib, words, hasWords, size, backgroundColor, options]);
 
 	const accessibilitySummary = useMemo(() => {
@@ -207,66 +269,63 @@ export default function WordCloud2Canvas({
 			background_color: backgroundColor,
 			source: "wordcloud2",
 		});
-	}, [hasWords, backgroundColor, words.length, posthog]);
+	}, [hasWords, backgroundColor, words.length, posthog, downloadName]);
 
 	return (
-		<IslandPanel className="flex min-h-80 flex-col rounded-2xl p-5 sm:p-6">
-			{/* Sticky on desktop so the cloud stays visible while editing options below */}
-			<div className="flex flex-col lg:sticky lg:top-6 lg:z-10 lg:max-h-[min(70vh,520px)] lg:shrink-0">
-				<div className="mb-3 flex items-center justify-between">
-					<h2 className="text-sm font-semibold text-sea-ink">
-						Preview
-						{mounted && hasWords && (
-							<span className="ml-2 text-xs font-normal text-sea-ink-soft">
-								{words.length} {words.length === 1 ? "word" : "words"}
-							</span>
-						)}
-					</h2>
-					{mounted && hasWords && (
-						<button
-							type="button"
-							onClick={handleDownload}
-							className="flex items-center gap-2 rounded-lg border border-line bg-foam px-3 py-2 text-sm font-medium text-sea-ink hover:border-lagoon hover:bg-lagoon/10 hover:text-lagoon"
-						>
-							<DownloadIcon className="size-4" />
-							Download PNG
-						</button>
-					)}
-				</div>
-				<div
-					ref={containerRef}
-					role="img"
-					aria-label={accessibilitySummary}
-					className="relative flex min-h-70 flex-1 items-center justify-center rounded-xl border border-line lg:min-h-64"
-					style={{
-						backgroundColor: sanitizeWordCloudBackground(backgroundColor),
-					}}
-				>
-					{!mounted ? (
-						<p className="text-sm text-sea-ink-soft">Loading preview...</p>
-					) : hasWords && words.length > 0 ? (
-						<>
-							<ul className="sr-only">
-								{words.map((w, i) => (
-									<li key={`${i}-${w.text}`}>{w.text}</li>
-								))}
-							</ul>
-							<canvas
-								ref={canvasRef}
-								width={size[0]}
-								height={size[1]}
-								className="h-full w-full"
-								aria-hidden
-							/>
-						</>
-					) : (
-						<p className="text-sm text-sea-ink-soft">
-							Add text or translations to see your word cloud preview.
-						</p>
-					)}
-				</div>
+		<section className={NEON_SCREEN_CLASS} aria-label="Word cloud preview">
+			{prompt ? (
+				<div className="relative z-10 px-4 pt-4 sm:px-6 sm:pt-6">{prompt}</div>
+			) : null}
+			<div
+				ref={containerRef}
+				role="img"
+				aria-label={accessibilitySummary}
+				className="relative m-4 flex h-[340px] items-center justify-center overflow-hidden rounded-[20px] sm:m-6 sm:h-[440px] lg:h-[520px]"
+				style={{
+					backgroundColor: sanitizeWordCloudBackground(backgroundColor),
+				}}
+			>
+				{!mounted ? (
+					<p className="font-mono text-sm text-muted-ink">
+						&gt; Loading preview...
+					</p>
+				) : hasWords && words.length > 0 ? (
+					<>
+						<ul className="sr-only">
+							{words.map((w, i) => (
+								<li key={`${i}-${w.text}`}>{w.text}</li>
+							))}
+						</ul>
+						<canvas
+							ref={canvasRef}
+							width={size[0]}
+							height={size[1]}
+							className="h-full w-full"
+							aria-hidden
+						/>
+					</>
+				) : (
+					<p className="max-w-sm px-6 text-center font-mono text-sm text-muted-ink">
+						&gt; Add text or translations to see your word cloud preview.
+					</p>
+				)}
 			</div>
+			<NeonHud
+				wordCount={mounted && hasWords ? words.length : null}
+				engine="experimental"
+			>
+				{mounted && hasWords && (
+					<button
+						type="button"
+						onClick={handleDownload}
+						className={NEON_EXPORT_BUTTON_CLASS}
+					>
+						<DownloadIcon className="size-4" />
+						Download PNG
+					</button>
+				)}
+			</NeonHud>
 			{children}
-		</IslandPanel>
+		</section>
 	);
 }

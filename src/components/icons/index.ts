@@ -1,9 +1,9 @@
-export { TextCloudIcon } from "./TextCloudIcon";
-export { TranslateIcon } from "./TranslateIcon";
-export { DownloadIcon } from "./DownloadIcon";
-export { ThemeLightIcon } from "./ThemeLightIcon";
-export { ThemeDarkIcon } from "./ThemeDarkIcon";
-export { ThemeSystemIcon } from "./ThemeSystemIcon";
 export { ChevronDownIcon } from "./ChevronDownIcon";
 export { CloseIcon } from "./CloseIcon";
+export { DownloadIcon } from "./DownloadIcon";
 export { PlusIcon } from "./PlusIcon";
+export { TextCloudIcon } from "./TextCloudIcon";
+export { ThemeDarkIcon } from "./ThemeDarkIcon";
+export { ThemeLightIcon } from "./ThemeLightIcon";
+export { ThemeSystemIcon } from "./ThemeSystemIcon";
+export { TranslateIcon } from "./TranslateIcon";
