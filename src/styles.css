@@ -128,91 +128,95 @@
   text-shadow: 0 0 30px #6CCFDD55;
 }
 
-:root {
-  color-scheme: dark;
-}
+/* Element defaults live in the base layer so utility classes (e.g. text-* on
+   <Link>) can override them; unlayered rules would beat every utility. */
+@layer base {
+  :root {
+    color-scheme: dark;
+  }
 
-* {
-  box-sizing: border-box;
-}
+  * {
+    box-sizing: border-box;
+  }
 
-html,
-body,
-#app {
-  min-height: 100%;
-}
+  html,
+  body,
+  #app {
+    min-height: 100%;
+  }
 
-body {
-  margin: 0;
-  color: var(--color-sea-ink);
-  font-family: var(--font-sans);
-  background-color: var(--color-night);
-  background-image:
-    radial-gradient(60% 50% at 80% 0%, #9A88E61f, transparent),
-    radial-gradient(50% 40% at 0% 100%, #E879A814, transparent),
-    linear-gradient(#ffffff06 1px, transparent 1px),
-    linear-gradient(90deg, #ffffff06 1px, transparent 1px);
-  background-size: auto, auto, 40px 40px, 40px 40px;
-  background-attachment: fixed;
-  overflow-x: hidden;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
+  body {
+    margin: 0;
+    color: var(--color-sea-ink);
+    font-family: var(--font-sans);
+    background-color: var(--color-night);
+    background-image:
+      radial-gradient(60% 50% at 80% 0%, #9A88E61f, transparent),
+      radial-gradient(50% 40% at 0% 100%, #E879A814, transparent),
+      linear-gradient(#ffffff06 1px, transparent 1px),
+      linear-gradient(90deg, #ffffff06 1px, transparent 1px);
+    background-size: auto, auto, 40px 40px, 40px 40px;
+    background-attachment: fixed;
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
 
-/* CRT scanlines */
-body::after {
-  content: "";
-  position: fixed;
-  inset: 0;
-  z-index: 100;
-  pointer-events: none;
-  background: repeating-linear-gradient(0deg, #0000 0 2px, #00000010 2px 3px);
-}
+  /* CRT scanlines */
+  body::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    pointer-events: none;
+    background: repeating-linear-gradient(0deg, #0000 0 2px, #00000010 2px 3px);
+  }
 
-::selection {
-  background: #E879A855;
-  color: #fff;
-}
+  ::selection {
+    background: #E879A855;
+    color: #fff;
+  }
 
-a {
-  color: var(--color-neon-cyan);
-  text-decoration-color: color-mix(in oklab, var(--color-neon-cyan) 40%, transparent);
-  text-decoration-thickness: 1px;
-  text-underline-offset: 2px;
-}
+  a {
+    color: var(--color-neon-cyan);
+    text-decoration-color: color-mix(in oklab, var(--color-neon-cyan) 40%, transparent);
+    text-decoration-thickness: 1px;
+    text-underline-offset: 2px;
+  }
 
-a:hover {
-  color: var(--color-lagoon-deep);
-}
+  a:hover {
+    color: var(--color-lagoon-deep);
+  }
 
-:focus-visible {
-  outline-color: var(--color-neon-cyan);
-}
+  :focus-visible {
+    outline-color: var(--color-neon-cyan);
+  }
 
-code {
-  font-family: var(--font-mono);
-  font-size: 0.9em;
-  color: var(--color-neon-lime);
-  border: 1px solid var(--color-line);
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 7px;
-  padding: 2px 7px;
-}
+  code {
+    font-family: var(--font-mono);
+    font-size: 0.9em;
+    color: var(--color-neon-lime);
+    border: 1px solid var(--color-line);
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 7px;
+    padding: 2px 7px;
+  }
 
-pre code {
-  border: 0;
-  background: transparent;
-  padding: 0;
-  border-radius: 0;
-  font-size: inherit;
-  color: inherit;
-}
+  pre code {
+    border: 0;
+    background: transparent;
+    padding: 0;
+    border-radius: 0;
+    font-size: inherit;
+    color: inherit;
+  }
 
-button,
-a {
-  transition:
-    background-color 180ms ease, color 180ms ease, border-color 180ms ease,
-    box-shadow 180ms ease, transform 180ms ease;
+  button,
+  a {
+    transition:
+      background-color 180ms ease, color 180ms ease, border-color 180ms ease,
+      box-shadow 180ms ease, transform 180ms ease;
+  }
 }
 
 @keyframes rise-in {
