@@ -26,6 +26,3 @@ export function deduplicateCloudWordsByText(items: CloudWord[]): CloudWord[] {
 	}
 	return Array.from(byText.entries(), ([text, value]) => ({ text, value }));
 }
-
-/** @deprecated Use {@link deduplicateCloudWordsByText}. */
-export const deduplicateCloudDataByValue = deduplicateCloudWordsByText;

@@ -9,15 +9,15 @@ vi.mock("#/lib/translationDb", () => ({
 	storePhraseTranslations: vi.fn(),
 }));
 
-import {
-	translateWithGoogleProvider,
-	translateWithMicrosoftProvider,
-} from "#/lib/translationProviders";
+import { runGetOrTranslatePhrase } from "#/lib/phraseTranslation/pipeline";
 import {
 	getExistingPhraseTranslation,
 	storePhraseTranslations,
 } from "#/lib/translationDb";
-import { runGetOrTranslatePhrase } from "#/lib/phraseTranslation/pipeline";
+import {
+	translateWithGoogleProvider,
+	translateWithMicrosoftProvider,
+} from "#/lib/translationProviders";
 
 describe("runGetOrTranslatePhrase", () => {
 	beforeEach(() => {
@@ -26,12 +26,18 @@ describe("runGetOrTranslatePhrase", () => {
 
 	it("returns validation error for empty phrase", async () => {
 		const result = await runGetOrTranslatePhrase({ phrase: "" });
-		expect(result).toEqual({ ok: false, error: "Enter a phrase to translate." });
+		expect(result).toEqual({
+			ok: false,
+			error: "Enter a phrase to translate.",
+		});
 	});
 
 	it("returns validation error for whitespace-only phrase", async () => {
 		const result = await runGetOrTranslatePhrase({ phrase: "   \n\t  " });
-		expect(result).toEqual({ ok: false, error: "Enter a phrase to translate." });
+		expect(result).toEqual({
+			ok: false,
+			error: "Enter a phrase to translate.",
+		});
 	});
 
 	it("returns validation error for phrase over 50 characters", async () => {
@@ -86,11 +92,9 @@ describe("runGetOrTranslatePhrase", () => {
 		const result = await runGetOrTranslatePhrase({ phrase: "hello" });
 
 		expect(result).toEqual({ ok: true, translations: { fr: "bonjour" } });
-		expect(storePhraseTranslations).toHaveBeenCalledWith(
-			"hello",
-			"en",
-			{ fr: "bonjour" },
-		);
+		expect(storePhraseTranslations).toHaveBeenCalledWith("hello", "en", {
+			fr: "bonjour",
+		});
 	});
 
 	it("falls back to Microsoft when Google returns empty", async () => {

@@ -26,9 +26,6 @@ export const TRANSLATOR_SOURCE_LANGUAGE_OPTIONS = [
 	{ code: "he", label: "Hebrew" },
 ] as const;
 
-export type TranslatorSourceLanguageCode =
-	(typeof TRANSLATOR_SOURCE_LANGUAGE_OPTIONS)[number]["code"];
-
 export const TRANSLATOR_SOURCE_LANGUAGE_CODE_SET = new Set<string>(
 	TRANSLATOR_SOURCE_LANGUAGE_OPTIONS.map((o) => o.code),
 );

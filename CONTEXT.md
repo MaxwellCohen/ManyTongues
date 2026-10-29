@@ -2,7 +2,7 @@
 
 ## Text Cloud
 
-Paste or type text; the app tokenizes it and renders a **word cloud** sized by word frequency. Supports **Experimental** (wordcloud2.js) and **Classic** (react-wordcloud) engines via URL `engine` param. No external services required.
+Paste or type text; the app tokenizes it and renders a **word cloud** sized by word frequency. Supports **Experimental** (wordcloud2.js) and **Classic** (in-repo d3-cloud renderer adapted from react-wordcloud) engines via URL `engine` param. No external services required.
 
 ## Translator
 

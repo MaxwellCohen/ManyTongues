@@ -32,6 +32,7 @@ export default function WordCloudOptionPaletteField({
 			<div className="flex flex-wrap items-center gap-2">
 				{localColors.map((color, i) => (
 					<WordCloudPaletteColorField
+						// biome-ignore lint/suspicious/noArrayIndexKey: colors may repeat; index disambiguates
 						key={`${color}-${i}-${localColors.slice(0, i).filter((c) => c === color).length}`}
 						defaultValue={color}
 						index={i}

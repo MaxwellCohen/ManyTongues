@@ -1,11 +1,11 @@
-import { DEFAULT_BG } from "#/lib/wordCloudUtils";
 import {
 	WORD_CLOUD_LAYOUT_HEIGHT,
 	WORD_CLOUD_LAYOUT_WIDTH,
 } from "#/features/word-cloud/wordCloudViewport";
+import { DEFAULT_BG } from "#/lib/wordCloudUtils";
 
 /** Slugify a string for use in a download filename. */
-export function toWordCloudFileSlug(input: string): string {
+function toWordCloudFileSlug(input: string): string {
 	return (
 		input
 			.trim()

@@ -7,9 +7,9 @@ It has two main tools:
 - **Text Cloud**: paste or type any text and the app sizes each word by how often it appears.
 - **Translator**: enter a short phrase, translate it into many languages, and render those translations as a word cloud.
 
-Both tools let you switch between the **Experimental** engine ([wordcloud2.js](https://github.com/timdream/wordcloud2.js), default) and **Classic** ([react-wordcloud](https://github.com/isoterik/react-wordcloud)).
+Both tools let you switch between the **Experimental** engine ([wordcloud2.js](https://github.com/timdream/wordcloud2.js), default) and **Classic** (an in-repo SVG renderer built on [d3-cloud](https://github.com/jasondavies/d3-cloud), adapted from react-wordcloud).
 
-The app is built with `TanStack Start`, `React`, `wordcloud2.js`, and `react-wordcloud`.
+The app is built with `TanStack Start`, `React`, `wordcloud2.js`, and `d3-cloud`.
 
 ## What The App Does
 
@@ -46,6 +46,7 @@ Server-side **rate limiting** (per client IP, when `DB_URL` is set) protects tra
 - `/` home page with links to all tools
 - `/text-cloud` text-to-word-cloud generator (engine switcher: Experimental / Classic)
 - `/translate` phrase translator and multilingual word cloud (engine switcher: Experimental / Classic)
+- `/privacy` privacy notice
 
 ## URL search params
 
@@ -59,10 +60,16 @@ Install dependencies:
 pnpm install
 ```
 
-Start the app locally:
+Start the app locally (http://localhost:3500):
 
 ```bash
 pnpm dev
+```
+
+If you use the Translator, apply the database migrations once:
+
+```bash
+pnpm db:migrate
 ```
 
 ## Environment Variables
@@ -91,6 +98,8 @@ VITE_PUBLIC_POSTHOG_KEY=
 VITE_PUBLIC_POSTHOG_HOST=https://us.i.posthog.com
 ```
 
+The browser client sends events to `/ingest`, which the Vite dev server proxies to PostHog (see `vite.config.ts`). If you change what the app collects, update the privacy notice in `src/routes/privacy.tsx`.
+
 ## Deploying to Vercel
 
 The app is configured for Vercel deployment with Nitro. To deploy:
@@ -99,7 +108,7 @@ The app is configured for Vercel deployment with Nitro. To deploy:
 2. Add the environment variables above in **Project Settings → Environment Variables**.
 3. Deploy. Vercel will auto-detect the Nitro/TanStack Start setup.
 
-The `nitro.config.ts` sets the Vercel preset and proxies `/ingest` to PostHog for analytics.
+Make sure `DB_URL` is set in production: translator rate limiting is skipped without it.
 
 ## Scripts
 
@@ -116,6 +125,7 @@ pnpm db:generate
 pnpm db:migrate
 pnpm db:push
 pnpm db:studio
+pnpm knip
 ```
 
 ## Tech Stack
@@ -124,7 +134,11 @@ pnpm db:studio
 - `TanStack Router` for file-based routing (custom Zipson + base64 search serialization in `src/router.tsx`)
 - `React` for UI
 - `Tailwind CSS` for styling
-- `react-wordcloud`, `d3-cloud`, and `wordcloud2.js` for cloud layout/rendering
+- `d3-cloud` and `wordcloud2.js` for cloud layout/rendering
 - `Drizzle ORM` with `@libsql/client` for Turso persistence
 - `Vitest` for tests
 - `Biome` for linting and formatting
+
+## License
+
+[MIT](LICENSE)

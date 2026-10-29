@@ -1,27 +1,32 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useDebounceValue } from "#/hooks/useDebouncedValue";
 import { applyPhraseTranslationResult } from "#/features/word-cloud/applyPhraseTranslationResult";
 import {
+	type ExperimentalTranslatorSearch,
+	type FullExperimentalTranslatorSearch,
 	getCloudData,
 	getCloudOptions,
 	getHiddenLanguagesSet,
 	getVisibleTranslations,
 	parseWeights,
-	type FullExperimentalTranslatorSearch,
-	type ExperimentalTranslatorSearch,
 } from "#/features/word-cloud/translateState";
 import {
-	getTranslatorSearchForUrl,
 	getTranslatorPalette,
+	getTranslatorSearchForUrl,
 	serializeWeights,
 } from "#/features/word-cloud/translatorSearchState";
+import { useDebounceValue } from "#/hooks/useDebouncedValue";
 import { getOrTranslatePhrase } from "#/lib/phraseTranslation";
 
-function shouldLoadTranslatedPhrase(search: FullExperimentalTranslatorSearch): boolean {
+function shouldLoadTranslatedPhrase(
+	search: FullExperimentalTranslatorSearch,
+): boolean {
 	return Boolean(search.input.trim());
 }
 
-function phraseLoadKey(search: FullExperimentalTranslatorSearch, phrase: string): string {
+function phraseLoadKey(
+	search: FullExperimentalTranslatorSearch,
+	phrase: string,
+): string {
 	return `${search.sourceLanguage}:${phrase}`;
 }
 
@@ -71,6 +76,8 @@ export function useTranslatePage({
 		[resolvedSearch, onSyncToUrl],
 	);
 
+	// Re-run only when the phrase inputs change; loadedPhraseRef guards repeat loads.
+	// biome-ignore lint/correctness/useExhaustiveDependencies: intentionally narrow deps
 	useEffect(() => {
 		if (!shouldLoadTranslatedPhrase(resolvedSearch)) {
 			setTranslations(new Map());
@@ -165,6 +172,7 @@ export function useTranslatePage({
 		[formState.weights, updateSearch],
 	);
 
+	// biome-ignore lint/correctness/useExhaustiveDependencies: keyed on the fields used, not the whole search object
 	const hiddenLanguages = useMemo(
 		() => getHiddenLanguagesSet(formState),
 		[formState.hiddenLanguages],
@@ -182,14 +190,10 @@ export function useTranslatePage({
 		() => getVisibleTranslations(translations, hiddenLanguages),
 		[translations, hiddenLanguages],
 	);
+	// biome-ignore lint/correctness/useExhaustiveDependencies: keyed on the fields used, not the whole search object
 	const cloudDataRaw = useMemo(
 		() =>
-			getCloudData(
-				formState,
-				translations,
-				debouncedWeights,
-				hiddenLanguages,
-			),
+			getCloudData(formState, translations, debouncedWeights, hiddenLanguages),
 		[
 			formState.input,
 			debouncedWeightsString,
@@ -204,6 +208,7 @@ export function useTranslatePage({
 		() => getTranslatorPalette(formState.colors),
 		[formState.colors],
 	);
+	// biome-ignore lint/correctness/useExhaustiveDependencies: keyed on the fields used, not the whole search object
 	const cloudOptions = useMemo(
 		() => getCloudOptions(formState),
 		[

@@ -14,7 +14,7 @@ import WordCloudOptions from "#/features/word-cloud/components/WordCloudOptions"
 import WordCloudPageLayout from "#/features/word-cloud/components/WordCloudPageLayout";
 import {
 	DEFAULT_TRANSLATOR_SEARCH,
-	deduplicateCloudDataByValue,
+	deduplicateCloudWordsByText,
 	type ExperimentalTranslatorSearch,
 	type FullExperimentalTranslatorSearch,
 	resolveTranslatorSearch,
@@ -298,7 +298,7 @@ function TranslatorWordCloudContent({
 					</div>
 					{experimental ? (
 						<WordCloud2Canvas
-							words={deduplicateCloudDataByValue(cloudData)}
+							words={deduplicateCloudWordsByText(cloudData)}
 							backgroundColor={formState.backgroundColor}
 							mounted
 							hasWords={hasWords}

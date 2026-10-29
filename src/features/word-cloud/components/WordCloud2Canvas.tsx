@@ -12,7 +12,7 @@ const FALLBACK_WIDTH = 640;
 const FALLBACK_HEIGHT = 360;
 const HEIGHT_RATIO = 0.65;
 
-export type WordCloud2Shape =
+type WordCloud2Shape =
 	| "circle"
 	| "cardioid"
 	| "diamond"
@@ -293,6 +293,7 @@ export default function WordCloud2Canvas({
 					<>
 						<ul className="sr-only">
 							{words.map((w, i) => (
+								// biome-ignore lint/suspicious/noArrayIndexKey: static screen-reader list; words may repeat
 								<li key={`${i}-${w.text}`}>{w.text}</li>
 							))}
 						</ul>

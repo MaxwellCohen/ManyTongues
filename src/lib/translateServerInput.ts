@@ -1,4 +1,1 @@
-export {
-	getOrTranslatePhraseInputSchema,
-	type GetOrTranslatePhraseInput,
-} from "#/lib/phraseTranslation/input";
+export { getOrTranslatePhraseInputSchema } from "#/lib/phraseTranslation/input";

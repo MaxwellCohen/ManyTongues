@@ -1,4 +1,4 @@
-export type TranslationProvider = "google" | "microsoft";
+type TranslationProvider = "google" | "microsoft";
 
 export type GetOrTranslateResult =
 	| { ok: true; translations: Record<string, string> }

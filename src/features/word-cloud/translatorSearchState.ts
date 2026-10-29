@@ -72,7 +72,6 @@ export type ExperimentalTranslatorSearch = TranslatorSearch & {
 	cloud2FontWeight?: (typeof translatorCloud2FontWeightOptions)[number];
 };
 
-export type FullTranslatorSearch = Required<TranslatorSearch>;
 export type FullExperimentalTranslatorSearch =
 	Required<ExperimentalTranslatorSearch>;
 

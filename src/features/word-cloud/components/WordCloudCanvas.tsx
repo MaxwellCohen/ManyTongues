@@ -162,6 +162,7 @@ export default function WordCloudCanvas({
 					>
 						<ul className="sr-only">
 							{words.map((w, i) => (
+								// biome-ignore lint/suspicious/noArrayIndexKey: static screen-reader list; words may repeat
 								<li key={`${i}-${w.text}`}>{w.text}</li>
 							))}
 						</ul>

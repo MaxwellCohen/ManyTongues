@@ -1,5 +1,5 @@
 export {
 	MAX_PHRASE_LENGTH,
-	validatePhrase,
 	parseStoredTranslations,
+	validatePhrase,
 } from "#/lib/phraseTranslation/validation";

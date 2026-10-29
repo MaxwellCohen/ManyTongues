@@ -6,10 +6,7 @@ import { isTursoConfigured, TRANSLATOR_DB_NOT_CONFIGURED } from "#/lib/turso";
 export async function getExistingPhraseTranslation(
 	phrase: string,
 	sourceLanguage: string,
-): Promise<
-	| { error: string }
-	| { existingTranslationsJson: string | null }
-> {
+): Promise<{ error: string } | { existingTranslationsJson: string | null }> {
 	if (!isTursoConfigured()) {
 		return { error: TRANSLATOR_DB_NOT_CONFIGURED };
 	}

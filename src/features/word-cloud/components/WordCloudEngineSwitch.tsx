@@ -13,6 +13,7 @@ export default function WordCloudEngineSwitch({
 	onChange: (engine: WordCloudEngine) => void;
 }) {
 	return (
+		// biome-ignore lint/a11y/useSemanticElements: ARIA toggle-button group; a fieldset would need style resets
 		<div
 			role="group"
 			aria-label="Word cloud engine"

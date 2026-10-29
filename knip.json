@@ -1,5 +1,5 @@
 {
-  "$schema": "https://unpkg.com/knip@5/schema.json",
-  "entry": ["src/server.ts"],
-  "ignoreFiles": ["coverage/**"]
+	"$schema": "https://unpkg.com/knip@6/schema.json",
+	"ignore": ["src/components/ui/**"],
+	"ignoreFiles": ["coverage/**"]
 }

@@ -3,7 +3,4 @@ export { CloseIcon } from "./CloseIcon";
 export { DownloadIcon } from "./DownloadIcon";
 export { PlusIcon } from "./PlusIcon";
 export { TextCloudIcon } from "./TextCloudIcon";
-export { ThemeDarkIcon } from "./ThemeDarkIcon";
-export { ThemeLightIcon } from "./ThemeLightIcon";
-export { ThemeSystemIcon } from "./ThemeSystemIcon";
 export { TranslateIcon } from "./TranslateIcon";

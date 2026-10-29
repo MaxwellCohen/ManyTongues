@@ -105,7 +105,9 @@ async function mapWithConcurrency<TItem, TResult>(
 	concurrency: number,
 	worker: (item: TItem) => Promise<TResult>,
 ): Promise<PromiseSettledResult<TResult>[]> {
-	const settledResults: PromiseSettledResult<TResult>[] = new Array(items.length);
+	const settledResults: PromiseSettledResult<TResult>[] = new Array(
+		items.length,
+	);
 	let nextIndex = 0;
 
 	async function runWorker() {
