@@ -30,9 +30,7 @@ vi.mock("#/components/ui/label", () => ({
 	}: {
 		children: React.ReactNode;
 		htmlFor?: string;
-	}) => (
-		<label htmlFor={htmlFor}>{children}</label>
-	),
+	}) => <label htmlFor={htmlFor}>{children}</label>,
 }));
 
 vi.mock("#/components/ui/input", () => ({

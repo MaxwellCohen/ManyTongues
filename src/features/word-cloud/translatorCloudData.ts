@@ -1,10 +1,10 @@
-import type { CloudWord } from "#/lib/deduplicateByText";
-import { deduplicateCloudWordsByText } from "#/lib/deduplicateByText";
 import {
 	clampWeight,
 	DEFAULT_WEIGHT,
 	type FullExperimentalTranslatorSearch,
 } from "#/features/word-cloud/translatorSearchState";
+import type { CloudWord } from "#/lib/deduplicateByText";
+import { deduplicateCloudWordsByText } from "#/lib/deduplicateByText";
 
 /** Simple hash for word -> stable index into palette. */
 export function hashWordForColor(word: string): number {
@@ -57,7 +57,7 @@ export function getCloudData(
 	return items;
 }
 
-export { deduplicateCloudWordsByText, deduplicateCloudWordsByText as deduplicateCloudDataByValue };
+export { deduplicateCloudWordsByText };
 
 type TranslatorCloudOptions = {
 	minFontSize: number;

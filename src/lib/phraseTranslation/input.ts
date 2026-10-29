@@ -15,7 +15,3 @@ export const getOrTranslatePhraseInputSchema = z.object({
 			{ message: "Invalid source language" },
 		),
 });
-
-export type GetOrTranslatePhraseInput = z.infer<
-	typeof getOrTranslatePhraseInputSchema
->;

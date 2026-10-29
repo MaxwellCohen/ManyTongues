@@ -1,6 +1,6 @@
 import { phraseAnalyticsProps } from "#/lib/analyticsPhrase";
-import { getPostHogClient, posthogApiKey } from "#/utils/posthog-server";
 import type { GetOrTranslateResult } from "#/lib/phraseTranslation/types";
+import { getPostHogClient, posthogApiKey } from "#/utils/posthog-server";
 
 export function capturePhraseTranslationAnalytics(
 	phrase: string,

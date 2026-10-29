@@ -1,7 +1,6 @@
 import { deduplicateTranslationsByValue } from "#/lib/deduplicateByText";
 import { translatePhraseWithGoogle } from "#/lib/GoogleTranslation";
 import { translatePhraseWithMicrosoft } from "#/lib/MicrosoftTranslation";
-import type { TranslationProvider } from "#/lib/phraseTranslation/types";
 
 export type ProviderTranslateResult =
 	| { ok: true; translations: Record<string, string> }
@@ -14,7 +13,9 @@ export async function translateWithGoogleProvider(
 	sourceLanguage: string,
 ): Promise<ProviderTranslateResult> {
 	const googleResult = await translatePhraseWithGoogle(phrase, sourceLanguage);
-	const translations = deduplicateTranslationsByValue(googleResult.translations);
+	const translations = deduplicateTranslationsByValue(
+		googleResult.translations,
+	);
 	if (Object.keys(translations).length > 0) {
 		return { ok: true, translations };
 	}
@@ -40,8 +41,3 @@ export async function translateWithMicrosoftProvider(
 		return { ok: false, error: message };
 	}
 }
-
-export type ProviderFailure = {
-	provider: TranslationProvider;
-	error: string;
-};

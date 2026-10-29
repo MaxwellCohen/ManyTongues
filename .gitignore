@@ -11,3 +11,8 @@ dist-ssr
 .vinxi
 __unconfig*
 todos.json
+coverage
+.fallow
+.vercel
+.env*
+.vscode

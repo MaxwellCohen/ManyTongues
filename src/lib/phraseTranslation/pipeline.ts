@@ -1,8 +1,4 @@
 import { deduplicateTranslationsByValue } from "#/lib/deduplicateByText";
-import {
-	translateWithGoogleProvider,
-	translateWithMicrosoftProvider,
-} from "#/lib/translationProviders";
 import type { GetOrTranslateResult } from "#/lib/phraseTranslation/types";
 import {
 	parseStoredTranslations,
@@ -12,6 +8,10 @@ import {
 	getExistingPhraseTranslation,
 	storePhraseTranslations,
 } from "#/lib/translationDb";
+import {
+	translateWithGoogleProvider,
+	translateWithMicrosoftProvider,
+} from "#/lib/translationProviders";
 
 const DEFAULT_SOURCE_LANGUAGE = "en";
 const GENERIC_FAILURE = "We couldn't generate translations for that phrase.";
@@ -45,8 +45,7 @@ export async function runGetOrTranslatePhrase(data: {
 	}
 
 	const phrase = validated.phrase;
-	const sourceLanguage =
-		data.sourceLanguage?.trim() || DEFAULT_SOURCE_LANGUAGE;
+	const sourceLanguage = data.sourceLanguage?.trim() || DEFAULT_SOURCE_LANGUAGE;
 
 	const cached = await getCachedTranslations(phrase, sourceLanguage);
 	if (!cached.ok) {
@@ -65,7 +64,10 @@ export async function runGetOrTranslatePhrase(data: {
 		return storePhraseTranslations(phrase, sourceLanguage, google.translations);
 	}
 
-	const microsoft = await translateWithMicrosoftProvider(phrase, sourceLanguage);
+	const microsoft = await translateWithMicrosoftProvider(
+		phrase,
+		sourceLanguage,
+	);
 	if (microsoft.ok) {
 		return storePhraseTranslations(
 			phrase,

@@ -11,7 +11,7 @@ import {
 	mergeSearchWithDefaults,
 } from "./search";
 import {
-	translatorCloud2ColorOptions,
+	type translatorCloud2ColorOptions,
 	translatorCloud2FontWeightOptions,
 	translatorCloud2ShapeOptions,
 } from "./translatorSearchState";
@@ -25,7 +25,6 @@ export const generatorScaleOptions = ["linear", "sqrt", "log"] as const;
 export const generatorSpiralOptions = ["archimedean", "rectangular"] as const;
 
 export {
-	translatorCloud2ColorOptions,
 	translatorCloud2FontWeightOptions,
 	translatorCloud2ShapeOptions,
 	wordCloudEngineOptions,

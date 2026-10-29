@@ -1,14 +1,14 @@
-import type { GetOrTranslateResult } from "#/lib/phraseTranslation";
 import {
 	createRandomWeights,
+	type ExperimentalTranslatorSearch,
+	type FullExperimentalTranslatorSearch,
 	getTranslatorSearchForUrl,
 	parseWeights,
 	serializeWeights,
 	WEIGHT_MAX,
 	WEIGHT_MIN,
-	type FullExperimentalTranslatorSearch,
-	type ExperimentalTranslatorSearch,
 } from "#/features/word-cloud/translatorSearchState";
+import type { GetOrTranslateResult } from "#/lib/phraseTranslation";
 
 function isTranslateSuccess(
 	result: GetOrTranslateResult,
@@ -16,7 +16,7 @@ function isTranslateSuccess(
 	return result.ok;
 }
 
-export function formatTranslateFailure(
+function formatTranslateFailure(
 	result: Extract<GetOrTranslateResult, { ok: false }>,
 ): string {
 	let msg = result.error;
@@ -37,10 +37,7 @@ function mergeWeightsForTranslations(
 	const merged = new Map(existing);
 	for (const lang of translationLangs) {
 		if (!merged.has(lang)) {
-			merged.set(
-				lang,
-				Math.floor(Math.random() * WEIGHT_MAX) + WEIGHT_MIN,
-			);
+			merged.set(lang, Math.floor(Math.random() * WEIGHT_MAX) + WEIGHT_MIN);
 		}
 	}
 	return merged;

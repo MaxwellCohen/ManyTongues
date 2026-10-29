@@ -45,6 +45,7 @@ function TranslationRow({
 
 	// Only push to parent when the user's debounced value changes. Omitting `weight`
 	// from deps avoids a loop: parent update → new weight prop → effect runs → push → parent update…
+	// biome-ignore lint/correctness/useExhaustiveDependencies: see comment above
 	useEffect(() => {
 		if (debouncedWeight !== weight) {
 			weightChangeEvent(debouncedWeight);

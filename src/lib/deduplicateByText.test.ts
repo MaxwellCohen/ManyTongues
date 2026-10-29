@@ -16,9 +16,9 @@ describe("deduplicateTranslationsByValue", () => {
 	});
 
 	it("skips empty strings", () => {
-		expect(
-			deduplicateTranslationsByValue({ fr: "", es: "hola" }),
-		).toEqual({ es: "hola" });
+		expect(deduplicateTranslationsByValue({ fr: "", es: "hola" })).toEqual({
+			es: "hola",
+		});
 	});
 });
 
