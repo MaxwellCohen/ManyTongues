@@ -1,3 +1,4 @@
+import unboundedLatin900 from "@fontsource/unbounded/files/unbounded-latin-900-normal.woff2?url";
 import { PostHogProvider } from "@posthog/react";
 import { TanStackDevtools } from "@tanstack/react-devtools";
 import { createRootRoute, HeadContent, Scripts } from "@tanstack/react-router";
@@ -6,7 +7,6 @@ import Footer from "../components/layout/Footer";
 import Header from "../components/layout/Header";
 import RootNotFound from "../components/shell/RootNotFound";
 import RootRouteError from "../components/shell/RootRouteError";
-
 import appCss from "../styles.css?url";
 
 export const Route = createRootRoute({
@@ -35,6 +35,13 @@ export const Route = createRootRoute({
 			},
 		],
 		links: [
+			{
+				rel: "preload",
+				href: unboundedLatin900,
+				as: "font",
+				type: "font/woff2",
+				crossOrigin: "anonymous",
+			},
 			{ rel: "preconnect", href: "https://fonts.googleapis.com" },
 			{
 				rel: "preconnect",
@@ -45,7 +52,7 @@ export const Route = createRootRoute({
 				id: "gf-fonts",
 				rel: "stylesheet",
 				media: "print",
-				href: "https://fonts.googleapis.com/css2?family=Unbounded:wght@400;600;800;900&family=JetBrains+Mono:wght@400;500;700&family=Noto+Sans+JP:wght@700;900&family=Noto+Sans+KR:wght@700;900&family=Noto+Kufi+Arabic:wght@700;900&display=swap",
+				href: "https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@700;900&family=Noto+Sans+KR:wght@700;900&family=Noto+Kufi+Arabic:wght@700;900&display=swap",
 			},
 			{
 				rel: "stylesheet",
