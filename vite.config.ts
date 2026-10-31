@@ -10,6 +10,7 @@ import { nitro } from "nitro/vite";
 import { defineConfig } from "vite";
 
 const config = defineConfig({
+	build: { sourcemap: true },
 	resolve: {
 		tsconfigPaths: true,
 	},

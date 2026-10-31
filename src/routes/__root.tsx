@@ -1,13 +1,16 @@
+import jetbrainsMonoLatin400 from "@fontsource/jetbrains-mono/files/jetbrains-mono-latin-400-normal.woff2?url";
+import unboundedLatin800 from "@fontsource/unbounded/files/unbounded-latin-800-normal.woff2?url";
 import unboundedLatin900 from "@fontsource/unbounded/files/unbounded-latin-900-normal.woff2?url";
-import { PostHogProvider } from "@posthog/react";
 import { TanStackDevtools } from "@tanstack/react-devtools";
 import { createRootRoute, HeadContent, Scripts } from "@tanstack/react-router";
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
+import { useEffect } from "react";
+import { loadAnalytics } from "#/lib/analytics";
 import Footer from "../components/layout/Footer";
 import Header from "../components/layout/Header";
 import RootNotFound from "../components/shell/RootNotFound";
 import RootRouteError from "../components/shell/RootRouteError";
-import appCss from "../styles.css?url";
+import appCss from "../styles.css?inline";
 
 export const Route = createRootRoute({
 	errorComponent: RootRouteError,
@@ -34,6 +37,7 @@ export const Route = createRootRoute({
 				content: "website",
 			},
 		],
+		styles: [{ children: appCss }],
 		links: [
 			{
 				rel: "preload",
@@ -42,22 +46,19 @@ export const Route = createRootRoute({
 				type: "font/woff2",
 				crossOrigin: "anonymous",
 			},
-			{ rel: "preconnect", href: "https://fonts.googleapis.com" },
 			{
-				rel: "preconnect",
-				href: "https://fonts.gstatic.com",
+				rel: "preload",
+				href: unboundedLatin800,
+				as: "font",
+				type: "font/woff2",
 				crossOrigin: "anonymous",
 			},
 			{
-				id: "gf-fonts",
-				rel: "stylesheet",
-				media: "print",
-				"data-href":
-					"https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@700;900&family=Noto+Sans+KR:wght@700;900&family=Noto+Kufi+Arabic:wght@700;900&display=swap",
-			},
-			{
-				rel: "stylesheet",
-				href: appCss,
+				rel: "preload",
+				href: jetbrainsMonoLatin400,
+				as: "font",
+				type: "font/woff2",
+				crossOrigin: "anonymous",
 			},
 			{ rel: "icon", href: "/favicon.ico", sizes: "any" },
 			{ rel: "icon", href: "/favicon.svg", type: "image/svg+xml" },
@@ -69,6 +70,20 @@ export const Route = createRootRoute({
 });
 
 function RootDocument({ children }: { children: React.ReactNode }) {
+	useEffect(() => {
+		const events = ["pointerdown", "keydown", "scroll"] as const;
+		const start = () => {
+			for (const event of events) window.removeEventListener(event, start);
+			void loadAnalytics();
+		};
+		for (const event of events) {
+			window.addEventListener(event, start, { once: true, passive: true });
+		}
+		return () => {
+			for (const event of events) window.removeEventListener(event, start);
+		};
+	}, []);
+
 	return (
 		<html
 			lang="en"
@@ -78,45 +93,27 @@ function RootDocument({ children }: { children: React.ReactNode }) {
 		>
 			<head>
 				<HeadContent />
-				<script
-					// biome-ignore lint/security/noDangerouslySetInnerHtml: static font-swap snippet
-					dangerouslySetInnerHTML={{
-						__html:
-							"(function(){var l=document.getElementById('gf-fonts');if(!l)return;function g(){l.href=l.dataset.href;l.media='all'}if(document.readyState==='complete')setTimeout(g,500);else addEventListener('load',function(){setTimeout(g,500)})})()",
-					}}
-				/>
 			</head>
 			<body
 				className="bg-night font-sans text-sea-ink antialiased wrap-anywhere selection:bg-neon-pink/35"
 				suppressHydrationWarning
 			>
-				<PostHogProvider
-					apiKey={import.meta.env.VITE_PUBLIC_POSTHOG_KEY as string}
-					options={{
-						api_host: "/ingest",
-						ui_host:
-							import.meta.env.VITE_PUBLIC_POSTHOG_HOST ||
-							"https://us.posthog.com",
-						capture_exceptions: true,
-					}}
-				>
-					<Header />
-					<main className="relative px-4 py-8 sm:py-12">{children}</main>
-					<Footer />
-					{import.meta.env.DEV ? (
-						<TanStackDevtools
-							config={{
-								position: "bottom-right",
-							}}
-							plugins={[
-								{
-									name: "Tanstack Router",
-									render: <TanStackRouterDevtoolsPanel />,
-								},
-							]}
-						/>
-					) : null}
-				</PostHogProvider>
+				<Header />
+				<main className="relative px-4 py-8 sm:py-12">{children}</main>
+				<Footer />
+				{import.meta.env.DEV ? (
+					<TanStackDevtools
+						config={{
+							position: "bottom-right",
+						}}
+						plugins={[
+							{
+								name: "Tanstack Router",
+								render: <TanStackRouterDevtoolsPanel />,
+							},
+						]}
+					/>
+				) : null}
 				<Scripts />
 			</body>
 		</html>

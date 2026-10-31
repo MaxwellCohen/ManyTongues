@@ -1,4 +1,3 @@
-import { usePostHog } from "@posthog/react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { zodValidator } from "@tanstack/zod-adapter";
 import { useMemo } from "react";
@@ -40,6 +39,7 @@ import {
 	withFontFallback,
 } from "#/features/word-cloud/translationCloud2";
 import { isExperimentalEngine } from "#/features/word-cloud/wordCloudEngine";
+import { usePostHog } from "#/lib/analytics";
 import { DEFAULT_STOPWORDS, tokenizeAndCount } from "#/lib/wordCloudUtils";
 
 const generatorSearchSchema = z.object({
@@ -73,7 +73,6 @@ const generatorSearchSchema = z.object({
 });
 
 export const Route = createFileRoute("/text-cloud")({
-	ssr: false,
 	validateSearch: zodValidator(generatorSearchSchema),
 	head: () => ({
 		meta: [

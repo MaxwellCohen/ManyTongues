@@ -1,4 +1,3 @@
-import { usePostHog } from "@posthog/react";
 import { useCallback, useMemo, useRef } from "react";
 import { DownloadIcon } from "#/components/icons";
 import ReactWordcloud from "#/features/word-cloud/components/cloud-render";
@@ -13,6 +12,7 @@ import {
 	WORD_CLOUD_LAYOUT_HEIGHT,
 	WORD_CLOUD_LAYOUT_WIDTH,
 } from "#/features/word-cloud/wordCloudViewport";
+import { usePostHog } from "#/lib/analytics";
 import { DEFAULT_BG, DEFAULT_COLORS } from "#/lib/wordCloudUtils";
 
 /** Never pass empty colors to react-wordcloud (it reads colors[0]). */

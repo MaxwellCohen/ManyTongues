@@ -1,4 +1,3 @@
-import { usePostHog } from "@posthog/react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { zodValidator } from "@tanstack/zod-adapter";
 import { startTransition, useMemo } from "react";
@@ -26,9 +25,9 @@ import {
 import { translatorSearchSchema } from "#/features/word-cloud/translatorSearchSchema";
 import { useTranslatePage } from "#/features/word-cloud/useTranslatePage";
 import { isExperimentalEngine } from "#/features/word-cloud/wordCloudEngine";
+import { usePostHog } from "#/lib/analytics";
 
 export const Route = createFileRoute("/translate")({
-	ssr: false,
 	validateSearch: zodValidator(translatorSearchSchema),
 	head: () => ({
 		meta: [

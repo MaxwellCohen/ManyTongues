@@ -1,4 +1,3 @@
-import { usePostHog } from "@posthog/react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { DownloadIcon } from "#/components/icons";
 import {
@@ -6,6 +5,7 @@ import {
 	NEON_SCREEN_CLASS,
 	NeonHud,
 } from "#/features/word-cloud/components/neon";
+import { usePostHog } from "#/lib/analytics";
 import { DEFAULT_BG } from "#/lib/wordCloudUtils";
 
 const FALLBACK_WIDTH = 640;
