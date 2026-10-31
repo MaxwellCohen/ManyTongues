@@ -52,7 +52,8 @@ export const Route = createRootRoute({
 				id: "gf-fonts",
 				rel: "stylesheet",
 				media: "print",
-				href: "https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@700;900&family=Noto+Sans+KR:wght@700;900&family=Noto+Kufi+Arabic:wght@700;900&display=swap",
+				"data-href":
+					"https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@700;900&family=Noto+Sans+KR:wght@700;900&family=Noto+Kufi+Arabic:wght@700;900&display=swap",
 			},
 			{
 				rel: "stylesheet",
@@ -81,7 +82,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
 					// biome-ignore lint/security/noDangerouslySetInnerHtml: static font-swap snippet
 					dangerouslySetInnerHTML={{
 						__html:
-							"(function(){var l=document.getElementById('gf-fonts');if(!l)return;function s(){l.media='all'}if(l.sheet)s();else l.addEventListener('load',s)})()",
+							"(function(){var l=document.getElementById('gf-fonts');if(!l)return;function g(){l.href=l.dataset.href;l.media='all'}if(document.readyState==='complete')setTimeout(g,500);else addEventListener('load',function(){setTimeout(g,500)})})()",
 					}}
 				/>
 			</head>
