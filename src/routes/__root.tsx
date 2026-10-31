@@ -35,6 +35,18 @@ export const Route = createRootRoute({
 			},
 		],
 		links: [
+			{ rel: "preconnect", href: "https://fonts.googleapis.com" },
+			{
+				rel: "preconnect",
+				href: "https://fonts.gstatic.com",
+				crossOrigin: "anonymous",
+			},
+			{
+				id: "gf-fonts",
+				rel: "stylesheet",
+				media: "print",
+				href: "https://fonts.googleapis.com/css2?family=Unbounded:wght@400;600;800;900&family=JetBrains+Mono:wght@400;500;700&family=Noto+Sans+JP:wght@700;900&family=Noto+Sans+KR:wght@700;900&family=Noto+Kufi+Arabic:wght@700;900&display=swap",
+			},
 			{
 				rel: "stylesheet",
 				href: appCss,
@@ -58,6 +70,13 @@ function RootDocument({ children }: { children: React.ReactNode }) {
 		>
 			<head>
 				<HeadContent />
+				<script
+					// biome-ignore lint/security/noDangerouslySetInnerHtml: static font-swap snippet
+					dangerouslySetInnerHTML={{
+						__html:
+							"(function(){var l=document.getElementById('gf-fonts');if(!l)return;function s(){l.media='all'}if(l.sheet)s();else l.addEventListener('load',s)})()",
+					}}
+				/>
 			</head>
 			<body
 				className="bg-night font-sans text-sea-ink antialiased wrap-anywhere selection:bg-neon-pink/35"
