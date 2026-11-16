@@ -21,7 +21,7 @@ export default function SourceTextPanel({
 				<FieldLabel className={`mb-3 ${NEON_CARD_HEADING_CLASS}`}>
 					Source text
 				</FieldLabel>
-				<div className="flex gap-2 rounded-2xl border border-white/14 bg-white/[0.045] p-3 font-mono transition-[border-color,box-shadow] focus-within:border-neon-lime/60 focus-within:shadow-glow-lime">
+				<div className="ui-field flex gap-2 rounded-2xl border border-tint/14 bg-tint/[0.045] p-3 font-mono transition-[border-color,box-shadow] focus-within:border-neon-lime/60 focus-within:shadow-glow-lime">
 					<span aria-hidden className="text-sm leading-relaxed text-neon-lime">
 						&gt;
 					</span>

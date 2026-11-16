@@ -4,18 +4,18 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "#/lib/utils";
 
 const buttonVariants = cva(
-	"group/button inline-flex shrink-0 items-center justify-center rounded-xl border border-transparent bg-clip-padding font-mono text-xs/relaxed font-bold whitespace-nowrap transition-all outline-none select-none focus-visible:border-neon-cyan focus-visible:ring-2 focus-visible:ring-neon-cyan/40 focus-visible:shadow-glow-cyan active:translate-y-px disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-2 aria-invalid:ring-destructive/20 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+	"ui-btn group/button inline-flex shrink-0 items-center justify-center rounded-xl border border-transparent bg-clip-padding font-mono text-xs/relaxed font-bold whitespace-nowrap transition-all outline-none select-none focus-visible:border-neon-cyan focus-visible:ring-2 focus-visible:ring-neon-cyan/40 focus-visible:shadow-glow-cyan active:translate-y-px disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-2 aria-invalid:ring-destructive/20 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
 	{
 		variants: {
 			variant: {
 				default:
-					"bg-neon-lime text-night shadow-glow-lime hover:bg-[#C4E09C] hover:shadow-[0_0_32px_#B5D884aa]",
+					"bg-neon-lime text-night shadow-glow-lime hover:bg-btn-primary-hover-bg hover:shadow-[0_0_calc(32px*var(--glow))_color-mix(in_srgb,var(--color-neon-lime)_67%,transparent)]",
 				outline:
-					"border-white/15 bg-white/[0.04] text-sea-ink hover:border-neon-cyan/70 hover:bg-neon-cyan/10 hover:text-neon-cyan aria-expanded:border-neon-cyan aria-expanded:text-neon-cyan",
+					"border-tint/15 bg-tint/[0.04] text-sea-ink hover:border-neon-cyan/70 hover:bg-neon-cyan/10 hover:text-neon-cyan aria-expanded:border-neon-cyan aria-expanded:text-neon-cyan",
 				secondary:
-					"border-white/12 bg-white/[0.06] text-sea-ink hover:bg-white/[0.1] aria-expanded:bg-white/[0.1] aria-expanded:text-sea-ink",
+					"border-tint/12 bg-tint/[0.06] text-sea-ink hover:bg-tint/[0.1] aria-expanded:bg-tint/[0.1] aria-expanded:text-sea-ink",
 				ghost:
-					"text-sea-ink-soft hover:bg-white/[0.06] hover:text-neon-cyan aria-expanded:bg-white/[0.06] aria-expanded:text-neon-cyan",
+					"text-sea-ink-soft hover:bg-tint/[0.06] hover:text-neon-cyan aria-expanded:bg-tint/[0.06] aria-expanded:text-neon-cyan",
 				destructive:
 					"border-neon-pink/40 bg-neon-pink/10 text-neon-pink hover:bg-neon-pink/20 hover:shadow-glow-pink focus-visible:border-neon-pink focus-visible:ring-neon-pink/40",
 				link: "text-neon-cyan underline-offset-4 hover:underline",

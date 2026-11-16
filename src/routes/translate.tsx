@@ -183,7 +183,7 @@ function TranslatorLanguagesPanel({
 					defaultOpen
 				/>
 			) : (
-				<p className="rounded-xl border border-dashed border-white/12 px-4 py-5 text-center font-mono text-xs leading-relaxed text-muted-ink">
+				<p className="rounded-xl border border-dashed border-tint/12 px-4 py-5 text-center font-mono text-xs leading-relaxed text-muted-ink">
 					Translate a phrase above to see languages and adjust weights for the
 					cloud.
 				</p>

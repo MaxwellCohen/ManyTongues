@@ -2,7 +2,7 @@ import { Link } from "@tanstack/react-router";
 
 export default function RootNotFound() {
 	return (
-		<div className="mx-auto max-w-lg rounded-[28px] border border-line bg-panel p-8 text-center shadow-island">
+		<div className="mx-auto max-w-lg ui-card rounded-screen border border-line bg-panel p-8 text-center shadow-island">
 			<p className="font-mono text-eyebrow font-bold text-neon-lime">
 				{"// error 404"}
 			</p>

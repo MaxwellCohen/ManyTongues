@@ -6,6 +6,7 @@ import { createRootRoute, HeadContent, Scripts } from "@tanstack/react-router";
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
 import { useEffect } from "react";
 import { loadAnalytics } from "#/lib/analytics";
+import { THEME_INIT_SCRIPT } from "#/lib/themes";
 import Footer from "../components/layout/Footer";
 import Header from "../components/layout/Header";
 import RootNotFound from "../components/shell/RootNotFound";
@@ -85,13 +86,12 @@ function RootDocument({ children }: { children: React.ReactNode }) {
 	}, []);
 
 	return (
-		<html
-			lang="en"
-			className="dark"
-			style={{ colorScheme: "dark" }}
-			suppressHydrationWarning
-		>
+		<html lang="en" className="dark" suppressHydrationWarning>
 			<head>
+				<script
+					// biome-ignore lint/security/noDangerouslySetInnerHtml: static theme bootstrap, must run before paint
+					dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }}
+				/>
 				<HeadContent />
 			</head>
 			<body

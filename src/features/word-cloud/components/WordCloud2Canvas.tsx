@@ -280,7 +280,7 @@ export default function WordCloud2Canvas({
 				ref={containerRef}
 				role="img"
 				aria-label={accessibilitySummary}
-				className="relative m-4 flex h-[340px] items-center justify-center overflow-hidden rounded-[20px] sm:m-6 sm:h-[440px] lg:h-[520px]"
+				className="relative m-4 flex h-[340px] items-center justify-center overflow-hidden rounded-card sm:m-6 sm:h-[440px] lg:h-[520px]"
 				style={{
 					backgroundColor: sanitizeWordCloudBackground(backgroundColor),
 				}}

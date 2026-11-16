@@ -40,13 +40,13 @@ const accentClassNames = {
 		card: "border-neon-cyan/35 hover:border-neon-cyan hover:shadow-glow-cyan",
 		tag: "text-neon-cyan",
 		cta: "text-neon-cyan",
-		icon: "bg-neon-cyan/12 text-neon-cyan shadow-[0_0_14px_#6CCFDD44]",
+		icon: "bg-neon-cyan/12 text-neon-cyan shadow-[0_0_calc(14px*var(--glow))_color-mix(in_srgb,var(--color-neon-cyan)_27%,transparent)]",
 	},
 	pink: {
 		card: "border-neon-pink/35 hover:border-neon-pink hover:shadow-glow-pink",
 		tag: "text-neon-pink",
 		cta: "text-neon-pink",
-		icon: "bg-neon-pink/12 text-neon-pink shadow-[0_0_14px_#E879A844]",
+		icon: "bg-neon-pink/12 text-neon-pink shadow-[0_0_calc(14px*var(--glow))_color-mix(in_srgb,var(--color-neon-pink)_27%,transparent)]",
 	},
 };
 
@@ -136,7 +136,7 @@ function FeatureCard({
 	return (
 		<Link
 			to={to}
-			className={`group relative flex flex-col overflow-hidden rounded-[28px] border bg-panel p-6 text-left no-underline shadow-[inset_0_0_120px_#9A88E622] transition-[border-color,box-shadow] duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-neon-cyan sm:p-8 ${accentClassName.card}`}
+			className={`group relative flex flex-col overflow-hidden ui-card rounded-screen border bg-panel p-6 text-left no-underline shadow-[inset_0_0_calc(120px*var(--glow))_color-mix(in_srgb,var(--color-neon-violet)_13%,transparent)] transition-[border-color,box-shadow] duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-neon-cyan sm:p-8 ${accentClassName.card}`}
 		>
 			<div className="flex items-center justify-between gap-3">
 				<Icon className={`mb-0 ${accentClassName.icon}`} />
