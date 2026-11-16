@@ -1,0 +1,859 @@
+/*
+ * Themes. Each [data-theme="…"] block sets a few inputs (surfaces, ink, five
+ * accents, fonts, shape/glow knobs) and the tokens in styles.css derive the
+ * rest. The attribute sits on <html>, and on each swatch in the theme picker so
+ * a swatch previews its own theme — hence selectors are not anchored to :root.
+ * The default look (neon) is the @theme block in styles.css, with no attribute.
+ *
+ * This file is not part of the inlined app CSS: it is a separate stylesheet
+ * loaded only once a theme is active or the picker opens (see lib/themes.ts).
+ * It is plain CSS, unlayered, so it wins over Tailwind's layers. Fonts are
+ * system stacks on purpose: no extra downloads.
+ */
+
+[data-theme] {
+	color-scheme: dark;
+	--cjk: "Noto Sans JP", "Noto Sans KR", "Noto Kufi Arabic";
+	--font-mono: var(--font-sans);
+	--glow: 0;
+	--text-fx: none;
+	--radius-scale: 1;
+	--pill: calc(infinity * 1px);
+	--page-bg: none;
+	--page-bg-size: auto;
+	--scanlines: none;
+
+	--color-sea-ink-soft: color-mix(
+		in oklab,
+		var(--color-sea-ink) 76%,
+		var(--color-night)
+	);
+	--color-muted-ink: color-mix(
+		in oklab,
+		var(--color-sea-ink) 70%,
+		var(--color-night)
+	);
+	--color-nav-ink: color-mix(
+		in oklab,
+		var(--color-sea-ink) 85%,
+		var(--color-night)
+	);
+	--color-lagoon-deep: color-mix(
+		in oklab,
+		var(--color-neon-cyan) 72%,
+		var(--color-sea-ink)
+	);
+	--color-sand: var(--color-panel);
+	--color-line: color-mix(in srgb, var(--color-tint) 14%, transparent);
+	--color-btn-primary-hover-bg: color-mix(
+		in oklab,
+		var(--color-neon-lime) 82%,
+		var(--color-sea-ink)
+	);
+	--color-destructive: var(--color-neon-pink);
+	--color-on-gradient: var(--color-night);
+
+	--radius-sm: calc(0.25rem * var(--radius-scale));
+	--radius-md: calc(0.375rem * var(--radius-scale));
+	--radius-lg: calc(0.5rem * var(--radius-scale));
+	--radius-xl: calc(0.75rem * var(--radius-scale));
+	--radius-2xl: calc(1rem * var(--radius-scale));
+	--radius-3xl: calc(1.5rem * var(--radius-scale));
+	--radius-card: calc(20px * var(--radius-scale));
+	--radius-screen: calc(28px * var(--radius-scale));
+
+	& .rounded-full {
+		border-radius: var(--pill);
+	}
+
+	& ::selection {
+		color: var(--color-sea-ink);
+	}
+
+	/* Same composition Tailwind uses, so a theme only has to set --tw-shadow
+     (focus rings keep working) even on elements with no shadow utility. */
+	& :is(.ui-card, .ui-btn, .ui-field) {
+		box-shadow:
+			var(--tw-inset-shadow, 0 0 #0000), var(--tw-inset-ring-shadow, 0 0 #0000),
+			var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000),
+			var(--tw-shadow, 0 0 #0000);
+	}
+
+	& .ui-btn:focus-visible {
+		outline: 2px solid var(--color-neon-cyan);
+		outline-offset: 2px;
+	}
+}
+
+/* Swatch preview only; mirrors the defaults in styles.css. */
+[data-theme="neon"] {
+	--color-night: #0b0a12;
+	--color-panel: #13111c;
+	--color-sea-ink: #ede8ff;
+	--color-tint: #fff;
+	--color-neon-pink: #e879a8;
+	--color-neon-cyan: #6ccfdd;
+	--color-neon-lime: #b5d884;
+	--color-neon-amber: #e8b464;
+	--color-neon-violet: #9a88e6;
+	--font-sans:
+		"JetBrains Mono", ui-monospace, Menlo, Consolas, var(--cjk), monospace;
+	--font-display: "Unbounded", var(--cjk), system-ui, sans-serif;
+	--glow: 1;
+	--text-fx: var(--text-glow);
+}
+
+/* Broadsheet: paper, ink, serif, rules. */
+[data-theme="newsprint"] {
+	color-scheme: light;
+	--color-night: #f2efe6;
+	--color-panel: #faf8f2;
+	--color-sea-ink: #141414;
+	--color-tint: #000;
+	--color-neon-pink: #a3180f;
+	--color-neon-cyan: #12376b;
+	--color-neon-lime: #141414;
+	--color-neon-amber: #7a4f00;
+	--color-neon-violet: #4d2f7a;
+	--font-sans: Georgia, "Iowan Old Style", "Times New Roman", var(--cjk), serif;
+	--font-display:
+		"Bodoni 72", Didot, "Bodoni MT", "Times New Roman", var(--cjk), serif;
+	--radius-scale: 0;
+	--pill: 0;
+	--page-bg: radial-gradient(#0000000f 1px, transparent 1.3px);
+	--page-bg-size: 5px 5px;
+
+	& .font-display {
+		letter-spacing: -0.01em;
+	}
+
+	& header {
+		border-bottom: 4px double var(--color-sea-ink);
+	}
+
+	& :is(.ui-card, .ui-btn, .ui-field) {
+		border: 1px solid var(--color-sea-ink);
+	}
+}
+
+/* Neo-brutalism: flat yellow, black outlines, hard offset shadows. */
+[data-theme="brutalist"] {
+	color-scheme: light;
+	--color-night: #ffe600;
+	--color-panel: #fff;
+	--color-sea-ink: #000;
+	--color-tint: #000;
+	--color-neon-pink: #c4007a;
+	--color-neon-cyan: #1d2bff;
+	--color-neon-lime: #000;
+	--color-neon-amber: #a33c00;
+	--color-neon-violet: #5a00d6;
+	--color-sea-ink-soft: #111;
+	--color-muted-ink: #222;
+	--font-sans: "Helvetica Neue", Helvetica, Arial, var(--cjk), sans-serif;
+	--font-display:
+		"Arial Black", "Helvetica Neue", Impact, var(--cjk), sans-serif;
+	--radius-scale: 0;
+	--pill: 0;
+	--page-bg:
+		linear-gradient(#0000001a 2px, transparent 2px),
+		linear-gradient(90deg, #0000001a 2px, transparent 2px);
+	--page-bg-size: 48px 48px, 48px 48px;
+	--ui-border: 3px solid #000;
+	--ui-shadow: 5px 5px 0 #000;
+
+	& .font-display {
+		letter-spacing: -0.03em;
+	}
+}
+
+/* Green phosphor CRT. */
+[data-theme="terminal"] {
+	--color-night: #010a03;
+	--color-panel: #03130a;
+	--color-sea-ink: #5dff9a;
+	--color-tint: #33ff66;
+	--color-neon-pink: #a8ffc6;
+	--color-neon-cyan: #33ff66;
+	--color-neon-lime: #33ff66;
+	--color-neon-amber: #ffb000;
+	--color-neon-violet: #19c552;
+	--font-sans:
+		"JetBrains Mono", ui-monospace, Menlo, Consolas, var(--cjk), monospace;
+	--font-display: var(--font-sans);
+	--radius-scale: 0;
+	--pill: 0;
+	--glow: 1.2;
+	--text-fx: var(--text-glow);
+	--page-bg: radial-gradient(ellipse at 50% 40%, #0b3d1e66, transparent 75%);
+	--scanlines: repeating-linear-gradient(0deg, #0000 0 2px, #00000066 2px 4px);
+
+	& body {
+		text-shadow: 0 0 4px #33ff6655;
+	}
+
+	& .font-display {
+		font-weight: 700;
+		letter-spacing: 0;
+	}
+
+	& h1.font-display {
+		letter-spacing: -0.06em;
+	}
+}
+
+/* Drafting table: cyanotype blue, white linework, dashed outlines. */
+[data-theme="blueprint"] {
+	--color-night: #0f3f8f;
+	--color-panel: #0c357a;
+	--color-sea-ink: #eef4ff;
+	--color-tint: #fff;
+	--color-neon-pink: #ffd84a;
+	--color-neon-cyan: #fff;
+	--color-neon-lime: #9fe3ff;
+	--color-neon-amber: #ffb86b;
+	--color-neon-violet: #c9d6ff;
+	--font-sans: "Courier New", Courier, var(--cjk), monospace;
+	--font-display:
+		"Avenir Next Condensed", "Arial Narrow", "Roboto Condensed", var(--cjk),
+		sans-serif;
+	--radius-scale: 0.25;
+	--page-bg:
+		linear-gradient(#ffffff2b 1px, transparent 1px),
+		linear-gradient(90deg, #ffffff2b 1px, transparent 1px),
+		linear-gradient(#ffffff12 1px, transparent 1px),
+		linear-gradient(90deg, #ffffff12 1px, transparent 1px);
+	--page-bg-size: 120px 120px, 120px 120px, 24px 24px, 24px 24px;
+
+	& .font-display {
+		font-weight: 600;
+		letter-spacing: 0.06em;
+	}
+
+	& :is(.ui-card, .ui-field) {
+		border: 1px dashed #ffffff99;
+	}
+}
+
+/* Sunset gradient, perspective grid, italic serif caps. */
+[data-theme="vapor"] {
+	--color-night: #1a0b3b;
+	--color-panel: #2a1259;
+	--color-sea-ink: #fdf2ff;
+	--color-tint: #ffb8f6;
+	--color-neon-pink: #ff71ce;
+	--color-neon-cyan: #01cdfe;
+	--color-neon-lime: #05ffa1;
+	--color-neon-amber: #fffb96;
+	--color-neon-violet: #b967ff;
+	--font-sans: "Trebuchet MS", "Lucida Grande", Verdana, var(--cjk), sans-serif;
+	--font-display: "Times New Roman", Times, var(--cjk), serif;
+	--radius-scale: 0.3;
+	--glow: 0.8;
+	--text-fx: 0.04em 0.04em 0 #01cdfe99, -0.04em -0.02em 0 #ff71ce99;
+	--page-bg:
+		linear-gradient(#01cdfe1f 1px, transparent 1px),
+		linear-gradient(90deg, #01cdfe1f 1px, transparent 1px),
+		linear-gradient(180deg, #12062e 0%, #2b0f54 50%, #6d1f7a 85%, #a8327e 100%);
+	--page-bg-size: 48px 48px, 48px 48px, auto;
+
+	& .font-display {
+		font-style: italic;
+		font-weight: 700;
+		letter-spacing: 0.08em;
+	}
+
+	& .ui-card {
+		border-color: #01cdfe66;
+		background-image: linear-gradient(160deg, #ffffff1a, #ffffff05);
+	}
+}
+
+/* Candy pastels, rounded everything. */
+[data-theme="bubblegum"] {
+	color-scheme: light;
+	--color-night: #ffe8f2;
+	--color-panel: #fff8fb;
+	--color-sea-ink: #55243f;
+	--color-tint: #c2327f;
+	--color-neon-pink: #c2185b;
+	--color-neon-cyan: #7446d8;
+	--color-neon-lime: #086a5f;
+	--color-neon-amber: #985000;
+	--color-neon-violet: #8638cf;
+	--font-sans:
+		ui-rounded, "SF Pro Rounded", "Arial Rounded MT Bold", "Varela Round",
+		"Comic Sans MS", var(--cjk), system-ui, sans-serif;
+	--font-display: var(--font-sans);
+	--radius-scale: 1.7;
+	--page-bg:
+		radial-gradient(#ff8fc247 4px, transparent 4.5px),
+		radial-gradient(#b99cff38 3px, transparent 3.5px);
+	--page-bg-size: 36px 36px, 54px 54px;
+
+	& .font-display {
+		letter-spacing: 0;
+	}
+
+	& .ui-card {
+		border: 2px solid #f6b4d2;
+		background-color: var(--color-panel);
+		--tw-shadow: 0 6px 0 #f6b4d2;
+	}
+
+	& .ui-btn {
+		--tw-shadow: 0 4px 10px -2px
+			color-mix(in srgb, var(--color-neon-pink) 45%, transparent);
+	}
+}
+
+/* Gray chrome, bevels, a window on a teal desktop. */
+[data-theme="desktop95"] {
+	color-scheme: light;
+	--color-night: #c0c0c0;
+	--color-panel: #c0c0c0;
+	--color-sea-ink: #000;
+	--color-tint: #000;
+	--color-neon-pink: #800000;
+	--color-neon-cyan: #000080;
+	--color-neon-lime: #004f4f;
+	--color-neon-amber: #5c4400;
+	--color-neon-violet: #5b2a8c;
+	--color-sea-ink-soft: #1f1f1f;
+	--color-muted-ink: #3a3a3a;
+	--font-sans: Tahoma, "MS Sans Serif", Geneva, Verdana, var(--cjk), sans-serif;
+	--font-display: var(--font-sans);
+	--radius-scale: 0;
+	--pill: 0;
+	--bevel-out: #fff #404040 #404040 #fff;
+	--bevel-in: #404040 #fff #fff #404040;
+
+	& body {
+		background-color: #008080;
+	}
+
+	& .font-display {
+		letter-spacing: 0;
+	}
+
+	& header {
+		border-bottom: 2px solid #404040;
+		background-color: #c0c0c0;
+		backdrop-filter: none;
+	}
+
+	& main {
+		margin: 1rem max(0.75rem, calc((100% - 1240px) / 2));
+		border: 2px solid;
+		border-color: var(--bevel-out);
+		background-color: #c0c0c0;
+		padding: 0 1rem 2rem;
+		box-shadow: 2px 2px 0 #000;
+	}
+
+	& main::before {
+		content: "ManyTongues.exe";
+		display: block;
+		margin: 0 -1rem 2rem;
+		background: linear-gradient(90deg, #000080, #1084d0);
+		padding: 4px 8px;
+		color: #fff;
+		font: 700 13px / 1.4 var(--font-sans);
+	}
+
+	& footer {
+		margin-top: 2rem;
+		border: 0;
+	}
+
+	& footer,
+	& footer a {
+		color: #fff;
+	}
+
+	& :is(.ui-card, .ui-btn) {
+		border: 2px solid;
+		border-color: var(--bevel-out);
+	}
+
+	& .ui-btn:active {
+		border-color: var(--bevel-in);
+	}
+
+	& .ui-field {
+		border: 2px solid;
+		border-color: var(--bevel-in);
+		background-color: #fff;
+	}
+}
+
+/* Sand, terracotta, turquoise; humanist sans. */
+[data-theme="mesa"] {
+	color-scheme: light;
+	--color-night: #f2dfc4;
+	--color-panel: #fbefdc;
+	--color-sea-ink: #3a2012;
+	--color-tint: #6b3a12;
+	--color-neon-pink: #8f2d2d;
+	--color-neon-cyan: #17625e;
+	--color-neon-lime: #a23f1c;
+	--color-neon-amber: #8a5a00;
+	--color-neon-violet: #55683a;
+	--font-sans:
+		"Gill Sans", "Gill Sans MT", Optima, Candara, Calibri, var(--cjk),
+		sans-serif;
+	--font-display: Optima, Candara, "Gill Sans", var(--cjk), sans-serif;
+	--radius-scale: 1.3;
+	--page-bg:
+		radial-gradient(120% 55% at 50% 112%, #d98e5a99, transparent 65%),
+		radial-gradient(45% 35% at 88% -5%, #ffd28acc, transparent 70%);
+
+	& .font-display {
+		font-weight: 700;
+		letter-spacing: 0.02em;
+	}
+
+	& .ui-card {
+		border-color: #c9a27a;
+		background-color: var(--color-panel);
+	}
+}
+
+/* Art deco: black and gold, engraved caps, double rules. */
+[data-theme="gilded"] {
+	--color-night: #0b0b0d;
+	--color-panel: #141316;
+	--color-sea-ink: #f3e7c9;
+	--color-tint: #d4af37;
+	--color-neon-pink: #d4af37;
+	--color-neon-cyan: #5fc9a8;
+	--color-neon-lime: #e2c15a;
+	--color-neon-amber: #c08a2b;
+	--color-neon-violet: #b9a26a;
+	--font-sans:
+		"Hoefler Text", Garamond, Baskerville, "Times New Roman", var(--cjk), serif;
+	--font-display:
+		Copperplate, "Copperplate Gothic Light", Didot, "Bodoni 72", var(--cjk),
+		serif;
+	--radius-scale: 0;
+	--pill: 0;
+	--glow: 0.5;
+	--page-bg: repeating-conic-gradient(
+		from 90deg at 50% -20%,
+		#d4af3714 0 2deg,
+		transparent 2deg 8deg
+	);
+
+	& .font-display {
+		font-weight: 400;
+		letter-spacing: 0.12em;
+	}
+
+	& .ui-card {
+		border: 3px double #d4af37aa;
+	}
+
+	& :is(.ui-btn, .ui-field) {
+		border-color: #d4af3766;
+	}
+
+	& h1.font-display {
+		letter-spacing: -0.02em;
+	}
+}
+
+/* Deep woodland greens, old-style serif. */
+[data-theme="mosswood"] {
+	--color-night: #0f1f18;
+	--color-panel: #172b22;
+	--color-sea-ink: #e8efdc;
+	--color-tint: #cfe6bf;
+	--color-neon-pink: #eaa57a;
+	--color-neon-cyan: #9cd795;
+	--color-neon-lime: #dcc566;
+	--color-neon-amber: #e2a457;
+	--color-neon-violet: #b9a6dc;
+	--font-sans:
+		"Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua", Georgia,
+		var(--cjk), serif;
+	--font-display:
+		"Palatino Linotype", Palatino, "Book Antiqua", Georgia, var(--cjk), serif;
+	--radius-scale: 1.2;
+	--glow: 0.35;
+	--page-bg:
+		radial-gradient(70% 50% at 12% 0%, #2f6b4a66, transparent 70%),
+		radial-gradient(60% 50% at 100% 100%, #5a7d2a40, transparent 70%);
+
+	& .font-display {
+		font-weight: 700;
+		letter-spacing: 0;
+	}
+}
+
+/* Frosted glass over a bioluminescent deep. */
+[data-theme="abyss"] {
+	--color-night: #031326;
+	--color-panel: #0a2540;
+	--color-sea-ink: #e6f6ff;
+	--color-tint: #a5ecff;
+	--color-neon-pink: #7dd3fc;
+	--color-neon-cyan: #5eead4;
+	--color-neon-lime: #a7f3d0;
+	--color-neon-amber: #fde68a;
+	--color-neon-violet: #a5b4fc;
+	--font-sans:
+		system-ui, -apple-system, "Segoe UI", Roboto, var(--cjk), sans-serif;
+	--font-display: var(--font-sans);
+	--radius-scale: 1.6;
+	--glow: 0.8;
+	--text-fx: var(--text-glow);
+	--page-bg:
+		radial-gradient(40% 35% at 18% 12%, #22d3ee47, transparent 70%),
+		radial-gradient(45% 40% at 86% 78%, #6366f15c, transparent 70%),
+		radial-gradient(35% 30% at 62% 32%, #14b8a633, transparent 70%),
+		linear-gradient(160deg, #04233f, #020b1c 60%, #051f33);
+
+	& .font-display {
+		font-weight: 300;
+		letter-spacing: -0.01em;
+		text-transform: none;
+	}
+
+	& .ui-card {
+		border-color: #ffffff38;
+		background-color: #ffffff12;
+		backdrop-filter: blur(20px) saturate(1.5);
+		--tw-shadow: inset 0 1px 0 #ffffff40, 0 18px 48px #00000059;
+	}
+}
+
+/* CMYK print: halftone dots, caption-box yellow, ink outlines. */
+[data-theme="comic"] {
+	color-scheme: light;
+	--color-night: #fffdf0;
+	--color-panel: #fff3a0;
+	--color-sea-ink: #111;
+	--color-tint: #000;
+	--color-neon-pink: #d6006f;
+	--color-neon-cyan: #0077c8;
+	--color-neon-lime: #d81405;
+	--color-neon-amber: #b85600;
+	--color-neon-violet: #6a2be0;
+	--font-sans:
+		"Comic Sans MS", "Chalkboard SE", "Comic Neue", var(--cjk), cursive;
+	--font-display:
+		"Marker Felt", "Comic Sans MS", "Chalkboard SE", var(--cjk), fantasy;
+	--radius-scale: 0.5;
+	--text-fx: 0.06em 0.06em 0 #111;
+	--page-bg: radial-gradient(#0077c838 2px, transparent 2.5px);
+	--page-bg-size: 14px 14px;
+	--ui-border: 3px solid #111;
+	--ui-shadow: 5px 5px 0 #111;
+
+	& .font-display {
+		letter-spacing: 0.02em;
+	}
+}
+
+/* Slate green, chalk pastels, hand lettering. */
+[data-theme="chalkboard"] {
+	--color-night: #1f3329;
+	--color-panel: #264034;
+	--color-sea-ink: #f4f1e4;
+	--color-tint: #fff;
+	--color-neon-pink: #ff9fb2;
+	--color-neon-cyan: #a4dcff;
+	--color-neon-lime: #fff29a;
+	--color-neon-amber: #ffc78c;
+	--color-neon-violet: #d4b8ff;
+	--font-sans:
+		"Chalkboard SE", "Bradley Hand", "Segoe Print", "Comic Sans MS", var(--cjk),
+		cursive;
+	--font-display:
+		Chalkduster, "Chalkboard SE", "Bradley Hand", "Segoe Print", var(--cjk),
+		cursive;
+	--radius-scale: 0.6;
+	--page-bg:
+		radial-gradient(80% 60% at 28% 18%, #ffffff12, transparent 70%),
+		radial-gradient(60% 50% at 82% 92%, #ffffff0d, transparent 70%);
+
+	& .font-display {
+		font-weight: 400;
+		letter-spacing: 0;
+	}
+
+	& :is(.ui-card, .ui-field) {
+		border: 2px dashed #ffffff8c;
+	}
+}
+
+/* Four-shade olive handheld LCD. */
+[data-theme="pocket"] {
+	color-scheme: light;
+	--color-night: #9bbc0f;
+	--color-panel: #8bac0f;
+	--color-sea-ink: #0f380f;
+	--color-tint: #0f380f;
+	--color-neon-pink: #0f380f;
+	--color-neon-cyan: #123b12;
+	--color-neon-lime: #0f380f;
+	--color-neon-amber: #123b12;
+	--color-neon-violet: #123b12;
+	--color-sea-ink-soft: #123b12;
+	--color-muted-ink: #123b12;
+	--color-nav-ink: #123b12;
+	--font-sans: "Courier New", "Lucida Console", Monaco, var(--cjk), monospace;
+	--font-display: var(--font-sans);
+	--radius-scale: 0;
+	--pill: 0;
+	--page-bg:
+		linear-gradient(#0f380f1a 1px, transparent 1px),
+		linear-gradient(90deg, #0f380f1a 1px, transparent 1px);
+	--page-bg-size: 4px 4px, 4px 4px;
+	--ui-border: 3px solid #0f380f;
+	--ui-shadow: 4px 4px 0 #123b12;
+
+	& body {
+		font-weight: 700;
+		-webkit-font-smoothing: none;
+	}
+
+	& :is(label, input, textarea, button) {
+		font-weight: 700;
+	}
+
+	& .font-display {
+		letter-spacing: 0.04em;
+	}
+
+	& h1.font-display {
+		letter-spacing: -0.06em;
+	}
+}
+
+/* Molten orange on basalt, condensed poster type. */
+[data-theme="magma"] {
+	--color-night: #110403;
+	--color-panel: #1e0906;
+	--color-sea-ink: #ffe8d6;
+	--color-tint: #ff9a5c;
+	--color-neon-pink: #ff4a36;
+	--color-neon-cyan: #ff9a1f;
+	--color-neon-lime: #ffd23f;
+	--color-neon-amber: #ff6a00;
+	--color-neon-violet: #ff6f9c;
+	--font-sans:
+		"Avenir Next", "Segoe UI", "Trebuchet MS", var(--cjk), sans-serif;
+	--font-display:
+		Impact, Haettenschweiler, "Arial Narrow Bold", "Avenir Next Condensed",
+		var(--cjk), sans-serif;
+	--radius-scale: 0.35;
+	--glow: 1.6;
+	--text-fx: var(--text-glow);
+	--page-bg:
+		radial-gradient(90% 50% at 50% 118%, #ff4d00b3, transparent 70%),
+		radial-gradient(40% 30% at 8% 104%, #ffb30066, transparent 70%),
+		radial-gradient(50% 30% at 94% 108%, #ff1f0080, transparent 70%);
+
+	& .font-display {
+		font-weight: 400;
+		letter-spacing: 0.03em;
+	}
+
+	& .ui-card {
+		border-color: #ff6a0055;
+		background-image: linear-gradient(180deg, #ff5a0017, transparent 60%);
+	}
+}
+
+/* International style: white, black, one red, rules instead of boxes. */
+[data-theme="swiss"] {
+	color-scheme: light;
+	--color-night: #fff;
+	--color-panel: #fff;
+	--color-sea-ink: #0a0a0a;
+	--color-tint: #000;
+	--color-neon-pink: #e30613;
+	--color-neon-cyan: #0a0a0a;
+	--color-neon-lime: #e30613;
+	--color-neon-amber: #6b6b6b;
+	--color-neon-violet: #0a0a0a;
+	--font-sans: "Helvetica Neue", Helvetica, Arial, var(--cjk), sans-serif;
+	--font-display: var(--font-sans);
+	--radius-scale: 0;
+	--pill: 0;
+
+	& .font-display {
+		font-weight: 700;
+		letter-spacing: -0.03em;
+	}
+
+	& .ui-card {
+		border-width: 4px 0 0;
+		border-color: #0a0a0a;
+		background: none;
+	}
+
+	& .ui-field {
+		border-width: 0 0 2px;
+		border-color: #0a0a0a;
+		background: none;
+	}
+}
+
+/* Maximum legibility: pure black and white, saturated accents, thick focus. */
+[data-theme="contrast"] {
+	--color-night: #000;
+	--color-panel: #000;
+	--color-sea-ink: #fff;
+	--color-tint: #fff;
+	--color-neon-pink: #ff0;
+	--color-neon-cyan: #0ff;
+	--color-neon-lime: #0f0;
+	--color-neon-amber: #ffb000;
+	--color-neon-violet: #ff80ff;
+	--color-sea-ink-soft: #fff;
+	--color-muted-ink: #fff;
+	--color-nav-ink: #fff;
+	--font-sans:
+		system-ui, -apple-system, "Segoe UI", Arial, var(--cjk), sans-serif;
+	--font-display: var(--font-sans);
+	--radius-scale: 0.5;
+
+	& .font-display {
+		letter-spacing: 0;
+	}
+
+	& :is(.ui-card, .ui-btn, .ui-field) {
+		border: 2px solid #fff;
+	}
+
+	& :focus-visible {
+		outline: 3px solid #ff0;
+		outline-offset: 2px;
+	}
+}
+
+/* Wine velvet and rose gold, italic Baskerville, script headlines. */
+[data-theme="velvet"] {
+	--color-night: #260817;
+	--color-panel: #361021;
+	--color-sea-ink: #fbe8df;
+	--color-tint: #ffc2b0;
+	--color-neon-pink: #f6a5b9;
+	--color-neon-cyan: #ecc79f;
+	--color-neon-lime: #f2c57c;
+	--color-neon-amber: #e59b5e;
+	--color-neon-violet: #caa6ff;
+	--font-sans:
+		Baskerville, "Baskerville Old Face", "Hoefler Text", Garamond, Georgia,
+		var(--cjk), serif;
+	--font-display: var(--font-sans);
+	--glow: 0.5;
+	--text-fx: var(--text-glow);
+	--page-bg:
+		radial-gradient(120% 80% at 50% 0%, #7a1d4399, transparent 70%),
+		repeating-linear-gradient(45deg, #ffffff06 0 2px, transparent 2px 16px),
+		repeating-linear-gradient(-45deg, #ffffff06 0 2px, transparent 2px 16px);
+
+	& .font-display {
+		font-style: italic;
+		font-weight: 600;
+		letter-spacing: 0.01em;
+	}
+
+	& :is(h1, header a).font-display {
+		font-family:
+			"Snell Roundhand", "Apple Chancery", "Lucida Handwriting",
+			"Brush Script MT", var(--cjk), cursive;
+		font-style: normal;
+		font-weight: 700;
+		letter-spacing: 0;
+		text-transform: none;
+	}
+
+	& header a.font-display {
+		text-transform: lowercase;
+	}
+}
+
+/* Turn-of-the-millennium desktop: pinstripes and gel buttons. */
+[data-theme="aqua"] {
+	color-scheme: light;
+	--color-night: #e8eef6;
+	--color-panel: #fff;
+	--color-sea-ink: #1a2940;
+	--color-tint: #1b3a66;
+	--color-neon-pink: #c9274f;
+	--color-neon-cyan: #1560d4;
+	--color-neon-lime: #17752f;
+	--color-neon-amber: #985600;
+	--color-neon-violet: #7445dd;
+	--font-sans:
+		"Lucida Grande", "Lucida Sans Unicode", "Trebuchet MS", Verdana, var(--cjk),
+		sans-serif;
+	--font-display: var(--font-sans);
+	--radius-scale: 1.3;
+	--page-bg: repeating-linear-gradient(0deg, #fff 0 2px, #e3eaf3 2px 4px);
+
+	& .font-display {
+		font-weight: 700;
+		letter-spacing: 0;
+		text-transform: none;
+	}
+
+	& header {
+		background-image: linear-gradient(#fff, #d9e2ee);
+		box-shadow: 0 1px 3px #1a294033;
+	}
+
+	& .ui-card {
+		border-color: #b4c1d4;
+		background-color: #fff;
+		--tw-shadow: inset 0 1px 0 #fff, 0 8px 24px #1a294026;
+	}
+
+	& .ui-btn {
+		--tw-shadow:
+			inset 0 1px 0 #ffffffd9, inset 0 12px 10px -8px #ffffffa6,
+			inset 0 -8px 10px -6px #0000002e, 0 2px 5px #1a294040;
+	}
+
+	& .ui-field {
+		background-color: #fff;
+		--tw-shadow: inset 0 2px 4px #1a294033;
+	}
+}
+
+/* Shared by the themes that set --ui-border / --ui-shadow. */
+:is([data-theme="brutalist"], [data-theme="comic"], [data-theme="pocket"]) {
+	& :is(.ui-card, .ui-btn, .ui-field) {
+		border: var(--ui-border);
+		--tw-shadow: var(--ui-shadow);
+	}
+
+	& .ui-card {
+		background-color: var(--color-panel);
+	}
+
+	& header {
+		border-bottom: var(--ui-border);
+	}
+
+	& .ui-btn:hover {
+		translate: -1px -1px;
+	}
+
+	& .ui-btn:active {
+		translate: 3px 3px;
+		--tw-shadow: 0 0 #0000;
+	}
+}
+
+/* A field wrapper that hosts another field: only the outer one is drawn.
+   Last in the file so it follows every theme's own .ui-field rule. */
+[data-theme] .ui-field .ui-field {
+	border: 0;
+	background: none;
+	--tw-shadow: 0 0 #0000;
+}

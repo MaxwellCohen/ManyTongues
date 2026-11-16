@@ -142,7 +142,7 @@ export default function WordCloudCanvas({
 				<div className="relative z-10 px-4 pt-4 sm:px-6 sm:pt-6">{prompt}</div>
 			) : null}
 			<div
-				className="relative m-4 flex h-[340px] items-center justify-center overflow-hidden rounded-[20px] sm:m-6 sm:h-[440px] lg:h-[520px]"
+				className="relative m-4 flex h-[340px] items-center justify-center overflow-hidden rounded-card sm:m-6 sm:h-[440px] lg:h-[520px]"
 				style={{
 					backgroundColor: /^#[0-9A-Fa-f]{6}$/.test(backgroundColor)
 						? backgroundColor

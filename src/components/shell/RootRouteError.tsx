@@ -3,7 +3,7 @@ import { Link } from "@tanstack/react-router";
 
 export default function RootRouteError({ error, reset }: ErrorComponentProps) {
 	return (
-		<div className="mx-auto max-w-lg rounded-[28px] border border-neon-pink/40 bg-panel p-8 text-center shadow-island">
+		<div className="mx-auto max-w-lg ui-card rounded-screen border border-neon-pink/40 bg-panel p-8 text-center shadow-island">
 			<p className="font-mono text-eyebrow font-bold text-neon-amber">
 				{"// runtime error"}
 			</p>
@@ -17,7 +17,7 @@ export default function RootRouteError({ error, reset }: ErrorComponentProps) {
 				<button
 					type="button"
 					onClick={reset}
-					className="rounded-2xl bg-neon-lime px-5 py-2.5 font-display text-sm font-extrabold text-night uppercase shadow-glow-lime hover:bg-[#C4E09C] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-neon-cyan"
+					className="ui-btn rounded-2xl bg-neon-lime px-5 py-2.5 font-display text-sm font-extrabold text-night uppercase shadow-glow-lime hover:bg-btn-primary-hover-bg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-neon-cyan"
 				>
 					Try again
 				</button>

@@ -35,50 +35,57 @@
   --color-night: #0B0A12;
   --color-panel: #13111C;
   --color-muted-ink: #8f84bf;
+  /* Overlay tint for hairlines and translucent fills: white on dark themes, black on light. */
+  --color-tint: #fff;
+  --color-nav-ink: #bdb3e6;
+  --color-on-gradient: #fff;
+
+  --radius-card: 20px;
+  --radius-screen: 28px;
 
   /* Glows */
-  --shadow-glow-pink: 0 0 14px #E879A833;
-  --shadow-glow-cyan: 0 0 14px #6CCFDD33;
-  --shadow-glow-lime: 0 0 14px #B5D88433;
-  --shadow-glow-violet: 0 0 14px #9A88E633;
+  --shadow-glow-pink: 0 0 calc(14px * var(--glow)) color-mix(in srgb, var(--color-neon-pink) 20%, transparent);
+  --shadow-glow-cyan: 0 0 calc(14px * var(--glow)) color-mix(in srgb, var(--color-neon-cyan) 20%, transparent);
+  --shadow-glow-lime: 0 0 calc(14px * var(--glow)) color-mix(in srgb, var(--color-neon-lime) 20%, transparent);
+  --shadow-glow-violet: 0 0 calc(14px * var(--glow)) color-mix(in srgb, var(--color-neon-violet) 20%, transparent);
 
   --shadow-card: inset 0 0 60px rgba(154, 136, 230, 0.08), 0 0 0 1px rgba(255, 255, 255, 0.02);
   --shadow-card-hover: inset 0 0 80px rgba(154, 136, 230, 0.14), 0 0 28px rgba(108, 207, 221, 0.18);
   --shadow-chip: 0 0 14px rgba(154, 136, 230, 0.18);
   --shadow-theme-toggle: 0 0 14px rgba(154, 136, 230, 0.18);
-  --shadow-button-primary: 0 0 14px #B5D88433;
+  --shadow-button-primary: 0 0 calc(14px * var(--glow)) color-mix(in srgb, var(--color-neon-lime) 20%, transparent);
   --shadow-button-primary-focus:
     0 0 0 3px var(--color-bg-base), 0 0 0 5px var(--color-btn-primary-focus-ring),
-    0 0 14px #6CCFDD33;
+    0 0 calc(14px * var(--glow)) color-mix(in srgb, var(--color-neon-cyan) 20%, transparent);
   --shadow-island:
-    inset 0 1px 0 var(--color-inset-glint), inset 0 0 120px rgba(154, 136, 230, 0.13),
+    inset 0 1px 0 var(--color-inset-glint), inset 0 0 calc(120px * var(--glow)) color-mix(in srgb, var(--color-neon-violet) 13%, transparent),
     0 20px 48px rgba(0, 0, 0, 0.4);
 
   /* Legacy design tokens remapped to neon values (dark only) */
   --color-sea-ink: #ede8ff;
   --color-sea-ink-soft: #a99ed6;
-  --color-lagoon: #6CCFDD;
+  --color-lagoon: var(--color-neon-cyan);
   --color-lagoon-deep: #9FDFE8;
-  --color-palm: #E879A8;
+  --color-palm: var(--color-neon-pink);
   --color-sand: #17151F;
-  --color-foam: #13111C;
-  --color-surface: rgba(255, 255, 255, 0.04);
-  --color-surface-strong: rgba(19, 17, 28, 0.92);
-  --color-line: rgba(255, 255, 255, 0.12);
-  --color-inset-glint: rgba(255, 255, 255, 0.06);
-  --color-kicker: #B5D884;
-  --color-bg-base: #0B0A12;
-  --color-header-bg: rgba(11, 10, 18, 0.78);
-  --color-chip-bg: rgba(255, 255, 255, 0.04);
-  --color-chip-line: rgba(255, 255, 255, 0.12);
-  --color-link-bg-hover: rgba(255, 255, 255, 0.08);
-  --color-hero-a: rgba(154, 136, 230, 0.2);
-  --color-hero-b: rgba(232, 121, 168, 0.16);
-  --color-btn-on-lagoon: #0B0A12;
-  --color-btn-primary-bg: #B5D884;
-  --color-btn-primary-text: #0B0A12;
+  --color-foam: var(--color-panel);
+  --color-surface: color-mix(in srgb, var(--color-tint) 4%, transparent);
+  --color-surface-strong: color-mix(in srgb, var(--color-panel) 92%, transparent);
+  --color-line: color-mix(in srgb, var(--color-tint) 12%, transparent);
+  --color-inset-glint: color-mix(in srgb, var(--color-tint) 6%, transparent);
+  --color-kicker: var(--color-neon-lime);
+  --color-bg-base: var(--color-night);
+  --color-header-bg: color-mix(in srgb, var(--color-night) 78%, transparent);
+  --color-chip-bg: color-mix(in srgb, var(--color-tint) 4%, transparent);
+  --color-chip-line: color-mix(in srgb, var(--color-tint) 12%, transparent);
+  --color-link-bg-hover: color-mix(in srgb, var(--color-tint) 8%, transparent);
+  --color-hero-a: color-mix(in srgb, var(--color-neon-violet) 20%, transparent);
+  --color-hero-b: color-mix(in srgb, var(--color-neon-pink) 16%, transparent);
+  --color-btn-on-lagoon: var(--color-night);
+  --color-btn-primary-bg: var(--color-neon-lime);
+  --color-btn-primary-text: var(--color-night);
   --color-btn-primary-hover-bg: #C4E09C;
-  --color-btn-primary-focus-ring: #6CCFDD;
+  --color-btn-primary-focus-ring: var(--color-neon-cyan);
 
   /* shadcn/Base UI (mapped to design tokens for bg-*, text-*, border-*, etc.) */
   --color-background: var(--color-night);
@@ -89,14 +96,14 @@
   --color-popover-foreground: var(--color-sea-ink);
   --color-primary: var(--color-neon-cyan);
   --color-primary-foreground: var(--color-night);
-  --color-secondary: rgba(255, 255, 255, 0.06);
+  --color-secondary: color-mix(in srgb, var(--color-tint) 6%, transparent);
   --color-secondary-foreground: var(--color-sea-ink);
-  --color-muted: rgba(255, 255, 255, 0.08);
+  --color-muted: color-mix(in srgb, var(--color-tint) 8%, transparent);
   --color-muted-foreground: var(--color-sea-ink-soft);
-  --color-accent: rgba(255, 255, 255, 0.08);
+  --color-accent: color-mix(in srgb, var(--color-tint) 8%, transparent);
   --color-accent-foreground: var(--color-sea-ink);
   --color-destructive: #ff4d6d;
-  --color-destructive-foreground: #0B0A12;
+  --color-destructive-foreground: var(--color-night);
   --color-border: var(--color-line);
   --color-input: var(--color-line);
   --color-ring: var(--color-neon-cyan);
@@ -105,33 +112,33 @@
 /* Neon text utilities */
 @utility text-glow-pink {
   color: var(--color-neon-pink);
-  text-shadow: 0 0 6px #E879A855, 0 0 18px #E879A822;
+  text-shadow: var(--text-fx);
 }
 
 @utility text-glow-cyan {
   color: var(--color-neon-cyan);
-  text-shadow: 0 0 6px #6CCFDD55, 0 0 18px #6CCFDD22;
+  text-shadow: var(--text-fx);
 }
 
 @utility text-glow-lime {
   color: var(--color-neon-lime);
-  text-shadow: 0 0 6px #B5D88455, 0 0 18px #B5D88422;
+  text-shadow: var(--text-fx);
 }
 
 @utility text-glow-amber {
   color: var(--color-neon-amber);
-  text-shadow: 0 0 6px #E8B46455, 0 0 18px #E8B46422;
+  text-shadow: var(--text-fx);
 }
 
 @utility text-glow-violet {
   color: var(--color-neon-violet);
-  text-shadow: 0 0 6px #9A88E655, 0 0 18px #9A88E622;
+  text-shadow: var(--text-fx);
 }
 
 @utility text-outline-cyan {
   color: transparent;
   -webkit-text-stroke: 2px var(--color-neon-cyan);
-  text-shadow: 0 0 30px #6CCFDD55;
+  text-shadow: 0 0 calc(30px * var(--glow)) color-mix(in srgb, var(--color-neon-cyan) calc(33% * min(var(--glow), 1)), transparent);
 }
 
 /* Element defaults live in the base layer so utility classes (e.g. text-* on
@@ -139,6 +146,19 @@
 @layer base {
   :root {
     color-scheme: dark;
+    /* Theme knobs; themes.css overrides these per [data-theme]. */
+    --glow: 1;
+    --text-glow:
+      0 0 6px color-mix(in srgb, currentColor 33%, transparent),
+      0 0 18px color-mix(in srgb, currentColor 13%, transparent);
+    --text-fx: var(--text-glow);
+    --page-bg:
+      radial-gradient(60% 50% at 80% 0%, #9A88E61f, transparent),
+      radial-gradient(50% 40% at 0% 100%, #E879A814, transparent),
+      linear-gradient(#ffffff06 1px, transparent 1px),
+      linear-gradient(90deg, #ffffff06 1px, transparent 1px);
+    --page-bg-size: auto, auto, 40px 40px, 40px 40px;
+    --scanlines: repeating-linear-gradient(0deg, #0000 0 2px, #00000010 2px 3px);
   }
 
   * {
@@ -156,12 +176,8 @@
     color: var(--color-sea-ink);
     font-family: var(--font-sans);
     background-color: var(--color-night);
-    background-image:
-      radial-gradient(60% 50% at 80% 0%, #9A88E61f, transparent),
-      radial-gradient(50% 40% at 0% 100%, #E879A814, transparent),
-      linear-gradient(#ffffff06 1px, transparent 1px),
-      linear-gradient(90deg, #ffffff06 1px, transparent 1px);
-    background-size: auto, auto, 40px 40px, 40px 40px;
+    background-image: var(--page-bg);
+    background-size: var(--page-bg-size);
     background-attachment: fixed;
     overflow-x: hidden;
     -webkit-font-smoothing: antialiased;
@@ -175,7 +191,7 @@
     inset: 0;
     z-index: 100;
     pointer-events: none;
-    background: repeating-linear-gradient(0deg, #0000 0 2px, #00000010 2px 3px);
+    background: var(--scanlines);
   }
 
   ::selection {
@@ -203,7 +219,7 @@
     font-size: 0.9em;
     color: var(--color-neon-lime);
     border: 1px solid var(--color-line);
-    background: rgba(255, 255, 255, 0.05);
+    background: color-mix(in srgb, var(--color-tint) 5%, transparent);
     border-radius: 7px;
     padding: 2px 7px;
   }

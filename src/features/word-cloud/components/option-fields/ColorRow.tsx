@@ -10,7 +10,7 @@ export default function ColorRow({ children, className }: ColorRowProps) {
 	return (
 		<div
 			className={cn(
-				"relative z-10 flex items-center gap-2 rounded-xl border border-white/12 bg-white/[0.04] px-2 py-1.5 font-mono transition-colors focus-within:border-neon-cyan/60",
+				"relative z-10 flex items-center gap-2 rounded-xl border border-tint/12 bg-tint/[0.04] px-2 py-1.5 font-mono transition-colors focus-within:border-neon-cyan/60",
 				className,
 			)}
 		>

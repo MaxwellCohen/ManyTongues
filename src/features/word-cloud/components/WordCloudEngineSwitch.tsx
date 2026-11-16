@@ -17,7 +17,7 @@ export default function WordCloudEngineSwitch({
 		<div
 			role="group"
 			aria-label="Word cloud engine"
-			className="inline-flex rounded-full border border-white/12 bg-white/[0.04] p-1 font-mono"
+			className="inline-flex rounded-full border border-tint/12 bg-tint/[0.04] p-1 font-mono"
 		>
 			{ENGINES.map(({ value: engine, label }) => (
 				<button
@@ -28,7 +28,7 @@ export default function WordCloudEngineSwitch({
 					className={`rounded-full px-3.5 py-1.5 text-xs font-bold lowercase tracking-wide transition-all duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-neon-cyan ${
 						value === engine
 							? "bg-neon-cyan text-night shadow-glow-cyan"
-							: "text-sea-ink-soft hover:bg-white/[0.06] hover:text-sea-ink"
+							: "text-sea-ink-soft hover:bg-tint/[0.06] hover:text-sea-ink"
 					}`}
 				>
 					{label}

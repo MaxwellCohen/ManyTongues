@@ -35,11 +35,11 @@ function Slider({
 			<SliderPrimitive.Control className="relative flex w-full touch-none items-center select-none data-disabled:opacity-50 data-vertical:h-full data-vertical:min-h-40 data-vertical:w-auto data-vertical:flex-col">
 				<SliderPrimitive.Track
 					data-slot="slider-track"
-					className="relative grow overflow-hidden rounded-full bg-white/[0.08] select-none data-horizontal:h-1.5 data-horizontal:w-full data-vertical:h-full data-vertical:w-1.5"
+					className="relative grow overflow-hidden rounded-full bg-tint/[0.08] select-none data-horizontal:h-1.5 data-horizontal:w-full data-vertical:h-full data-vertical:w-1.5"
 				>
 					<SliderPrimitive.Indicator
 						data-slot="slider-range"
-						className="rounded-full bg-neon-pink shadow-[0_0_12px_var(--color-neon-pink)] select-none data-horizontal:h-full data-vertical:w-full"
+						className="rounded-full bg-neon-pink shadow-[0_0_calc(12px*var(--glow))_var(--color-neon-pink)] select-none data-horizontal:h-full data-vertical:w-full"
 					/>
 				</SliderPrimitive.Track>
 				{Array.from({ length: _values.length }, (_, index) => (
@@ -47,7 +47,7 @@ function Slider({
 						// biome-ignore lint/suspicious/noArrayIndexKey: thumbs are positional
 						key={index}
 						data-slot="slider-thumb"
-						className="block size-4 shrink-0 rounded-full border-2 border-neon-pink bg-night shadow-[0_0_10px_var(--color-neon-pink)] ring-neon-pink/30 transition-colors select-none hover:ring-4 focus-visible:ring-4 focus-visible:outline-hidden disabled:pointer-events-none disabled:opacity-50"
+						className="block size-4 shrink-0 rounded-full border-2 border-neon-pink bg-night shadow-[0_0_calc(10px*var(--glow))_var(--color-neon-pink)] ring-neon-pink/30 transition-colors select-none hover:ring-4 focus-visible:ring-4 focus-visible:outline-hidden disabled:pointer-events-none disabled:opacity-50"
 					/>
 				))}
 			</SliderPrimitive.Control>

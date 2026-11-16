@@ -59,7 +59,7 @@ export default function WordCloudOptionPaletteField({
 						setLocalColors(next);
 						notifyChange(next);
 					}}
-					className="flex items-center gap-1.5 rounded-xl border border-dashed border-white/20 px-3 py-2 font-mono text-xs text-sea-ink-soft transition-colors hover:border-neon-lime/70 hover:text-neon-lime"
+					className="flex items-center gap-1.5 rounded-xl border border-dashed border-tint/20 px-3 py-2 font-mono text-xs text-sea-ink-soft transition-colors hover:border-neon-lime/70 hover:text-neon-lime"
 				>
 					<PlusIcon className="h-3.5 w-3.5" />
 					Add color

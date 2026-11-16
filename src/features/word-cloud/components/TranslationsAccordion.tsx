@@ -11,10 +11,10 @@ import { useDebounceValue } from "#/hooks/useDebouncedValue";
 
 /** Per-row neon tint for the weight bar (static strings so Tailwind can see them). */
 const BAR_TINTS = [
-	"[&_[data-slot=slider-range]]:bg-neon-cyan [&_[data-slot=slider-range]]:shadow-[0_0_12px_var(--color-neon-cyan)] [&_[data-slot=slider-thumb]]:border-neon-cyan [&_[data-slot=slider-thumb]]:shadow-[0_0_10px_var(--color-neon-cyan)]",
-	"[&_[data-slot=slider-range]]:bg-neon-amber [&_[data-slot=slider-range]]:shadow-[0_0_12px_var(--color-neon-amber)] [&_[data-slot=slider-thumb]]:border-neon-amber [&_[data-slot=slider-thumb]]:shadow-[0_0_10px_var(--color-neon-amber)]",
-	"[&_[data-slot=slider-range]]:bg-neon-lime [&_[data-slot=slider-range]]:shadow-[0_0_12px_var(--color-neon-lime)] [&_[data-slot=slider-thumb]]:border-neon-lime [&_[data-slot=slider-thumb]]:shadow-[0_0_10px_var(--color-neon-lime)]",
-	"[&_[data-slot=slider-range]]:bg-neon-violet [&_[data-slot=slider-range]]:shadow-[0_0_12px_var(--color-neon-violet)] [&_[data-slot=slider-thumb]]:border-neon-violet [&_[data-slot=slider-thumb]]:shadow-[0_0_10px_var(--color-neon-violet)]",
+	"[&_[data-slot=slider-range]]:bg-neon-cyan [&_[data-slot=slider-range]]:shadow-[0_0_calc(12px*var(--glow))_var(--color-neon-cyan)] [&_[data-slot=slider-thumb]]:border-neon-cyan [&_[data-slot=slider-thumb]]:shadow-[0_0_calc(10px*var(--glow))_var(--color-neon-cyan)]",
+	"[&_[data-slot=slider-range]]:bg-neon-amber [&_[data-slot=slider-range]]:shadow-[0_0_calc(12px*var(--glow))_var(--color-neon-amber)] [&_[data-slot=slider-thumb]]:border-neon-amber [&_[data-slot=slider-thumb]]:shadow-[0_0_calc(10px*var(--glow))_var(--color-neon-amber)]",
+	"[&_[data-slot=slider-range]]:bg-neon-lime [&_[data-slot=slider-range]]:shadow-[0_0_calc(12px*var(--glow))_var(--color-neon-lime)] [&_[data-slot=slider-thumb]]:border-neon-lime [&_[data-slot=slider-thumb]]:shadow-[0_0_calc(10px*var(--glow))_var(--color-neon-lime)]",
+	"[&_[data-slot=slider-range]]:bg-neon-violet [&_[data-slot=slider-range]]:shadow-[0_0_calc(12px*var(--glow))_var(--color-neon-violet)] [&_[data-slot=slider-thumb]]:border-neon-violet [&_[data-slot=slider-thumb]]:shadow-[0_0_calc(10px*var(--glow))_var(--color-neon-violet)]",
 	"",
 ] as const;
 
@@ -53,9 +53,9 @@ function TranslationRow({
 	}, [debouncedWeight]);
 
 	return (
-		<li className="border-b border-dashed border-white/[0.08] py-2.5 font-mono last:border-b-0">
+		<li className="border-b border-dashed border-tint/[0.08] py-2.5 font-mono last:border-b-0">
 			<div className="flex items-center gap-2 text-[13px]">
-				<span className="shrink-0 rounded-md border border-white/12 bg-white/[0.06] px-1.5 py-0.5 text-[11px] font-bold tracking-wide text-neon-cyan uppercase">
+				<span className="shrink-0 rounded-md border border-tint/12 bg-tint/[0.06] px-1.5 py-0.5 text-[11px] font-bold tracking-wide text-neon-cyan uppercase">
 					{lang}
 				</span>
 				<span className="min-w-0 flex-1 truncate text-sea-ink" title={text}>
